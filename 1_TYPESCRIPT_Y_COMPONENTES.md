@@ -1,4 +1,4 @@
-# 5. TypeScript y Separación de Componentes
+# 1. TypeScript y Separación de Componentes (Frontend)
 
 ## 🎯 Objetivos
 - Entender qué es TypeScript y por qué es útil
@@ -428,16 +428,6 @@ frontend/
 4. **Fácil de mantener**: Cada componente tiene una sola responsabilidad
 5. **Trabajo en equipo**: Cada alumno puede trabajar en componentes diferentes
 
-## 📝 Ejercicio práctico
-
-1. Usa este CRUD de clientes como base para tu módulo
-2. Adapta los campos según tu módulo:
-   - **Rutinas**: nombre, descripción, duración, nivel
-   - **Dietas**: nombre, calorías, tipo, descripción
-   - **Pagos**: clienteId, monto, fecha, concepto
-3. Crea tu propia interface con TypeScript
-4. Reutiliza la estructura de componentes
-
 ## 🔍 Tipos útiles de TypeScript para React
 
 ```typescript
@@ -470,14 +460,3 @@ interface Props {
 3. **Lee los errores**: Los mensajes de error de TypeScript son muy descriptivos
 4. **any es tu enemigo**: Evita usar `any`, mejor usa tipos específicos
 5. **Interfaces vs Types**: Para objetos usa `interface`, para uniones usa `type`
-
-## 🎯 Próximos pasos
-
-Con esta base, pueden:
-1. Adaptar cada módulo (clientes, rutinas, dietas, pagos) con sus propios tipos
-2. Compartir componentes base entre módulos
-3. Crear un tipo `Entrenador` que contenga arrays de cada módulo
-4. Implementar navegación entre módulos
-5. Añadir validaciones más complejas con TypeScript
-
-¡TypeScript puede parecer más trabajo al inicio, pero les ahorrará MUCHOS dolores de cabeza cuando su aplicación crezca!
