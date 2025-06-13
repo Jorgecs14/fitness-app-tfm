@@ -1,50 +1,50 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import { Cliente } from './types/Cliente';
-import { ClienteForm } from './components/ClienteForm';
-import { ClienteList } from './components/ClienteList';
+import { Client } from './types/Client';
+import { ClientForm } from './components/ClientForm';
+import { ClientList } from './components/ClientList';
 import * as api from './services/api';
 
 function App() {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   useEffect(() => {
-    loadClientes();
+    loadClients();
   }, []);
 
-  const loadClientes = async () => {
+  const loadClients = async () => {
     try {
-      const data = await api.getClientes();
-      setClientes(data);
+      const data = await api.getClients();
+      setClients(data);
     } catch (error) {
       console.error('Error cargando clientes:', error);
     }
   };
 
-  const handleSubmit = async (clienteData: Omit<Cliente, 'id'>) => {
+  const handleSubmit = async (clientData: Omit<Client, 'id'>) => {
     try {
-      if (editingCliente) {
-        await api.updateCliente(editingCliente.id, clienteData);
-        setEditingCliente(null);
+      if (editingClient) {
+        await api.updateClient(editingClient.id, clientData);
+        setEditingClient(null);
       } else {
-        await api.createCliente(clienteData);
+        await api.createClient(clientData);
       }
-      loadClientes();
+      loadClients();
     } catch (error) {
       console.error('Error guardando cliente:', error);
     }
   };
 
-  const handleEdit = (cliente: Cliente) => {
-    setEditingCliente(cliente);
+  const handleEdit = (client: Client) => {
+    setEditingClient(client);
   };
 
   const handleDelete = async (id: number) => {
     if (window.confirm('¿Estás seguro de eliminar este cliente?')) {
       try {
-        await api.deleteCliente(id);
-        loadClientes();
+        await api.deleteClient(id);
+        loadClients();
       } catch (error) {
         console.error('Error eliminando cliente:', error);
       }
@@ -52,21 +52,21 @@ function App() {
   };
 
   const handleCancelEdit = () => {
-    setEditingCliente(null);
+    setEditingClient(null);
   };
 
   return (
     <div className="app">
       <h1>Gestión de Clientes - Entrenador Fitness</h1>
       
-      <ClienteForm
+      <ClientForm
         onSubmit={handleSubmit}
-        clienteToEdit={editingCliente}
+        clientToEdit={editingClient}
         onCancelEdit={handleCancelEdit}
       />
       
-      <ClienteList
-        clientes={clientes}
+      <ClientList
+        clients={clients}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />

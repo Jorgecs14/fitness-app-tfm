@@ -88,11 +88,11 @@ No necesitas cambiar nada - Vite detecta TypeScript automáticamente.
 
 Vamos a dividir nuestro `App.tsx` en componentes más pequeños:
 
-### 1. Definir tipos (src/types/Cliente.ts)
+### 1. Definir tipos (src/types/Client.ts)
 
 ```typescript
-// Definimos cómo debe lucir un Cliente
-export interface Cliente {
+// Definimos cómo debe lucir un Client
+export interface Client {
   id: number;
   nombre: string;
   email: string;
@@ -104,41 +104,41 @@ export interface Cliente {
 ### 2. Servicio API (src/services/api.ts)
 
 ```typescript
-import { Cliente } from '../types/Cliente';
+import { Client } from '../types/Client';
 
-const API_URL = 'http://localhost:3001/api/clientes';
+const API_URL = 'http://localhost:3001/api/clients';
 
 // Obtener todos los clientes
-export const getClientes = async (): Promise<Cliente[]> => {
+export const getClients = async (): Promise<Client[]> => {
   const response = await fetch(API_URL);
   if (!response.ok) throw new Error('Error al obtener clientes');
   return response.json();
 };
 
 // Crear un cliente
-export const createCliente = async (cliente: Omit<Cliente, 'id'>): Promise<Cliente> => {
+export const createClient = async (client: Omit<Client, 'id'>): Promise<Client> => {
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cliente),
+    body: JSON.stringify(client),
   });
   if (!response.ok) throw new Error('Error al crear cliente');
   return response.json();
 };
 
 // Actualizar un cliente
-export const updateCliente = async (id: number, cliente: Omit<Cliente, 'id'>): Promise<Cliente> => {
+export const updateClient = async (id: number, client: Omit<Client, 'id'>): Promise<Client> => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cliente),
+    body: JSON.stringify(client),
   });
   if (!response.ok) throw new Error('Error al actualizar cliente');
   return response.json();
 };
 
 // Eliminar un cliente
-export const deleteCliente = async (id: number): Promise<void> => {
+export const deleteClient = async (id: number): Promise<void> => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: 'DELETE',
   });
@@ -146,20 +146,20 @@ export const deleteCliente = async (id: number): Promise<void> => {
 };
 ```
 
-### 3. Componente ClienteForm (src/components/ClienteForm.tsx)
+### 3. Componente ClientForm (src/components/ClientForm.tsx)
 
 ```typescript
 import { useState, useEffect, FormEvent } from 'react';
-import { Cliente } from '../types/Cliente';
+import { Client } from '../types/Client';
 
 // Props que recibe el componente
-interface ClienteFormProps {
-  onSubmit: (cliente: Omit<Cliente, 'id'>) => void;
-  clienteToEdit?: Cliente | null;
+interface ClientFormProps {
+  onSubmit: (client: Omit<Client, 'id'>) => void;
+  clientToEdit?: Client | null;
   onCancelEdit?: () => void;
 }
 
-export const ClienteForm = ({ onSubmit, clienteToEdit, onCancelEdit }: ClienteFormProps) => {
+export const ClientForm = ({ onSubmit, clientToEdit, onCancelEdit }: ClientFormProps) => {
   // Estados con tipos
   const [nombre, setNombre] = useState<string>('');
   const [email, setEmail] = useState<string>('');
@@ -237,9 +237,9 @@ export const ClienteForm = ({ onSubmit, clienteToEdit, onCancelEdit }: ClienteFo
       </div>
       <div className="form-buttons">
         <button type="submit">
-          {clienteToEdit ? 'Actualizar' : 'Agregar'} Cliente
+          {clientToEdit ? 'Actualizar' : 'Agregar'} Cliente
         </button>
-        {clienteToEdit && onCancelEdit && (
+        {clientToEdit && onCancelEdit && (
           <button type="button" onClick={onCancelEdit}>
             Cancelar
           </button>
@@ -250,58 +250,58 @@ export const ClienteForm = ({ onSubmit, clienteToEdit, onCancelEdit }: ClienteFo
 };
 ```
 
-### 4. Componente ClienteCard (src/components/ClienteCard.tsx)
+### 4. Componente ClientCard (src/components/ClientCard.tsx)
 
 ```typescript
-import { Cliente } from '../types/Cliente';
+import { Client } from '../types/Client';
 
-interface ClienteCardProps {
-  cliente: Cliente;
-  onEdit: (cliente: Cliente) => void;
+interface ClientCardProps {
+  client: Client;
+  onEdit: (client: Client) => void;
   onDelete: (id: number) => void;
 }
 
-export const ClienteCard = ({ cliente, onEdit, onDelete }: ClienteCardProps) => {
+export const ClientCard = ({ client, onEdit, onDelete }: ClientCardProps) => {
   return (
-    <div className="cliente">
-      <div className="cliente-info">
-        <h3>{cliente.nombre}</h3>
-        <p><strong>Email:</strong> {cliente.email}</p>
-        <p><strong>Teléfono:</strong> {cliente.telefono}</p>
-        <p><strong>Objetivo:</strong> {cliente.objetivo}</p>
+    <div className="client">
+      <div className="client-info">
+        <h3>{client.nombre}</h3>
+        <p><strong>Email:</strong> {client.email}</p>
+        <p><strong>Teléfono:</strong> {client.telefono}</p>
+        <p><strong>Objetivo:</strong> {client.objetivo}</p>
       </div>
-      <div className="cliente-actions">
-        <button onClick={() => onEdit(cliente)}>Editar</button>
-        <button onClick={() => onDelete(cliente.id)}>Eliminar</button>
+      <div className="client-actions">
+        <button onClick={() => onEdit(client)}>Editar</button>
+        <button onClick={() => onDelete(client.id)}>Eliminar</button>
       </div>
     </div>
   );
 };
 ```
 
-### 5. Componente ClienteList (src/components/ClienteList.tsx)
+### 5. Componente ClientList (src/components/ClientList.tsx)
 
 ```typescript
-import { Cliente } from '../types/Cliente';
-import { ClienteCard } from './ClienteCard';
+import { Client } from '../types/Client';
+import { ClientCard } from './ClientCard';
 
-interface ClienteListProps {
-  clientes: Cliente[];
-  onEdit: (cliente: Cliente) => void;
+interface ClientListProps {
+  clients: Client[];
+  onEdit: (client: Client) => void;
   onDelete: (id: number) => void;
 }
 
-export const ClienteList = ({ clientes, onEdit, onDelete }: ClienteListProps) => {
+export const ClientList = ({ clients, onEdit, onDelete }: ClientListProps) => {
   return (
-    <div className="clientes-list">
+    <div className="clients-list">
       <h2>Clientes</h2>
-      {clientes.length === 0 ? (
+      {clients.length === 0 ? (
         <p>No hay clientes registrados</p>
       ) : (
-        clientes.map((cliente) => (
-          <ClienteCard
-            key={cliente.id}
-            cliente={cliente}
+        clients.map((client) => (
+          <ClientCard
+            key={client.id}
+            client={client}
             onEdit={onEdit}
             onDelete={onDelete}
           />
@@ -317,52 +317,52 @@ export const ClienteList = ({ clientes, onEdit, onDelete }: ClienteListProps) =>
 ```typescript
 import { useState, useEffect } from 'react';
 import './App.css';
-import { Cliente } from './types/Cliente';
-import { ClienteForm } from './components/ClienteForm';
-import { ClienteList } from './components/ClienteList';
+import { Client } from './types/Client';
+import { ClientForm } from './components/ClientForm';
+import { ClientList } from './components/ClientList';
 import * as api from './services/api';
 
 function App() {
-  const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [editingCliente, setEditingCliente] = useState<Cliente | null>(null);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
 
   // Cargar clientes al iniciar
   useEffect(() => {
-    loadClientes();
+    loadClients();
   }, []);
 
-  const loadClientes = async () => {
+  const loadClients = async () => {
     try {
-      const data = await api.getClientes();
-      setClientes(data);
+      const data = await api.getClients();
+      setClients(data);
     } catch (error) {
       console.error('Error cargando clientes:', error);
     }
   };
 
-  const handleSubmit = async (clienteData: Omit<Cliente, 'id'>) => {
+  const handleSubmit = async (clientData: Omit<Client, 'id'>) => {
     try {
-      if (editingCliente) {
-        await api.updateCliente(editingCliente.id, clienteData);
-        setEditingCliente(null);
+      if (editingClient) {
+        await api.updateClient(editingClient.id, clientData);
+        setEditingClient(null);
       } else {
-        await api.createCliente(clienteData);
+        await api.createClient(clientData);
       }
-      loadClientes();
+      loadClients();
     } catch (error) {
       console.error('Error guardando cliente:', error);
     }
   };
 
-  const handleEdit = (cliente: Cliente) => {
-    setEditingCliente(cliente);
+  const handleEdit = (client: Client) => {
+    setEditingClient(client);
   };
 
   const handleDelete = async (id: number) => {
     if (window.confirm('¿Estás seguro de eliminar este cliente?')) {
       try {
-        await api.deleteCliente(id);
-        loadClientes();
+        await api.deleteClient(id);
+        loadClients();
       } catch (error) {
         console.error('Error eliminando cliente:', error);
       }
@@ -370,21 +370,21 @@ function App() {
   };
 
   const handleCancelEdit = () => {
-    setEditingCliente(null);
+    setEditingClient(null);
   };
 
   return (
     <div className="app">
       <h1>Gestión de Clientes - Entrenador Fitness</h1>
       
-      <ClienteForm
+      <ClientForm
         onSubmit={handleSubmit}
-        clienteToEdit={editingCliente}
+        clientToEdit={editingClient}
         onCancelEdit={handleCancelEdit}
       />
       
-      <ClienteList
-        clientes={clientes}
+      <ClientList
+        clients={clients}
         onEdit={handleEdit}
         onDelete={handleDelete}
       />
@@ -401,13 +401,13 @@ export default App;
 frontend/
 ├── src/
 │   ├── components/
-│   │   ├── ClienteForm.tsx
-│   │   ├── ClienteList.tsx
-│   │   └── ClienteCard.tsx
+│   │   ├── ClientForm.tsx
+│   │   ├── ClientList.tsx
+│   │   └── ClientCard.tsx
 │   ├── services/
 │   │   └── api.ts
 │   ├── types/
-│   │   └── Cliente.ts
+│   │   └── Client.ts
 │   ├── App.tsx
 │   ├── App.css
 │   ├── main.tsx

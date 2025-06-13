@@ -63,17 +63,17 @@ Todas las rutas cambiaron de `/api/items` a `/api/clientes`:
 
 | Método | Ruta | Descripción |
 |--------|------|-------------|
-| GET | `/api/clientes` | Obtener todos los clientes |
-| GET | `/api/clientes/:id` | Obtener un cliente específico |
-| POST | `/api/clientes` | Crear nuevo cliente |
-| PUT | `/api/clientes/:id` | Actualizar cliente existente |
-| DELETE | `/api/clientes/:id` | Eliminar cliente |
+| GET | `/api/clients` | Obtener todos los clientes |
+| GET | `/api/clients/:id` | Obtener un cliente específico |
+| POST | `/api/clients` | Crear nuevo cliente |
+| PUT | `/api/clients/:id` | Actualizar cliente existente |
+| DELETE | `/api/clients/:id` | Eliminar cliente |
 
 ### 5. Validaciones actualizadas
 
 **Ejemplo en POST/PUT:**
 ```javascript
-app.post('/api/clientes', (req, res) => {
+app.post('/api/clients', (req, res) => {
   const { nombre, email, telefono, objetivo } = req.body;
   
   // Validamos que TODOS los campos estén presentes
@@ -84,16 +84,16 @@ app.post('/api/clientes', (req, res) => {
   }
   
   // Crear el cliente con la estructura correcta
-  const newCliente = {
+  const newClient = {
     id: nextId++,
-    nombre,    // ← Coincide con Cliente.ts
-    email,     // ← Coincide con Cliente.ts
-    telefono,  // ← Coincide con Cliente.ts
-    objetivo   // ← Coincide con Cliente.ts
+    nombre,    // ← Coincide con Client.ts
+    email,     // ← Coincide con Client.ts
+    telefono,  // ← Coincide con Client.ts
+    objetivo   // ← Coincide con Client.ts
   };
   
-  clientes.push(newCliente);
-  res.status(201).json(newCliente);
+  clients.push(newClient);
+  res.status(201).json(newClient);
 });
 ```
 

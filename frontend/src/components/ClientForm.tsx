@@ -1,31 +1,31 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { Cliente } from '../types/Cliente';
+import { Client } from '../types/Client';
 
-interface ClienteFormProps {
-  onSubmit: (cliente: Omit<Cliente, 'id'>) => void;
-  clienteToEdit?: Cliente | null;
+interface ClientFormProps {
+  onSubmit: (client: Omit<Client, 'id'>) => void;
+  clientToEdit?: Client | null;
   onCancelEdit?: () => void;
 }
 
-export const ClienteForm = ({ onSubmit, clienteToEdit, onCancelEdit }: ClienteFormProps) => {
+export const ClientForm = ({ onSubmit, clientToEdit, onCancelEdit }: ClientFormProps) => {
   const [nombre, setNombre] = useState<string>('');
   const [email, setEmail] = useState<string>('');
   const [telefono, setTelefono] = useState<string>('');
   const [objetivo, setObjetivo] = useState<string>('');
 
   useEffect(() => {
-    if (clienteToEdit) {
-      setNombre(clienteToEdit.nombre);
-      setEmail(clienteToEdit.email);
-      setTelefono(clienteToEdit.telefono);
-      setObjetivo(clienteToEdit.objetivo);
+    if (clientToEdit) {
+      setNombre(clientToEdit.nombre);
+      setEmail(clientToEdit.email);
+      setTelefono(clientToEdit.telefono);
+      setObjetivo(clientToEdit.objetivo);
     } else {
       setNombre('');
       setEmail('');
       setTelefono('');
       setObjetivo('');
     }
-  }, [clienteToEdit]);
+  }, [clientToEdit]);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -37,7 +37,7 @@ export const ClienteForm = ({ onSubmit, clienteToEdit, onCancelEdit }: ClienteFo
 
     onSubmit({ nombre, email, telefono, objetivo });
     
-    if (!clienteToEdit) {
+    if (!clientToEdit) {
       setNombre('');
       setEmail('');
       setTelefono('');
@@ -81,9 +81,9 @@ export const ClienteForm = ({ onSubmit, clienteToEdit, onCancelEdit }: ClienteFo
       </div>
       <div className="form-buttons">
         <button type="submit">
-          {clienteToEdit ? 'Actualizar' : 'Agregar'} Cliente
+          {clientToEdit ? 'Actualizar' : 'Agregar'} Cliente
         </button>
-        {clienteToEdit && onCancelEdit && (
+        {clientToEdit && onCancelEdit && (
           <button type="button" onClick={onCancelEdit}>
             Cancelar
           </button>

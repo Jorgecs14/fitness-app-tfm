@@ -1,34 +1,34 @@
-import { Cliente } from '../types/Cliente';
+import { Client } from '../types/Client';
 
-const API_URL = 'http://localhost:3001/api/clientes';
+const API_URL = 'http://localhost:3001/api/clients';
 
-export const getClientes = async (): Promise<Cliente[]> => {
+export const getClients = async (): Promise<Client[]> => {
   const response = await fetch(API_URL);
   if (!response.ok) throw new Error('Error al obtener clientes');
   return response.json();
 };
 
-export const createCliente = async (cliente: Omit<Cliente, 'id'>): Promise<Cliente> => {
+export const createClient = async (client: Omit<Client, 'id'>): Promise<Client> => {
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cliente),
+    body: JSON.stringify(client),
   });
   if (!response.ok) throw new Error('Error al crear cliente');
   return response.json();
 };
 
-export const updateCliente = async (id: number, cliente: Omit<Cliente, 'id'>): Promise<Cliente> => {
+export const updateClient = async (id: number, client: Omit<Client, 'id'>): Promise<Client> => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(cliente),
+    body: JSON.stringify(client),
   });
   if (!response.ok) throw new Error('Error al actualizar cliente');
   return response.json();
 };
 
-export const deleteCliente = async (id: number): Promise<void> => {
+export const deleteClient = async (id: number): Promise<void> => {
   const response = await fetch(`${API_URL}/${id}`, {
     method: 'DELETE',
   });

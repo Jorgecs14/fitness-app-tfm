@@ -7,7 +7,7 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-let clientes = [
+let clients = [
   { 
     id: 1, 
     nombre: 'Juan Pérez', 
@@ -26,29 +26,29 @@ let clientes = [
 
 let nextId = 3;
 
-app.get('/api/clientes', (req, res) => {
-  res.json(clientes);
+app.get('/api/clients', (req, res) => {
+  res.json(clients);
 });
 
-app.get('/api/clientes/:id', (req, res) => {
+app.get('/api/clients/:id', (req, res) => {
   const id = parseInt(req.params.id);
-  const cliente = clientes.find(cliente => cliente.id === id);
+  const client = clients.find(client => client.id === id);
   
-  if (!cliente) {
+  if (!client) {
     return res.status(404).json({ error: 'Cliente no encontrado' });
   }
   
-  res.json(cliente);
+  res.json(client);
 });
 
-app.post('/api/clientes', (req, res) => {
+app.post('/api/clients', (req, res) => {
   const { nombre, email, telefono, objetivo } = req.body;
   
   if (!nombre || !email || !telefono || !objetivo) {
     return res.status(400).json({ error: 'Todos los campos son requeridos' });
   }
   
-  const newCliente = {
+  const newClient = {
     id: nextId++,
     nombre,
     email,
@@ -56,17 +56,17 @@ app.post('/api/clientes', (req, res) => {
     objetivo
   };
   
-  clientes.push(newCliente);
-  res.status(201).json(newCliente);
+  clients.push(newClient);
+  res.status(201).json(newClient);
 });
 
-app.put('/api/clientes/:id', (req, res) => {
+app.put('/api/clients/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const { nombre, email, telefono, objetivo } = req.body;
   
-  const clienteIndex = clientes.findIndex(cliente => cliente.id === id);
+  const clientIndex = clients.findIndex(client => client.id === id);
   
-  if (clienteIndex === -1) {
+  if (clientIndex === -1) {
     return res.status(404).json({ error: 'Cliente no encontrado' });
   }
   
@@ -74,19 +74,19 @@ app.put('/api/clientes/:id', (req, res) => {
     return res.status(400).json({ error: 'Todos los campos son requeridos' });
   }
   
-  clientes[clienteIndex] = { id, nombre, email, telefono, objetivo };
-  res.json(clientes[clienteIndex]);
+  clients[clientIndex] = { id, nombre, email, telefono, objetivo };
+  res.json(clients[clientIndex]);
 });
 
-app.delete('/api/clientes/:id', (req, res) => {
+app.delete('/api/clients/:id', (req, res) => {
   const id = parseInt(req.params.id);
-  const clienteIndex = clientes.findIndex(cliente => cliente.id === id);
+  const clientIndex = clients.findIndex(client => client.id === id);
   
-  if (clienteIndex === -1) {
+  if (clientIndex === -1) {
     return res.status(404).json({ error: 'Cliente no encontrado' });
   }
   
-  clientes.splice(clienteIndex, 1);
+  clients.splice(clientIndex, 1);
   res.json({ message: 'Cliente eliminado correctamente' });
 });
 
