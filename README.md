@@ -5,7 +5,6 @@ Este proyecto es un ejemplo completo de una aplicación CRUD (Create, Read, Upda
 ## 📚 Tutoriales
 
 ### [1. TypeScript y Separación de Componentes (Frontend)](./1_TYPESCRIPT_Y_COMPONENTES.md)
-Aprende cómo:
 - ✅ Configurar TypeScript en React
 - ✅ Definir interfaces y tipos seguros
 - ✅ Separar la aplicación en componentes reutilizables
@@ -13,7 +12,6 @@ Aprende cómo:
 - ✅ Manejar estados con tipos de TypeScript
 
 ### [2. Backend para TypeScript](./2_BACKEND_PARA_TYPESCRIPT.md)
-Descubre:
 - ✅ Cómo adaptar el backend Express para TypeScript
 - ✅ Configuración de CORS para comunicación frontend-backend
 - ✅ Estructura de datos que coincide con los tipos del frontend
