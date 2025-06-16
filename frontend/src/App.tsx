@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import './App.css';
 import { Client } from './types/Client';
-import { ClientForm } from './components/ClientForm';
-import { ClientList } from './components/ClientList';
-import * as api from './services/api';
+import { ClientForm } from './components/client.components/ClientForm';
+import { ClientList } from './components/client.components/ClientList';
+import * as api from './services/clientService';
 
 function App() {
   const [clients, setClients] = useState<Client[]>([]);

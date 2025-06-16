@@ -29,6 +29,23 @@ export const HomePage = () => {
           👥 Ver Clientes
         </Link>
       </div>
+
+            <div style={{ marginTop: '3rem' }}>
+        <Link 
+          to="/products" 
+          style={{
+            display: 'inline-block',
+            padding: '1rem 2rem',
+            background: '#4CAF50',
+            color: 'white',
+            textDecoration: 'none',
+            borderRadius: '4px',
+            fontSize: '1.1rem'
+          }}
+        >
+          🛒 Venta
+        </Link>
+      </div>
     </div>
   );
 };

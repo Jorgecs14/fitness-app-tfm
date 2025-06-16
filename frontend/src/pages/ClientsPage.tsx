@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Client } from '../types/Client';
-import { ClientForm } from '../components/ClientForm';
-import { ClientList } from '../components/ClientList';
-import * as api from '../services/api';
+import { ClientForm } from '../components/client.components/ClientForm';
+import { ClientList } from '../components/client.components/ClientList';
+import * as clientService from '../services/clientService';
 import '../App.css';
 
 export const ClientsPage = () => {
@@ -15,7 +15,7 @@ export const ClientsPage = () => {
 
   const loadClients = async () => {
     try {
-      const data = await api.getClients();
+      const data = await clientService.getClients();
       setClients(data);
     } catch (error) {
       console.error('Error cargando clientes:', error);
@@ -25,10 +25,10 @@ export const ClientsPage = () => {
   const handleSubmit = async (clientData: Omit<Client, 'id'>) => {
     try {
       if (editingClient) {
-        await api.updateClient(editingClient.id, clientData);
+        await clientService.updateClient(editingClient.id, clientData);
         setEditingClient(null);
       } else {
-        await api.createClient(clientData);
+        await clientService.createClient(clientData);
       }
       loadClients();
     } catch (error) {
@@ -43,7 +43,7 @@ export const ClientsPage = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('¿Estás seguro de eliminar este cliente?')) {
       try {
-        await api.deleteClient(id);
+        await clientService.deleteClient(id);
         loadClients();
       } catch (error) {
         console.error('Error eliminando cliente:', error);
