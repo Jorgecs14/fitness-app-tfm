@@ -34,3 +34,15 @@ export const deleteClient = async (id: number): Promise<void> => {
   });
   if (!response.ok) throw new Error('Error al eliminar cliente');
 };
+
+export function deleteWorkout(id: number) {
+  throw new Error('Function not implemented.');
+}
+export function createWorkout(workoutData: Omit<Workout, "id">) {
+  throw new Error('Function not implemented.');
+}
+
+export function updateWorkout(id: number, workoutData: Omit<Workout, "id">) {
+  throw new Error('Function not implemented.');
+}
+
