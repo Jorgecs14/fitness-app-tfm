@@ -11,6 +11,7 @@ import { Layout } from './Layout'
 import { HomePage } from './pages/HomePage'
 import { ClientsPage } from './pages/ClientsPage'
 import { ProductsPage } from './pages/ProductsPage'
+import { WorkoutsPage } from './pages/WorkoutsPage'
 
 // Crear las rutas
 const router = createBrowserRouter(
@@ -19,6 +20,7 @@ const router = createBrowserRouter(
       <Route index element={<HomePage />} />
       <Route path="clients" element={<ClientsPage />} />
       <Route path="products" element={<ProductsPage />} />
+      <Route path="workouts" element={<WorkoutsPage />} />
     </Route>
   )
 )

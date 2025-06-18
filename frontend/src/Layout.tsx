@@ -10,6 +10,7 @@ export const Layout = () => {
           <Link to="/">🏠 Inicio</Link>
           <Link to="/clients">👥 Clientes</Link>
           <Link to="/products">🛒 Venta</Link>
+          <Link to="/workouts">🏋️‍♀️ Entrenamientos</Link>
         </div>
       </nav>
       

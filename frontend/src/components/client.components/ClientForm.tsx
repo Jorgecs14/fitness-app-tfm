@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { Client } from '../types/Client';
+import { Client } from '../../types/Client';
 
 interface ClientFormProps {
   onSubmit: (client: Omit<Client, 'id'>) => void;
