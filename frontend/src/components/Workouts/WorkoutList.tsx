@@ -10,7 +10,7 @@ interface WorkoutListProps {
 
 export const WorkoutList = ({ workouts, onEdit, onDelete }: WorkoutListProps) => {
   return (
-    <div className="Workout-list">
+    <div className="clients-list">
       <h2>Workouts</h2>
       {workouts.length === 0 ? (
         <p>No hay entrenamientos registrados</p>

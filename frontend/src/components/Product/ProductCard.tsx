@@ -8,14 +8,14 @@ interface ProductCardProps {
 
 export const ProductCard = ({ product, onEdit, onDelete }: ProductCardProps) => {
   return (
-    <div className="product">
-      <div className="product-info">
+    <div className="client">
+      <div className="client-info">
         <h3>{product.nombre}</h3>
         <p><strong>Precio:</strong> {product.precio}</p>
         <p><strong>Descripción:</strong> {product.descripcion}</p>
         <p><strong>Imagen:</strong> {product.imagen}</p>
       </div>
-      <div className="product-actions">
+      <div className="client-actions">
         <button onClick={() => onEdit(product)}>Editar</button>
         <button onClick={() => onDelete(product.id)}>Eliminar</button>
       </div>

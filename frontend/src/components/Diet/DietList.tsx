@@ -1,4 +1,4 @@
-import { Diet } from '../types/Diet';
+import { Diet } from '../../types/Diet';
 
 interface DietListProps {
   diets: Diet[];

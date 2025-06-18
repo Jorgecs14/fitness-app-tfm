@@ -9,7 +9,7 @@ interface ProductListProps {
 
 export const ProductList = ({ products, onEdit, onDelete }: ProductListProps) => {
   return (
-    <div className="products-list">
+    <div className="clients-list">
       <h2>Productos</h2>
       {products.length === 0 ? (
         <p>No hay productos registrados</p>

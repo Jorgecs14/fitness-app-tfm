@@ -20,12 +20,12 @@ let products = [
 
 let nextProductId = 3;
 
-
-router.get('/api/products', (req, res) => {
+// Cambia las rutas a relativas
+router.get('/', (req, res) => {
   res.json(products);
 });
 
-router.get('/api/products/:id', (req, res) => {
+router.get('/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const product = products.find(product => product.id === id);
 
@@ -36,7 +36,7 @@ router.get('/api/products/:id', (req, res) => {
   res.json(product);
 });
 
-router.post('/api/products', (req, res) => {
+router.post('/', (req, res) => {
   const { nombre, precio, descripcion, imagen } = req.body;
 
   if (!nombre || !precio || !descripcion || !imagen) {
@@ -55,7 +55,7 @@ router.post('/api/products', (req, res) => {
   res.status(201).json(newProduct);
 });
 
-router.put('/api/products/:id', (req, res) => {
+router.put('/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const { nombre, precio, descripcion, imagen } = req.body;
 
@@ -73,7 +73,7 @@ router.put('/api/products/:id', (req, res) => {
   res.json(products[productIndex]);
 });
 
-router.delete('/api/products/:id', (req, res) => {
+router.delete('/:id', (req, res) => {
   const id = parseInt(req.params.id);
   const productIndex = products.findIndex(product => product.id === id);
 
@@ -85,5 +85,4 @@ router.delete('/api/products/:id', (req, res) => {
   res.json({ message: 'Producto eliminado correctamente' });
 });
 
-
-module.exports = router; 
+module.exports = router;
