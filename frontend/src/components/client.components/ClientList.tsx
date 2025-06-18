@@ -1,4 +1,4 @@
-import { Client } from '../types/Client';
+import { Client } from '../../types/Client';
 import { ClientCard } from './ClientCard';
 
 interface ClientListProps {
