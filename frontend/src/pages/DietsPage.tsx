@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Diet } from '../types/Diet';
-import { DietForm } from '../components/DietForm';
-import { DietList } from '../components/DietList';
-import * as api from '../services/api';
+import { DietForm } from '../components/Diet/DietForm';
+import { DietList } from '../components/Diet/DietList';
+import * as dietService from '../services/dietService';
 import '../App.css';
 
 export const DietsPage = () => {
@@ -15,7 +15,7 @@ export const DietsPage = () => {
 
   const loadDiets = async () => {
     try {
-      const data = await api.getDiets();
+      const data = await dietService.getDiets();
       setDiets(data);
     } catch (error) {
       console.error('Error cargando dietas:', error);
@@ -25,10 +25,10 @@ export const DietsPage = () => {
   const handleSubmit = async (dietData: Omit<Diet, 'id'>) => {
     try {
       if (editingDiet) {
-        await api.updateDiet(editingDiet.id, dietData);
+        await dietService.updateDiet(editingDiet.id, dietData);
         setEditingDiet(null);
       } else {
-        await api.createDiet(dietData);
+        await dietService.createDiet(dietData);
       }
       loadDiets();
     } catch (error) {
@@ -43,7 +43,7 @@ export const DietsPage = () => {
   const handleDelete = async (id: number) => {
     if (window.confirm('¿Estás seguro de eliminar esta dieta?')) {
       try {
-        await api.deleteDiet(id);
+        await dietService.deleteDiet(id);
         loadDiets();
       } catch (error) {
         console.error('Error eliminando dieta:', error);

@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { Workout } from '../../types/Workouts';
+import { Workout } from '../../types/Workout';
 
 interface WorkoutFormProps {
   onSubmit: (workout: Omit<Workout, 'id'>) => void; 

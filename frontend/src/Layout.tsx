@@ -11,7 +11,7 @@ export const Layout = () => {
           <Link to="/clients">👥 Clientes</Link>
           <Link to="/diets">🥐 Dietas </Link>
           <Link to="/workouts">🏋️ Entrenamientos </Link>
-          <Link to="/ecommerce">🛒 Ecommerce </Link>
+          <Link to="/products">🛒 Productos </Link>
         </div>
       </nav>
       
@@ -19,3 +19,4 @@ export const Layout = () => {
     </>
   );
 };
+

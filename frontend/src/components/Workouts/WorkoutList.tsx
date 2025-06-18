@@ -1,4 +1,4 @@
-import { Workout } from '../../types/Workouts';
+import { Workout } from '../../types/Workout';
 import { WorkoutCard } from '../../components/Workouts/WorkoutCard';
 
 

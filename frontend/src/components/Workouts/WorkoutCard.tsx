@@ -1,5 +1,5 @@
 
-import { Workout } from '../../types/Workouts';
+import { Workout } from '../../types/Workout';
 
 interface WorkoutCardProps { 
     workout: Workout;

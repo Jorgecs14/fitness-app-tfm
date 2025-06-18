@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Client } from '../types/Client';
-import { ClientForm } from '../components/client.components/ClientForm';
-import { ClientList } from '../components/client.components/ClientList';
+import { ClientForm } from '../components/Client/ClientForm';
+import { ClientList } from '../components/Client/ClientList';
 import * as clientService from '../services/clientService';
 import '../App.css';
 

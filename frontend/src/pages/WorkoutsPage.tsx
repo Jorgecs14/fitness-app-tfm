@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Workout } from '../types/Workout';
-import { WorkoutForm } from '../components/workout.components/WorkoutForm';
-import { WorkoutList } from '../components/workout.components/WorkoutList';
+import { WorkoutForm } from '../components/Workouts/WorkoutForm';
+import { WorkoutList } from '../components/Workouts/WorkoutList';
 import * as workoutService from '../services/workoutService';
 import '../App.css';
 

@@ -1,5 +1,5 @@
-import { Client } from '../types/Client';
-import { ClientCard } from './Client/ClientCard';
+import { Client } from '../../types/Client';
+import { ClientCard } from '../Client/ClientCard';
 
 interface ClientListProps {
   clients: Client[];

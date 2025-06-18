@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { ProductForm } from '../components/product.components/ProductForm';
-import { ProductList } from '../components/product.components/ProductList';
+import { ProductForm } from '../components/Product/ProductForm';
+import { ProductList } from '../components/Product/ProductList';
 import * as productService from '../services/productService';
 import '../App.css';
 import { Product } from '../types/Product';

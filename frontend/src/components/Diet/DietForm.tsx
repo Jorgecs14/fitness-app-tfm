@@ -1,5 +1,5 @@
 import { useState, useEffect, FormEvent } from 'react';
-import { Diet } from '../types/Diet';
+import { Diet } from '../../types/Diet';
 
 interface DietFormProps {
   onSubmit: (diet: Omit<Diet, 'id'>) => void;
