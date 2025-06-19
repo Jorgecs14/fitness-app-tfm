@@ -32,6 +32,7 @@ volumes:
   postgres_data:
 ```
 
+
 ### 1.2 Iniciar la base de datos
 
 ```bash

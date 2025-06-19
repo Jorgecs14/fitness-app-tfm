@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS workouts (
     notes TEXT
 );
 
--- Tabla intermedia para la relación muchos a muchos
+-- Tabla intermedia para la relación muchos a muchos`
 CREATE TABLE IF NOT EXISTS workouts_exercises (
     id SERIAL PRIMARY KEY,
     workout_id INTEGER NOT NULL REFERENCES workouts(id) ON DELETE CASCADE,
