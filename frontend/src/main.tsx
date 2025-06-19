@@ -1,3 +1,8 @@
+/**
+ * Main application entry point
+ * Sets up routing for the Fitness Management System
+ */
+
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './index.css'
@@ -14,7 +19,7 @@ import { DietsPage } from './pages/DietsPage'
 import { WorkoutsPage } from './pages/WorkoutsPage'
 import { ProductsPage } from './pages/ProductsPage'
 
-// Crear las rutas
+// Create application routes
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
@@ -27,7 +32,7 @@ const router = createBrowserRouter(
   )
 )
 
-// Renderizar con RouterProvider
+// Render app with React Router
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <RouterProvider router={router} />

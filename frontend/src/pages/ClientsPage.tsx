@@ -5,11 +5,19 @@ import { ClientList } from '../components/Client/ClientList';
 import * as clientService from '../services/clientService';
 import '../App.css';
 
+/**
+ * Main page component for client management
+ * Handles CRUD operations for fitness clients
+ */
 export const ClientsPage = () => {
+  // State for all clients
   const [clients, setClients] = useState<Client[]>([]);
+  // State for client being edited
   const [editingClient, setEditingClient] = useState<Client | null>(null);
 
+  // Load clients when component mounts
   useEffect(() => {
+    console.log('Página de clientes cargada');
     loadClients();
   }, []);
 
@@ -22,6 +30,9 @@ export const ClientsPage = () => {
     }
   };
 
+  /**
+   * Handle form submission for create/update
+   */
   const handleSubmit = async (clientData: Omit<Client, 'id'>) => {
     try {
       if (editingClient) {
