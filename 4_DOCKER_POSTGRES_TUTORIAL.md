@@ -15,8 +15,6 @@ Este tutorial te guiará paso a paso para transformar el backend de almacenamien
 En la raíz del proyecto (RepoEjemplo), crea un archivo `docker-compose.yml`:
 
 ```yaml
-version: '3.8'
-
 services:
   postgres:
     image: postgres:15
