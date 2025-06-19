@@ -20,7 +20,7 @@ let products = [
 
 let nextProductId = 3;
 
-// Cambia las rutas a relativas
+
 router.get('/', (req, res) => {
   res.json(products);
 });

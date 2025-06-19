@@ -5,7 +5,7 @@
 
 const express = require('express');
 const cors = require('cors');
-const clientsRouter = require('./routes/clients');
+const usersRouter = require('./routes/users');
 const dietsRouter = require('./routes/diets');
 const workoutsRouter = require('./routes/workouts');
 const ecommerceRouter = require('./routes/ecommerce'); 
@@ -26,7 +26,7 @@ app.use((req, res, next) => {
 });
 
 // API Routes
-app.use('/api/clients', clientsRouter);
+app.use('/api/users', usersRouter);
 app.use('/api/diets', dietsRouter);
 app.use('/api/workouts', workoutsRouter);
 app.use('/api/products', ecommerceRouter);
@@ -34,7 +34,7 @@ app.use('/api/products', ecommerceRouter);
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
   console.log('Endpoints disponibles:');
-  console.log('  - /api/clients');
+  console.log('  - /api/users');
   console.log('  - /api/diets');
   console.log('  - /api/workouts');
   console.log('  - /api/products');
