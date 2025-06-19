@@ -8,7 +8,8 @@ const cors = require('cors');
 const clientsRouter = require('./routes/clients');
 const dietsRouter = require('./routes/diets');
 const workoutsRouter = require('./routes/workouts');
-const ecommerceRouter = require('./routes/ecommerce'); 
+const ecommerceRouter = require('./routes/ecommerce');
+const usersRouter = require('./routes/users');
 
 // Create Express application
 const app = express();
@@ -29,6 +30,7 @@ app.use((req, res, next) => {
 app.use('/api/clients', clientsRouter);
 app.use('/api/diets', dietsRouter);
 app.use('/api/workouts', workoutsRouter);
+app.use('/api/users', usersRouter);
 app.use('/api/products', ecommerceRouter);
 
 app.listen(PORT, () => {
@@ -37,5 +39,6 @@ app.listen(PORT, () => {
   console.log('  - /api/clients');
   console.log('  - /api/diets');
   console.log('  - /api/workouts');
+  console.log('  - /api/users');
   console.log('  - /api/products');
 });

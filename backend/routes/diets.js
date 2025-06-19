@@ -1,64 +1,78 @@
 const express = require('express');
 const router = express.Router();
+const pool = require('../database/db');
 
-let diets = [
-  {
-    id: 1,
-    nombre: 'Dieta Hipertrofia',
-    descripcion: 'Alta en proteínas y calorías para ganar masa muscular.',
-    calorias: 3000,
-    proteinas: 150
-  },
-  {
-    id: 2,
-    nombre: 'Dieta Pérdida de Peso',
-    descripcion: 'Baja en calorías y moderada en proteínas para perder peso de forma saludable.',
-    calorias: 1500,
-    proteinas: 100
+router.get('/', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM diets ORDER BY id');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error al obtener dietas' });
   }
-];
-
-let nextDietId = 3;
-
-router.get('/', (req, res) => {
-  res.json(diets);
 });
 
-router.get('/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const diet = diets.find(d => d.id === id);
-  if (!diet) return res.status(404).json({ error: 'Dieta no encontrada' });
-  res.json(diet);
-});
-
-router.post('/', (req, res) => {
-  const { nombre, descripcion, calorias, proteinas } = req.body;
-  if (!nombre || !descripcion || calorias == null || proteinas == null) {
-    return res.status(400).json({ error: 'Todos los campos son requeridos' });
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('SELECT * FROM diets WHERE id = $1', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Dieta no encontrada' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error al buscar dieta' });
   }
-  const newDiet = { id: nextDietId++, nombre, descripcion, calorias, proteinas };
-  diets.push(newDiet);
-  res.status(201).json(newDiet);
 });
 
-router.put('/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const { nombre, descripcion, calorias, proteinas } = req.body;
-  const dietIndex = diets.findIndex(d => d.id === id);
-  if (dietIndex === -1) return res.status(404).json({ error: 'Dieta no encontrada' });
-  if (!nombre || !descripcion || calorias == null || proteinas == null) {
-    return res.status(400).json({ error: 'Todos los campos son requeridos' });
+router.post('/', async (req, res) => {
+  try {
+    const { name, description, calories } = req.body;
+    if (!name || !description || calories == null) {
+      return res.status(400).json({ error: 'Todos los campos son requeridos' });
+    }
+    const result = await pool.query(
+      'INSERT INTO diets (name, description, calories) VALUES ($1, $2, $3) RETURNING *',
+      [name, description, calories]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error al crear dieta' });
   }
-  diets[dietIndex] = { id, nombre, descripcion, calorias, proteinas };
-  res.json(diets[dietIndex]);
 });
 
-router.delete('/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const dietIndex = diets.findIndex(d => d.id === id);
-  if (dietIndex === -1) return res.status(404).json({ error: 'Dieta no encontrada' });
-  diets.splice(dietIndex, 1);
-  res.json({ message: 'Dieta eliminada correctamente' });
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, calories } = req.body;
+    const result = await pool.query(
+      'UPDATE diets SET name = $1, description = $2, calories = $3 WHERE id = $4 RETURNING *',
+      [name, description, calories, id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Dieta no encontrada' });
+    }
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error al actualizar dieta' });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM diets WHERE id = $1 RETURNING id', [id]);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Dieta no encontrada' });
+    }
+    res.json({ message: 'Dieta eliminada correctamente' });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error al eliminar dieta' });
+  }
 });
 
 module.exports = router;

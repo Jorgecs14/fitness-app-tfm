@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS diets (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,
     description TEXT,
-    kcal VARCHAR(50)
+    calories INTEGER
 );
 
 -- Tabla de productos
