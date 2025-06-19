@@ -1,72 +1,127 @@
 const express = require('express');
 const router = express.Router();
-
-let workouts = [
-  {
-    id: 1,
-    title: 'Piernas y Glúteos',
-    category: 'Fuerza',
-    notes: 'Enfocado en tren inferior. 4 series de 12 repeticiones.'
-  },
-  {
-    id: 2,
-    title: 'Pecho y Tríceps',
-    category: 'Hipertrofia',
-    notes: 'Incluye press banca y fondos. Descanso 90 segundos.'
-  }
-];
-
-let nextWorkoutId = 3;
+const pool = require('../database/db');
 
 // Obtener todos los entrenamientos
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   res.json(workouts);
+  try {
+    console.log('GET /api/workouts - Obteniendo todos los workouts');
+    const result = await pool.query('SELECT * FROM workouts ORDER BY id');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error al obtener entrenamientos' });
+  }
 });
 
+
 // Obtener un entrenamiento por ID
-router.get('/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const workout = workouts.find(w => w.id === id);
-  if (!workout) return res.status(404).json({ error: 'Entrenamiento no encontrado' });
-  res.json(workout);
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`GET /api/workouts/${id} - Buscando workout`);
+
+    const result = await pool.query('SELECT * FROM workouts WHERE id = $1', [id]);
+
+    if (result.rows.length === 0) {
+      console.log(`Workout con ID ${id} no encontrado`);
+      return res.status(404).json({ error: 'Entrenamiento no encontrado' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error al buscar entrenamiento' });
+  }
 });
 
 // Crear un nuevo entrenamiento
-router.post('/', (req, res) => {
-  const { title, category, notes } = req.body;
-  if (!title || !category) {
-    return res.status(400).json({ error: 'Title y category son requeridos' });
+router.post('/', async (req, res) => {
+  try {
+    console.log('POST /api/workouts - Creando nuevo entrenamiento');
+    const { title, category, notes } = req.body;
+
+    if (!title || !category) {
+      return res.status(400).json({ error: 'titulo y categoria son requeridos' });
+    }
+
+    const result = await pool.query(
+      'INSERT INTO workouts (title, category, notes) VALUES ($1, $2, $3) RETURNING *',
+      [title, category, notes || '']
+    );
+
+
+    console.log(`Workout creado: ${result.rows[0].title} (ID: ${result.rows[0].id})`);
+    res.status(201).json(result.rows[0]);
+
+  } catch (error) {
+    console.error('Error al crear workout:', error);
+
+
+    if (error.code === '23505') {
+      res.status(400).json({ error: 'Ya existe un workout con ese nombre' });
+    } else if (error.code === '23514') {
+      res.status(400).json({ error: 'Los datos enviados no cumplen con las reglas del modelo' });
+    } else {
+      res.status(500).json({ error: 'Error interno al crear el workout' });
+    }
   }
-  const newWorkout = {
-    id: nextWorkoutId++,
-    title,
-    category,
-    notes: notes || ''
-  };
-  workouts.push(newWorkout);
-  res.status(201).json(newWorkout);
 });
 
+
 // Actualizar un entrenamiento
-router.put('/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const { title, category, notes } = req.body;
-  const workoutIndex = workouts.findIndex(w => w.id === id);
-  if (workoutIndex === -1) return res.status(404).json({ error: 'Entrenamiento no encontrado' });
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`PUT /api/workouts/${id} - Actualizando workout`);
+    const { title, category, notes } = req.body;
+  
+  
   if (!title || !category) {
-    return res.status(400).json({ error: 'Title y category son requeridos' });
+    console.log('Error: Faltan campos requeridos');
+    return res.status(400).json({ error: 'Titulo y categoria son requeridos' });
   }
-  workouts[workoutIndex] = { id, title, category, notes: notes || '' };
-  res.json(workouts[workoutIndex]);
+  const result = await pool.query(
+    'UPDATE workouts SET title = $1, category = $2, notes = $3 WHERE id = $4 RETURNING *',
+    [title, category, notes || '', id ]
+  );
+
+
+  if (result.rows.length === 0) {
+    console.log(`entrenamiento con ID ${id} no encontrado`);
+    return res.status(404).json({ error: 'Workout no encontrado' });
+  }
+
+  console.log(`Workout actualizado: ${title}`);
+  res.json(result.rows[0]);
+} catch (error) {
+  console.error('Error:', error);
+  res.status(500).json({ error: 'Error al actualizar entrenamiento' });
+}
 });
 
 // Eliminar un entrenamiento
-router.delete('/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const workoutIndex = workouts.findIndex(w => w.id === id);
-  if (workoutIndex === -1) return res.status(404).json({ error: 'Entrenamiento no encontrado' });
-  workouts.splice(workoutIndex, 1);
-  res.json({ message: 'Entrenamiento eliminado correctamente' });
+router.delete('/:id', async (req, res) => {
+  try {
+  const {id} = req.params;
+     console.log(`DELETE /api/workouts/${id} - Eliminando entrenamiento`);
+     const result = await pool.query(
+      'DELETE FROM workouts WHERE id = $1 RETURNING title',
+      [id]
+    );
+
+  if (result.row.length === 0) {
+     console.log(`Workout con ID ${id} no encontrado`);
+     return res.status(404).json({ error: 'Entrenamiento no encontrado' });
+
+  }
+     console.log(`Workout eliminado: ${result.rows[0].title}`);
+     res.json({ message: 'Entrenamiento eliminado correctamente' });
+     } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ error: 'Error al eliminar entrenamiento' });
+  }
 });
 
 module.exports = router;
