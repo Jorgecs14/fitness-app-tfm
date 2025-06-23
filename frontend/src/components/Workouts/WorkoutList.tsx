@@ -6,9 +6,10 @@ interface WorkoutListProps {
     workouts: Workout[];
     onEdit: (workout: Workout) => void;
     onDelete: (id: number) => void;
+    onViewDetails: (workout: Workout) => void;
 }
 
-export const WorkoutList = ({ workouts, onEdit, onDelete }: WorkoutListProps) => {
+export const WorkoutList = ({ workouts, onEdit, onDelete, onViewDetails }: WorkoutListProps) => {
   return (
     <div className="clients-list">
       <h2>Workouts</h2>
@@ -21,6 +22,7 @@ export const WorkoutList = ({ workouts, onEdit, onDelete }: WorkoutListProps) =>
             workout={workout}
             onEdit={onEdit}
             onDelete={onDelete}
+            onViewDetails={onViewDetails}
           />
         ))
       )}

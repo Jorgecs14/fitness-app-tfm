@@ -1,24 +1,23 @@
-import { Workout } from '../../types/Workout';
-import { WorkoutCard } from '../../components/Workouts/WorkoutCard';
+import { Exercise } from '../../types/Exercise';
+import { ExerciseCard } from './ExerciseCard';
 
-
-interface WorkoutListProps {
-    workouts: Workout[];
-    onEdit: (workout: Workout) => void;
-    onDelete: (id: number) => void;
+interface ExerciseListProps {
+  exercises: Exercise[];
+  onEdit: (exercise: Exercise) => void;
+  onDelete: (id: number) => void;
 }
 
-export const WorkoutList = ({ workouts, onEdit, onDelete }: WorkoutListProps) => {
+export const ExerciseList = ({ exercises, onEdit, onDelete }: ExerciseListProps) => {
   return (
     <div className="clients-list">
-      <h2>Workouts</h2>
-      {workouts.length === 0 ? (
-        <p>No hay entrenamientos registrados</p>
+      <h2>Ejercicios</h2>
+      {exercises.length === 0 ? (
+        <p>No hay ejercicios registrados</p>
       ) : (
-        workouts.map((workout) => (
-          <WorkoutCard
-            key={workout.id}
-            workout={workout}
+        exercises.map((exercise) => (
+          <ExerciseCard
+            key={exercise.id}
+            exercise={exercise}
             onEdit={onEdit}
             onDelete={onDelete}
           />
