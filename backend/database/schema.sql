@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS exercises (
 -- Tabla de rutinas (workouts)
 CREATE TABLE IF NOT EXISTS workouts (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
     category VARCHAR(100),
     notes TEXT
 );

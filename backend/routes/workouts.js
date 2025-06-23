@@ -4,7 +4,6 @@ const pool = require('../database/db');
 
 // Obtener todos los entrenamientos
 router.get('/', async (req, res) => {
-  res.json(workouts);
   try {
     console.log('GET /api/workouts - Obteniendo todos los workouts');
     const result = await pool.query('SELECT * FROM workouts ORDER BY id');
@@ -111,7 +110,7 @@ router.delete('/:id', async (req, res) => {
       [id]
     );
 
-  if (result.row.length === 0) {
+  if (result.rows.length === 0) {
      console.log(`Workout con ID ${id} no encontrado`);
      return res.status(404).json({ error: 'Entrenamiento no encontrado' });
 
