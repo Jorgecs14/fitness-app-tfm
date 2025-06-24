@@ -41,15 +41,15 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   try {
     console.log('POST /api/exercises - Creando nuevo ejercicio');
-    const { name, description, id } = req.body;
+    const { name, description, executionTime  } = req.body;
 
     if (!name || !description) {
       return res.status(400).json({ error: 'titulo y descripcion son requeridos' });
     }
 
     const result = await pool.query(
-      'INSERT INTO exercises (name, description) VALUES ($1, $2) RETURNING *',
-      [name, description]
+      'INSERT INTO exercises (name, description, execution_time) VALUES ($1, $2, $3) RETURNING *',
+      [name, description, executionTime ? parseInt(executionTime): null]
     );
 
 
@@ -76,7 +76,7 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     console.log(`PUT /api/exercises/${id} - Actualizando ejercicio`);
-    const { name, description} = req.body;
+    const {name, description, executionTime} = req.body;
   
   
   if (!name || !description) {
@@ -84,8 +84,8 @@ router.put('/:id', async (req, res) => {
     return res.status(400).json({ error: 'nombre y descripcion son requeridos' });
   }
   const result = await pool.query(
-    'UPDATE exercises SET name = $1, description = $2 WHERE id = $3 RETURNING *',
-    [name, description, id ]
+    'UPDATE exercises SET name = $1, description = $2, execution_time = $3 WHERE id = $4 RETURNING *',
+    [name, description, executionTime ? parseInt(executionTime) : null, id]
   );
 
 
