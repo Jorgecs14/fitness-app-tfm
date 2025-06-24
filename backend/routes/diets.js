@@ -1,76 +1,72 @@
 const express = require('express');
 const router = express.Router();
-const pool = require('../database/db');
+const supabase = require('../database/supabaseClient');
 
+// Obtener todas las dietas
 router.get('/', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM diets ORDER BY id');
-    res.json(result.rows);
+    const { data, error } = await supabase.from('diets').select('*').order('id');
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
-    console.error('Error:', error);
     res.status(500).json({ error: 'Error al obtener dietas' });
   }
 });
 
+// Obtener una dieta por ID
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('SELECT * FROM diets WHERE id = $1', [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Dieta no encontrada' });
-    }
-    res.json(result.rows[0]);
+    const { data, error } = await supabase.from('diets').select('*').eq('id', id).single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Dieta no encontrada' });
+    res.json(data);
   } catch (error) {
-    console.error('Error:', error);
     res.status(500).json({ error: 'Error al buscar dieta' });
   }
 });
 
+// Crear una nueva dieta
 router.post('/', async (req, res) => {
   try {
     const { name, description, calories } = req.body;
-    if (!name || !description || calories == null) {
+    if (!name || !description || !calories) {
       return res.status(400).json({ error: 'Todos los campos son requeridos' });
     }
-    const result = await pool.query(
-      'INSERT INTO diets (name, description, calories) VALUES ($1, $2, $3) RETURNING *',
-      [name, description, calories]
-    );
-    res.status(201).json(result.rows[0]);
+    const { data, error } = await supabase.from('diets').insert([{ name, description, calories }]).select().single();
+    if (error) throw error;
+    res.status(201).json(data);
   } catch (error) {
-    console.error('Error:', error);
     res.status(500).json({ error: 'Error al crear dieta' });
   }
 });
 
+// Actualizar una dieta
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, calories } = req.body;
-    const result = await pool.query(
-      'UPDATE diets SET name = $1, description = $2, calories = $3 WHERE id = $4 RETURNING *',
-      [name, description, calories, id]
-    );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Dieta no encontrada' });
+    if (!name || !description || !calories) {
+      return res.status(400).json({ error: 'Todos los campos son requeridos' });
     }
-    res.json(result.rows[0]);
+    const { data, error } = await supabase.from('diets').update({ name, description, calories }).eq('id', id).select().single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Dieta no encontrada' });
+    res.json(data);
   } catch (error) {
-    console.error('Error:', error);
     res.status(500).json({ error: 'Error al actualizar dieta' });
   }
 });
 
+// Eliminar una dieta
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query('DELETE FROM diets WHERE id = $1 RETURNING id', [id]);
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: 'Dieta no encontrada' });
-    }
+    const { data, error } = await supabase.from('diets').delete().eq('id', id).select('name').single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Dieta no encontrada' });
     res.json({ message: 'Dieta eliminada correctamente' });
   } catch (error) {
-    console.error('Error:', error);
     res.status(500).json({ error: 'Error al eliminar dieta' });
   }
 });
