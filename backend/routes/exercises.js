@@ -102,7 +102,7 @@ router.put('/:id', async (req, res) => {
 }
 });
 
-// Eliminar un entrenamiento
+// Eliminar un ejercicio
 router.delete('/:id', async (req, res) => {
   try {
   const {id} = req.params;

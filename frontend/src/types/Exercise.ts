@@ -1,6 +1,6 @@
-export interface Workout {
+export interface Exercise {
   id: number;
-  title: string;
-  category: string;
-  notes: string;
+  name: string;
+  description: string;
+  executionTime?: number;
 }

@@ -1,44 +1,45 @@
-import { useState, useEffect, FormEvent } from 'react';
-import { Workout } from '../../types/Workout';
+import { useState, useEffect } from 'react';
+import { Exercise } from '../../types/Exercise';
 
-interface WorkoutFormProps {
-  onSubmit: (workout: Omit<Workout, 'id'>) => void; 
-  workoutToEdit?: Workout | null; 
+interface ExerciseFormProps {
+  onSubmit: (exercise: Omit<Exercise, 'id'>) => void; 
+  exerciseToEdit?: Exercise | null; 
   onCancelEdit?: () => void; 
 }
 
-export const WorkoutForm = ({ onSubmit, workoutToEdit, onCancelEdit }: WorkoutFormProps) => {
-const [title, setTitle] = useState('');
-const [category, setCategory] = useState('');
-const [notes, setNotes] = useState('');
+export const ExerciseForm = ({ onSubmit, exerciseToEdit, onCancelEdit }: ExerciseFormProps) => {
+const [name, setName] = useState('');
+const [description, setDescription] = useState('');
+const [executionTime, setExecutionTime] = useState('');
 
 useEffect(() => {
-    if (workoutToEdit) {
-      setTitle(workoutToEdit.title);
-      setCategory(workoutToEdit.category);
-      setNotes(workoutToEdit.notes);
+    if (exerciseToEdit) {
+      setName(exerciseToEdit.name);
+      setDescription(exerciseToEdit.description);
+      setExecutionTime(exerciseToEdit.executionTime?.toString() || '');
       
     } else {
-      setTitle('');
-      setCategory('');
-      setNotes('');
-      
+      setName('');
+      setDescription('');
+      setExecutionTime('');   
     }
-  }, [workoutToEdit]);
+  }, [exerciseToEdit]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
-  if (!title.trim() || !category.trim()) {
+  if (!name.trim() || !description.trim()) {
     alert('Favor de completar todos los campos requeridos');
     return;
   }
 
-  onSubmit({ title, category, notes });
-if (!workoutToEdit) {
-    setTitle('');
-    setCategory('');
-    setNotes('');
+  onSubmit({ name, description, executionTime: executionTime ?
+    parseInt(executionTime) : undefined
+   });
+if (!exerciseToEdit) {
+    setName('');
+    setDescription('');
+    setExecutionTime('');
   }
 };
 
@@ -47,33 +48,35 @@ return (
       <div className="form-group">
         <input
           type="text"
-          placeholder="Workout Title"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-        />
-      </div>
-      <div className="form-group">
-        <input
-          type="text"
-          placeholder="Category"
-          value={category}
-          onChange={e => setCategory(e.target.value)}
+          placeholder="Nombre del ejercicio"
+          value={name}
+          onChange={e => setName(e.target.value)}
+          required
         />
       </div>
       <div className="form-group">
         <textarea
-          placeholder="Notes (optional)"
-          value={notes}
-          onChange={e => setNotes(e.target.value)}
+          placeholder="Descripción"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          aria-required
+        />
+      </div>
+      <div className="form-group">
+        <input
+         type="number"
+          placeholder="Tiempo de ejecucion"
+          value={executionTime}
+          onChange={e => setExecutionTime(e.target.value)}
         />
       </div>
       <div className="form-buttons">
         <button type="submit">
-          {workoutToEdit ? 'Update' : 'Add'} Workout
+          {exerciseToEdit ? 'Actualizar' : 'Agregar'} Ejercicio
         </button>
-        {workoutToEdit && onCancelEdit && (
+        {exerciseToEdit && onCancelEdit && (
           <button type="button" onClick={onCancelEdit}>
-            Cancel
+            Cancelar
           </button>
         )}
       </div>

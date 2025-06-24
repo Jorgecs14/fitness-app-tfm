@@ -1,23 +1,23 @@
 
-import { Workout } from '../../types/Workout';
+import { Exercise } from '../../types/Exercise';
 
-interface WorkoutCardProps { 
-    workout: Workout;
-    onEdit: (workout: Workout) => void;
+interface ExerciseCardProps { 
+    exercise: Exercise;
+    onEdit: (exercise: Exercise) => void;
     onDelete: (id: number) => void;
 }
 
-export const WorkoutCard = ({workout, onEdit, onDelete}: WorkoutCardProps) => {
+export const ExerciseCard = ({exercise, onEdit, onDelete}: ExerciseCardProps) => {
 return (
     <div className="client">
       <div className="client-info">
-        <h3>{workout.title}</h3>
-        <p><strong>Category:</strong> {workout.category}</p>
-        <p><strong>Notes:</strong> {workout.notes || 'No notes'}</p>
+        <h3>{exercise.name}</h3>
+        <p><strong>Descripcion:</strong> {exercise.description}</p>
+        <p><strong>Tiempo:</strong> {exercise.executionTime} segundos </p>
       </div>
       <div className="client-actions">
-        <button onClick={() => onEdit(workout)}>Editar</button>
-        <button onClick={() => onDelete(workout.id)}>Eliminar</button>
+        <button onClick={() => onEdit(exercise)}>Editar</button>
+        <button onClick={() => onDelete(exercise.id)}>Eliminar</button>
       </div>
     </div>
   );
