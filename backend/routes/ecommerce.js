@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../database/supabaseClient');
 
-// Obtener todos los productos
 router.get('/products', async (req, res) => {
   try {
     const { data, error } = await supabase.from('products').select('*').order('id');
@@ -13,7 +12,6 @@ router.get('/products', async (req, res) => {
   }
 });
 
-// Obtener un producto por ID
 router.get('/products/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -26,7 +24,6 @@ router.get('/products/:id', async (req, res) => {
   }
 });
 
-// Crear un nuevo producto
 router.post('/products', async (req, res) => {
   try {
     const { name, description, price, stock } = req.body;
@@ -41,7 +38,6 @@ router.post('/products', async (req, res) => {
   }
 });
 
-// Actualizar un producto
 router.put('/products/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -58,7 +54,6 @@ router.put('/products/:id', async (req, res) => {
   }
 });
 
-// Eliminar un producto
 router.delete('/products/:id', async (req, res) => {
   try {
     const { id } = req.params;

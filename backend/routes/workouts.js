@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../database/supabaseClient');
 
-// Obtener todos los entrenamientos
 router.get('/', async (req, res) => {
   try {
     const { data, error } = await supabase.from('workouts').select('*').order('id');
@@ -13,7 +12,6 @@ router.get('/', async (req, res) => {
   }
 });
 
-// Obtener un entrenamiento por ID
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -26,7 +24,6 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Crear un nuevo entrenamiento
 router.post('/', async (req, res) => {
   try {
     const { title, category, notes } = req.body;
@@ -41,7 +38,6 @@ router.post('/', async (req, res) => {
   }
 });
 
-// Actualizar un entrenamiento
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -58,7 +54,6 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-// Eliminar un entrenamiento
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
