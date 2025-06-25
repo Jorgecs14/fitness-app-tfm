@@ -11,14 +11,16 @@ interface SelectedExercise {
 
 
 interface WorkoutFormProps {
+   
   onSubmit: (workout: Omit<Workout, 'id'>, exercises?:
     SelectedExercise[]) => void; 
   workoutToEdit?: Workout | null; 
-  onCancelEdit?: () => void; 
+  onCancelEdit?: () => void;
+  userId: number;
 }
 
-export const WorkoutForm = ({ onSubmit, workoutToEdit, onCancelEdit }: WorkoutFormProps) => {
-const [title, setTitle] = useState('');
+export const WorkoutForm = ({ onSubmit, workoutToEdit, onCancelEdit, userId }: WorkoutFormProps) => {
+const [name, setName] = useState('');
 const [category, setCategory] = useState('');
 const [notes, setNotes] = useState('');
  const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -34,12 +36,12 @@ useEffect(() => {
 
 useEffect(() => {
     if (workoutToEdit) {
-      setTitle(workoutToEdit.title);
+      setName(workoutToEdit.name);
       setCategory(workoutToEdit.category);
       setNotes(workoutToEdit.notes);
       
     } else {
-      setTitle('');
+      setName('');
       setCategory('');
       setNotes('');
       
@@ -89,16 +91,16 @@ useEffect(() => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
-  if (!title.trim() || !category.trim()) {
+  if (!name.trim() || !category.trim()) {
     alert('Favor de completar todos los campos requeridos');
     return;
   }
 
   console.log('Enviando workout con ejercicios:', selectedExercises);
 
-  onSubmit({ title, category, notes }, workoutToEdit? undefined: selectedExercises);
+  onSubmit({ name, category, notes, user_id: userId }, workoutToEdit? undefined: selectedExercises);
 if (!workoutToEdit) {
-    setTitle('');
+    setName('');
     setCategory('');
     setNotes('');
     setSelectedExercises([]);
@@ -116,8 +118,8 @@ return (
         <input
           type="text"
           placeholder="Titulo del entrenamiento"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
+          value={name}
+          onChange={e => setName(e.target.value)}
         />
       </div>
       <div className="form-group">

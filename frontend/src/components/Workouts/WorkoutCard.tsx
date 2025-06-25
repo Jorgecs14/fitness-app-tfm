@@ -12,7 +12,7 @@ export const WorkoutCard = ({workout, onEdit, onDelete, onViewDetails}: WorkoutC
 return (
     <div className="client">
       <div className="client-info">
-        <h3>{workout.title}</h3>
+        <h3>{workout.name}</h3>
         <p><strong>Category:</strong> {workout.category}</p>
         <p><strong>Notes:</strong> {workout.notes || 'No notes'}</p>
       </div>
