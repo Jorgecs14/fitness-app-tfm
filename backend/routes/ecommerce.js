@@ -1,12 +1,16 @@
 const express = require("express");
 const router = express.Router();
-const pool = require("../database/db");
+const supabase = require("../database/supabaseClient");
 
 router.get("/", async (req, res) => {
   try {
     console.log("GET /api/products - Obteniendo todos los productos");
-    const result = await pool.query("SELECT * FROM products ORDER BY id");
-    res.json(result.rows);
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .order("id");
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Error al obtener productos" });
@@ -16,15 +20,14 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query("SELECT * FROM products WHERE id = $1", [
-      id,
-    ]);
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Producto no encontrado" });
-    }
-
-    res.json(result.rows[0]);
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", id)
+      .single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: "Producto no encontrado" });
+    res.json(data);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Error al buscar producto" });
@@ -39,12 +42,14 @@ router.post("/", async (req, res) => {
       return res.status(400).json({ error: "Faltan campos requeridos" });
     }
 
-    const result = await pool.query(
-      "INSERT INTO products (name, description, price) VALUES ($1, $2, $3) RETURNING *",
-      [name, description, price || "product"]
-    );
+    const { data, error } = await supabase
+      .from("products")
+      .insert([{ name, description, price }])
+      .select()
+      .single();
 
-    res.status(201).json(result.rows[0]);
+    if (error) throw error;
+    res.status(201).json(data);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Error al crear producto" });
@@ -56,16 +61,17 @@ router.put("/:id", async (req, res) => {
     const { id } = req.params;
     const { name, description, price } = req.body;
 
-    const result = await pool.query(
-      "UPDATE products SET name = $1, description = $2, price = $3 RETURNING *",
-      [name, description, price, id]
-    );
+    const { data, error } = await supabase
+      .from("products")
+      .update({ name, description, price })
+      .eq("id", id)
+      .select()
+      .single();
 
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Producto no encontrado" });
-    }
+    if (!data) return res.status(404).json({ error: "Producto no encontrado" });
 
-    res.json(result.rows[0]);
+    if (error) throw error;
+    res.json(data);
   } catch (error) {
     console.error("Error:", error);
     res.status(500).json({ error: "Error al actualizar producto" });
@@ -75,17 +81,16 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query(
-      "DELETE FROM products WHERE id = $1 RETURNING name",
-      [id]
-    );
-
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Producto no encontrado" });
-    }
-
+    const { data, error } = await supabase
+      .from("products")
+      .delete()
+      .eq("id", id)
+      .select("name")
+      .single();
+    if (!data) return res.status(404).json({ error: "Producto no encontrado" });
+    if (error) throw error;
     res.json({
-      message: `Producto ${result.rows[0].email} eliminado correctamente`,
+      message: `Producto ${data.name} eliminado correctamente`,
     });
   } catch (error) {
     console.error("Error:", error);
