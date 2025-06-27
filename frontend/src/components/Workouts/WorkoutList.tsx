@@ -1,16 +1,21 @@
-import { Workout } from '../../types/Workout';
-import { WorkoutCard } from '../../components/Workouts/WorkoutCard';
-
+import { Workout } from '../../types/Workout'
+import { WorkoutCard } from '../../components/Workouts/WorkoutCard'
 
 interface WorkoutListProps {
-    workouts: Workout[];
-    onEdit: (workout: Workout) => void;
-    onDelete: (id: number) => void;
+  workouts: Workout[]
+  onEdit: (workout: Workout) => void
+  onDelete: (id: number) => void
+  onViewDetails: (workout: Workout) => void
 }
 
-export const WorkoutList = ({ workouts, onEdit, onDelete }: WorkoutListProps) => {
+export const WorkoutList = ({
+  workouts,
+  onEdit,
+  onDelete,
+  onViewDetails
+}: WorkoutListProps) => {
   return (
-    <div className="clients-list">
+    <div className='clients-list'>
       <h2>Workouts</h2>
       {workouts.length === 0 ? (
         <p>No hay entrenamientos registrados</p>
@@ -21,9 +26,10 @@ export const WorkoutList = ({ workouts, onEdit, onDelete }: WorkoutListProps) =>
             workout={workout}
             onEdit={onEdit}
             onDelete={onDelete}
+            onViewDetails={onViewDetails}
           />
         ))
       )}
     </div>
-  );
-};
+  )
+}

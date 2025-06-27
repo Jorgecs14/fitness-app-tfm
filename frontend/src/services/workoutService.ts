@@ -1,4 +1,6 @@
 import { Workout } from '../types/Workout';
+import { SelectedExercise } from '../types/WorkoutExercise';
+import { WorkoutWithExercises } from '../types/WorkoutWithExercises';
 
 const API_URL = 'http://localhost:3001/api/workouts';
 
@@ -33,4 +35,50 @@ export const deleteWorkout = async (id: number): Promise<void> => {
     method: 'DELETE',
   });
   if (!response.ok) throw new Error('Error al eliminar entrenamiento');
+};
+
+export const getWorkoutWithExercises = async (id: number): Promise<WorkoutWithExercises> => {
+  const response = await fetch(`${API_URL}/${id}/details`);
+  if (!response.ok) {
+    throw new Error('Error al obtener entrenamiento con ejercicios');
+  }
+  return await response.json();
+};
+
+export const getWorkoutDetails = async (id: number): Promise<WorkoutWithExercises> => {
+  const response = await fetch(`${API_URL}/${id}/details`);
+  if (!response.ok) {
+    throw new Error('No se pudieron cargar los detalles del entrenamiento');
+  }
+  return await response.json();
+};
+
+export const addExercisesToWorkout = async (
+  workoutId: number,
+  exercises: SelectedExercise[]
+) => {
+  const payload = exercises.map((ex) => ({
+    workout_id: workoutId,
+    ...ex
+  }));
+
+  const response = await fetch('http://localhost:3001/api/workouts_exercises', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    throw new Error('Error al guardar ejercicios del entrenamiento');
+  }
+};
+
+export const removeAllExercisesFromWorkout = async (workoutId: number): Promise<void> => {
+  const response = await fetch(`http://localhost:3001/api/workouts_exercises/workout/${workoutId}`, {
+    method: 'DELETE'
+  });
+
+  if (!response.ok) {
+    throw new Error('Error al eliminar ejercicios del entrenamiento');
+  }
 };
