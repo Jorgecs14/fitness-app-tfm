@@ -12,37 +12,37 @@ export const ProductForm = ({ onSubmit, productToEdit, onCancelEdit }: ProductFo
   const [nombre, setNombre] = useState<string>('');
   const [precio, setPrecio] = useState<number>(0);
   const [descripcion, setDescripcion] = useState<string>('');
-  const [imagen, setImagen] = useState<string>('');
+  //const [imagen, setImagen] = useState<string>('');
 
   useEffect(() => {
     if (productToEdit) {
       setNombre(productToEdit.nombre);
       setPrecio(productToEdit.precio);
       setDescripcion(productToEdit.descripcion);
-      setImagen(productToEdit.imagen);
+      //setImagen(productToEdit.imagen);
     } else {
       setNombre('');
       setPrecio(0);
       setDescripcion('');
-      setImagen('');
+      //setImagen('');
     }
   }, [productToEdit]);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (!nombre.trim() || !precio || !descripcion.trim() || !imagen.trim()) {
+    if (!nombre.trim() || !precio || !descripcion.trim() /*|| !imagen.trim()*/) {
       alert('Por favor completa todos los campos');
       return;
     }
 
-    onSubmit({ nombre, precio, descripcion, imagen });
+    onSubmit({ nombre, precio, descripcion, /*imagen*/ });
     
     if (!productToEdit) {
       setNombre('');
       setPrecio(0);
       setDescripcion('');
-      setImagen('');
+      //setImagen('');
     }
   };
 
@@ -72,14 +72,14 @@ export const ProductForm = ({ onSubmit, productToEdit, onCancelEdit }: ProductFo
           onChange={(e) => setDescripcion(e.target.value)}
         />
       </div>
-      <div className="form-group">
+      {/* <div className="form-group">
         <input
           type="text"
           placeholder="Imagen URL"
           value={imagen}
           onChange={(e) => setImagen(e.target.value)}
         />
-      </div>
+      </div> */}
       <div className="form-buttons">
         <button type="submit">
           {productToEdit ? 'Actualizar' : 'Agregar'} Producto
