@@ -9,40 +9,40 @@ interface ProductFormProps {
 }
 
 export const ProductForm = ({ onSubmit, productToEdit, onCancelEdit }: ProductFormProps) => {
-  const [nombre, setNombre] = useState<string>('');
-  const [precio, setPrecio] = useState<number>(0);
-  const [descripcion, setDescripcion] = useState<string>('');
-  const [imagen, setImagen] = useState<string>('');
+  const [name, setName] = useState<string>('');
+  const [price, setPrice] = useState<number>(0);
+  const [description, setDescription] = useState<string>('');
+  //const [imagen, setImagen] = useState<string>('');
 
   useEffect(() => {
     if (productToEdit) {
-      setNombre(productToEdit.nombre);
-      setPrecio(productToEdit.precio);
-      setDescripcion(productToEdit.descripcion);
-      setImagen(productToEdit.imagen);
+      setName(productToEdit.name);
+      setPrice(productToEdit.price);
+      setDescription(productToEdit.description);
+      //setImagen(productToEdit.imagen);
     } else {
-      setNombre('');
-      setPrecio(0);
-      setDescripcion('');
-      setImagen('');
+      setName('');
+      setPrice(0);
+      setDescription('');
+      //setImagen('');
     }
   }, [productToEdit]);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (!nombre.trim() || !precio || !descripcion.trim() || !imagen.trim()) {
+    if (!name.trim() || !price || !description.trim() /*|| !imagen.trim()*/) {
       alert('Por favor completa todos los campos');
       return;
     }
 
-    onSubmit({ nombre, precio, descripcion, imagen });
+    onSubmit({ name: name, price: price, description: description, /*imagen*/ });
     
     if (!productToEdit) {
-      setNombre('');
-      setPrecio(0);
-      setDescripcion('');
-      setImagen('');
+      setName('');
+      setPrice(0);
+      setDescription('');
+      //setImagen('');
     }
   };
 
@@ -52,34 +52,34 @@ export const ProductForm = ({ onSubmit, productToEdit, onCancelEdit }: ProductFo
         <input
           type="text"
           placeholder="Nombre completo"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
         />
       </div>
       <div className="form-group">
         <input
           type="number"
           placeholder="Precio"
-          value={precio}
-          onChange={(e) => setPrecio(Number(e.target.value))}
+          value={price}
+          onChange={(e) => setPrice(Number(e.target.value))}
         />
       </div>
       <div className="form-group">
         <input
           type="text"
           placeholder="Descripción"
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
         />
       </div>
-      <div className="form-group">
+      {/* <div className="form-group">
         <input
           type="text"
           placeholder="Imagen URL"
           value={imagen}
           onChange={(e) => setImagen(e.target.value)}
         />
-      </div>
+      </div> */}
       <div className="form-buttons">
         <button type="submit">
           {productToEdit ? 'Actualizar' : 'Agregar'} Producto

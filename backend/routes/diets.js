@@ -1,64 +1,69 @@
 const express = require('express');
 const router = express.Router();
+const supabase = require('../database/supabaseClient');
 
-let diets = [
-  {
-    id: 1,
-    nombre: 'Dieta Hipertrofia',
-    descripcion: 'Alta en proteínas y calorías para ganar masa muscular.',
-    calorias: 3000,
-    proteinas: 150
-  },
-  {
-    id: 2,
-    nombre: 'Dieta Pérdida de Peso',
-    descripcion: 'Baja en calorías y moderada en proteínas para perder peso de forma saludable.',
-    calorias: 1500,
-    proteinas: 100
+router.get('/', async (req, res) => {
+  try {
+    const { data, error } = await supabase.from('diets').select('*').order('id');
+    if (error) throw error;
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener dietas' });
   }
-];
-
-let nextDietId = 3;
-
-router.get('/', (req, res) => {
-  res.json(diets);
 });
 
-router.get('/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const diet = diets.find(d => d.id === id);
-  if (!diet) return res.status(404).json({ error: 'Dieta no encontrada' });
-  res.json(diet);
-});
-
-router.post('/', (req, res) => {
-  const { nombre, descripcion, calorias, proteinas } = req.body;
-  if (!nombre || !descripcion || calorias == null || proteinas == null) {
-    return res.status(400).json({ error: 'Todos los campos son requeridos' });
+router.get('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('diets').select('*').eq('id', id).single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Dieta no encontrada' });
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al buscar dieta' });
   }
-  const newDiet = { id: nextDietId++, nombre, descripcion, calorias, proteinas };
-  diets.push(newDiet);
-  res.status(201).json(newDiet);
 });
 
-router.put('/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const { nombre, descripcion, calorias, proteinas } = req.body;
-  const dietIndex = diets.findIndex(d => d.id === id);
-  if (dietIndex === -1) return res.status(404).json({ error: 'Dieta no encontrada' });
-  if (!nombre || !descripcion || calorias == null || proteinas == null) {
-    return res.status(400).json({ error: 'Todos los campos son requeridos' });
+router.post('/', async (req, res) => {
+  try {
+    const { name, description, calories } = req.body;
+    if (!name || !description || !calories) {
+      return res.status(400).json({ error: 'Todos los campos son requeridos' });
+    }
+    const { data, error } = await supabase.from('diets').insert([{ name, description, calories }]).select().single();
+    if (error) throw error;
+    res.status(201).json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear dieta' });
   }
-  diets[dietIndex] = { id, nombre, descripcion, calorias, proteinas };
-  res.json(diets[dietIndex]);
 });
 
-router.delete('/:id', (req, res) => {
-  const id = parseInt(req.params.id);
-  const dietIndex = diets.findIndex(d => d.id === id);
-  if (dietIndex === -1) return res.status(404).json({ error: 'Dieta no encontrada' });
-  diets.splice(dietIndex, 1);
-  res.json({ message: 'Dieta eliminada correctamente' });
+router.put('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, calories } = req.body;
+    if (!name || !description || !calories) {
+      return res.status(400).json({ error: 'Todos los campos son requeridos' });
+    }
+    const { data, error } = await supabase.from('diets').update({ name, description, calories }).eq('id', id).select().single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Dieta no encontrada' });
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar dieta' });
+  }
+});
+
+router.delete('/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase.from('diets').delete().eq('id', id).select('name').single();
+    if (error) throw error;
+    if (!data) return res.status(404).json({ error: 'Dieta no encontrada' });
+    res.json({ message: 'Dieta eliminada correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar dieta' });
+  }
 });
 
 module.exports = router;

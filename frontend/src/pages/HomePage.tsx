@@ -5,7 +5,7 @@ export const HomePage = () => {
     <div style={{ 
       textAlign: 'center', 
       padding: '2rem',
-      maxWidth: '450px',
+      maxWidth: '650px',
       margin: '0 auto'
     }}>
       <h1>🏋️ Fitness Pro</h1>
@@ -15,7 +15,7 @@ export const HomePage = () => {
       
       <div style={{ marginTop: '3rem', display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
         <Link 
-          to="/clients" 
+          to="/users" 
           style={{
             display: 'inline-block',
             padding: '1rem 2rem',
@@ -27,7 +27,7 @@ export const HomePage = () => {
             minWidth: '250px',
           }}
         >
-          👥 Ver Clientes
+          👥 Ver Usuarios
         </Link>
         <Link 
           to="/diets" 

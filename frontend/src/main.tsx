@@ -14,7 +14,7 @@ import {
 } from 'react-router-dom'
 import { Layout } from './Layout'
 import { HomePage } from './pages/HomePage'
-import { ClientsPage } from './pages/ClientsPage'
+import { UsersPage } from './pages/UsersPage'
 import { DietsPage } from './pages/DietsPage'
 import { WorkoutsPage } from './pages/WorkoutsPage'
 import { ProductsPage } from './pages/ProductsPage'
@@ -24,7 +24,7 @@ const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path="/" element={<Layout />}>
       <Route index element={<HomePage />} />
-      <Route path="clients" element={<ClientsPage />} />
+      <Route path="users" element={<UsersPage />} />
       <Route path="diets" element={<DietsPage />} />
       <Route path="workouts" element={<WorkoutsPage />} />
       <Route path="products" element={<ProductsPage />} />
