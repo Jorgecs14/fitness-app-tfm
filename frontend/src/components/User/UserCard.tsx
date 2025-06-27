@@ -1,4 +1,4 @@
-import { Client } from '../../types/Client';
+import { Client } from '../../types/User';
 
 interface ClientCardProps {
   client: Client;

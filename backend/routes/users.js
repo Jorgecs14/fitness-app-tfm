@@ -17,6 +17,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -31,6 +32,7 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ error: 'Error al buscar usuario' });
   }
 });
+
 
 router.post('/', async (req, res) => {
   try {
@@ -53,6 +55,7 @@ router.post('/', async (req, res) => {
   }
 });
 
+
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -73,6 +76,7 @@ router.put('/:id', async (req, res) => {
     res.status(500).json({ error: 'Error al actualizar usuario' });
   }
 });
+
 
 router.delete('/:id', async (req, res) => {
   try {
