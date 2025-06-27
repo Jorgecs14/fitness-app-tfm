@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const supabase = require('../database/supabaseClient');
 
+
 router.get('/', async (req, res) => {
   try {
     console.log('GET /api/users - Obteniendo todos los usuarios');
