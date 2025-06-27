@@ -16,10 +16,9 @@ export const DietList = ({ diets, onEdit, onDelete }: DietListProps) => {
         diets.map((diet) => (
           <div className="client" key={diet.id}>
             <div className="client-info">
-              <h3>{diet.nombre}</h3>
-              <p><strong>Descripción:</strong> {diet.descripcion}</p>
-              <p><strong>Calorías:</strong> {diet.calorias}</p>
-              <p><strong>Proteínas:</strong> {diet.proteinas}g</p>
+              <h3>{diet.name}</h3>
+              <p><strong>Descripción:</strong> {diet.description}</p>
+              <p><strong>Calorías:</strong> {diet.calories}</p>
             </div>
             <div className="client-actions">
               <button onClick={() => onEdit(diet)}>Editar</button>

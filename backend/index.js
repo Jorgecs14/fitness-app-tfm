@@ -3,6 +3,7 @@
  * @description Backend handling clients, diets, workouts and products
  */
 
+
 const express = require('express')
 const cors = require('cors')
 const usersRouter = require('./routes/users')
@@ -11,6 +12,7 @@ const workoutsRouter = require('./routes/workouts')
 const exercisesRouter = require('./routes/exercises')
 const workoutsExercisesRouter = require('./routes/workouts_exercises')
 const ecommerceRouter = require('./routes/ecommerce')
+
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -40,3 +42,4 @@ app.listen(PORT, () => {
   console.log('  - /api/exercises')
   console.log('  - /api/workouts_exercises')
 })
+

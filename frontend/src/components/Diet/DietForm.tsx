@@ -8,42 +8,37 @@ interface DietFormProps {
 }
 
 export const DietForm = ({ onSubmit, dietToEdit, onCancelEdit }: DietFormProps) => {
-  const [nombre, setNombre] = useState('');
-  const [descripcion, setDescripcion] = useState('');
-  const [calorias, setCalorias] = useState('');
-  const [proteinas, setProteinas] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [calories, setCalories] = useState('');
 
   useEffect(() => {
     if (dietToEdit) {
-      setNombre(dietToEdit.nombre);
-      setDescripcion(dietToEdit.descripcion);
-      setCalorias(dietToEdit.calorias.toString());
-      setProteinas(dietToEdit.proteinas.toString());
+      setName(dietToEdit.name);
+      setDescription(dietToEdit.description);
+      setCalories(dietToEdit.calories.toString());
     } else {
-      setNombre('');
-      setDescripcion('');
-      setCalorias('');
-      setProteinas('');
+      setName('');
+      setDescription('');
+      setCalories('');
     }
   }, [dietToEdit]);
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!nombre.trim() || !descripcion.trim() || !calorias.trim() || !proteinas.trim()) {
+    if (!name.trim() || !description.trim() || !calories.trim()) {
       alert('Por favor completa todos los campos');
       return;
     }
     onSubmit({
-      nombre,
-      descripcion,
-      calorias: Number(calorias),
-      proteinas: Number(proteinas),
+      name,
+      description,
+      calories: Number(calories),
     });
     if (!dietToEdit) {
-      setNombre('');
-      setDescripcion('');
-      setCalorias('');
-      setProteinas('');
+      setName('');
+      setDescription('');
+      setCalories('');
     }
   };
 
@@ -53,32 +48,24 @@ export const DietForm = ({ onSubmit, dietToEdit, onCancelEdit }: DietFormProps) 
         <input
           type="text"
           placeholder="Nombre de la dieta"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
         />
       </div>
       <div className="form-group">
         <input
           type="text"
           placeholder="Descripción"
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
         />
       </div>
       <div className="form-group">
         <input
           type="number"
           placeholder="Calorías"
-          value={calorias}
-          onChange={(e) => setCalorias(e.target.value)}
-        />
-      </div>
-      <div className="form-group">
-        <input
-          type="number"
-          placeholder="Proteínas (g)"
-          value={proteinas}
-          onChange={(e) => setProteinas(e.target.value)}
+          value={calories}
+          onChange={(e) => setCalories(e.target.value)}
         />
       </div>
       <div className="form-buttons">
@@ -87,7 +74,7 @@ export const DietForm = ({ onSubmit, dietToEdit, onCancelEdit }: DietFormProps) 
         </button>
         {dietToEdit && onCancelEdit && (
           <button type="button" onClick={onCancelEdit}>
-            Cancelar
+            Cancel
           </button>
         )}
       </div>
