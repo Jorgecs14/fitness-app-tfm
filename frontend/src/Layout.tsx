@@ -8,7 +8,7 @@ export const Layout = () => {
         <Link to="/" className="nav-brand">💪 Fitness Pro</Link>
         <div className="nav-links">
           <Link to="/">🏠 Inicio</Link>
-          <Link to="/clients">👥 Clientes</Link>
+          <Link to="/users">👥 Usuarios</Link>
           <Link to="/diets">🥐 Dietas </Link>
           <Link to="/workouts">🏋️ Entrenamientos </Link>
           <Link to="/products">🛒 Productos </Link>
