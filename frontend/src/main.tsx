@@ -19,18 +19,20 @@ import { DietsPage } from './pages/DietsPage'
 import { WorkoutsPage } from './pages/WorkoutsPage'
 import { ProductsPage } from './pages/ProductsPage'
 import { LoginPage } from './pages/LoginPage'
-
+import { ProtectedRoute } from './components/ProtectedRoute'
 // Create application routes
 const router = createBrowserRouter(
   createRoutesFromElements(
     <>
     <Route path="/login" element={<LoginPage/>} />
+    <Route element={<ProtectedRoute />}>
     <Route path="/" element={<Layout />}>
       <Route index element={<HomePage />} />
       <Route path="users" element={<UsersPage />} />
       <Route path="diets" element={<DietsPage />} />
       <Route path="workouts" element={<WorkoutsPage />} />
       <Route path="products" element={<ProductsPage />} />
+    </Route>
     </Route>
     </>
   )
