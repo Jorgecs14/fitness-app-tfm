@@ -41,7 +41,9 @@ export const LoginForm: React.FC<LoginFromProps> = ({ onLoginSuccess }) => {
  };
  
 
- return ( <div className="form-container">
+ return ( 
+   <div className="page-wrapper">  
+    <div className="form-container">
       <p className="title">Log in</p>
 
       <form className="form" onSubmit={handleSubmit}>
@@ -84,6 +86,7 @@ export const LoginForm: React.FC<LoginFromProps> = ({ onLoginSuccess }) => {
           <span>🔍 Log in with Google</span>
         </div>*/}
       </div>
+      </div> 
     
   );
 };

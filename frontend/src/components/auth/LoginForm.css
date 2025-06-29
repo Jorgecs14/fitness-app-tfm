@@ -1,3 +1,11 @@
+.page-wrapper {
+  height: 100vh; /* full viewport height */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+
 .form-container {
   width: 350px;
   height: 500px;
@@ -131,3 +139,4 @@
   font-size: 18px;
   margin-bottom: 1px;
 }
+
