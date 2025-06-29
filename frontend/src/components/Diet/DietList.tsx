@@ -18,7 +18,6 @@ export const DietList = ({ diets, onEdit, onDelete }: DietListProps) => {
             <div className="client-info">
               <h3>{diet.name}</h3>
               <p><strong>Descripción:</strong> {diet.description}</p>
-              <p><strong>Calorías:</strong> {diet.calories}</p>
             </div>
             <div className="client-actions">
               <button onClick={() => onEdit(diet)}>Editar</button>

@@ -10,10 +10,8 @@ export const DietCard = ({ diet, onEdit, onDelete }: DietCardProps) => {
   return (
     <div className="client">
       <div className="client-info">
-        <h3>{diet.nombre}</h3>
-        <p><strong>Descripción:</strong> {diet.descripcion}</p>
-        <p><strong>Calorías:</strong> {diet.calorias}</p>
-        <p><strong>Proteínas:</strong> {diet.proteinas}g</p>
+        <h3>{diet.name}</h3>
+        <p><strong>Descripción:</strong> {diet.description}</p>
       </div>
       <div className="client-actions">
         <button onClick={() => onEdit(diet)}>Editar</button>
