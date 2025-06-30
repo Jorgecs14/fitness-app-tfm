@@ -18,6 +18,7 @@ import { UsersPage } from './pages/UsersPage'
 import { DietsPage } from './pages/DietsPage'
 import { WorkoutsPage } from './pages/WorkoutsPage'
 import { ProductsPage } from './pages/ProductsPage'
+import { RegisterPage } from './pages/RegisterPage'
 
 // Create application routes
 const router = createBrowserRouter(
@@ -28,6 +29,7 @@ const router = createBrowserRouter(
       <Route path="diets" element={<DietsPage />} />
       <Route path="workouts" element={<WorkoutsPage />} />
       <Route path="products" element={<ProductsPage />} />
+      <Route path="register" element={<RegisterPage />} />
     </Route>
   )
 )

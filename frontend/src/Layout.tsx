@@ -12,6 +12,7 @@ export const Layout = () => {
           <Link to="/diets">🥐 Dietas </Link>
           <Link to="/workouts">🏋️ Entrenamientos </Link>
           <Link to="/products">🛒 Productos </Link>
+          <Link to="/register">📝 Registro</Link>
         </div>
       </nav>
       
