@@ -14,11 +14,11 @@ graph TD
     B --> E[Error Handler]
     
     A --> F[Route Handlers]
-    F --> G[/api/users]
-    F --> H[/api/diets]
-    F --> I[/api/workouts]
-    F --> J[/api/products]
-    F --> K[/api/exercises]
+    F --> G[users routes]
+    F --> H[diets routes]
+    F --> I[workouts routes]
+    F --> J[products routes]
+    F --> K[exercises routes]
     
     G --> L[Supabase Client]
     H --> L
