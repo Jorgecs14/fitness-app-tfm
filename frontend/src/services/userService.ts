@@ -15,6 +15,18 @@ export const getUsers = async (): Promise<User[]> => {
 };
 
 /**
+ * Obtener un usuario por ID
+ */ 
+export const getUser = async (id: number): Promise<User> => {
+  console.log(`Frontend: Solicitando usuario con ID ${id}`);
+  const response = await fetch(`${API_URL}/${id}`);
+  if (!response.ok) throw new Error('Error al obtener usuario');
+  const data = await response.json();
+  console.log('Frontend: Usuario recibido', data);
+  return data;
+};
+
+/**
  * Crear un nuevo usuario
  */
 export const createUser = async (user: Omit<User, 'id' | 'created_at'>): Promise<User> => {

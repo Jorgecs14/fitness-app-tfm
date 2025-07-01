@@ -19,6 +19,7 @@ import { ProductsPage } from './pages/ProductsPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { SignInPage } from './pages/SignInPage'
 import { SignUpPage } from './pages/SignUpPage'
+import { UserDetailPage } from './pages/UserDetailPage'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
@@ -65,6 +66,10 @@ const router = createBrowserRouter([
       {
         path: 'users',
         element: <UsersPage />,
+      },
+      {
+        path: 'users/:id',
+        element: <UserDetailPage />,
       },
       {
         path: 'products',
