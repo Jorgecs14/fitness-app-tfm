@@ -1,11 +1,12 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './styles/global.css'
 import './styles/components.css'
 import App from './App'
-import { 
-  RouterProvider, 
-  createBrowserRouter, 
+import { supabase } from './lib/supabase'
+import {
+  RouterProvider,
+  createBrowserRouter,
   Outlet,
   Navigate
 } from 'react-router-dom'
@@ -22,9 +23,49 @@ import { SignUpPage } from './pages/SignUpPage'
 import { LandingPage } from './pages/LandingPage'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  return isAuthenticated ? <>{children}</> : <Navigate to="/sign-in" replace />;
-};
+  const [loading, setLoading] = useState(true)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    supabase.auth
+      .getSession()
+      .then(({ data: { session } }) => {
+        setIsAuthenticated(!!session)
+        setLoading(false)
+      })
+      .catch(() => {
+        // Si hay error con Supabase, redirigir al login
+        setLoading(false)
+        setIsAuthenticated(false)
+      })
+
+    const {
+      data: { subscription }
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setIsAuthenticated(!!session)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [])
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          fontFamily: 'Arial, sans-serif'
+        }}
+      >
+        Cargando...
+      </div>
+    )
+  }
+
+  return isAuthenticated ? <>{children}</> : <Navigate to='/sign-in' replace />
+}
 
 const router = createBrowserRouter([
   {
@@ -39,7 +80,7 @@ const router = createBrowserRouter([
           <SignInPage />
         </AuthLayout>
       </App>
-    ),
+    )
   },
   {
     path: '/register',
@@ -49,7 +90,7 @@ const router = createBrowserRouter([
           <SignUpPage />
         </AuthLayout>
       </App>
-    ),
+    )
   },
   
   // RUTAS PROTEGIDAS (requieren autenticación)
@@ -67,31 +108,31 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <HomePage />,
+        element: <HomePage />
       },
       {
         path: 'users',
-        element: <UsersPage />,
+        element: <UsersPage />
       },
       {
         path: 'products',
-        element: <ProductsPage />,
+        element: <ProductsPage />
       },
       {
         path: 'diets',
-        element: <DietsPage />,
+        element: <DietsPage />
       },
       {
         path: 'workouts',
-        element: <WorkoutsPage />,
+        element: <WorkoutsPage />
       },
       {
         path: 'profile',
-        element: <ProfilePage />,
-      },
-    ],
-  },
-]);
+        element: <ProfilePage />
+      }
+    ]
+  }
+])
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
