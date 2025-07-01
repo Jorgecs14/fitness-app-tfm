@@ -12,32 +12,32 @@ export type NavItem = {
 export const navData: NavItem[] = [
   {
     title: 'Dashboard',
-    path: '/',
+    path: '/dashboard',
     icon: <Iconify icon="solar:home-2-bold-duotone" width={24} />,
   },
   {
     title: 'Usuarios',
-    path: '/users',
+    path: '/dashboard/users',
     icon: <Iconify icon="solar:users-group-two-rounded-bold-duotone" width={24} />,
   },
   {
     title: 'Dietas',
-    path: '/diets',
+    path: '/dashboard/diets',
     icon: <Iconify icon="solar:chef-hat-bold-duotone" width={24} />,
   },
   {
     title: 'Entrenamientos',
-    path: '/workouts',
+    path: '/dashboard/workouts',
     icon: <Iconify icon="solar:dumbbell-bold-duotone" width={24} />,
   },
   {
     title: 'Productos',
-    path: '/products',
+    path: '/dashboard/products',
     icon: <Iconify icon="solar:bag-4-bold-duotone" width={24} />,
   },
   {
     title: 'Perfil',
-    path: '/profile',
+    path: '/dashboard/profile',
     icon: <Iconify icon="solar:user-circle-bold-duotone" width={24} />,
   },
 ];

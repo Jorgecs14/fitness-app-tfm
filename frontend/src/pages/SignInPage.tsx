@@ -32,7 +32,7 @@ export const SignInPage = () => {
       if (error) {
         setError(error.message)
       } else if (data.user) {
-        navigate('/')
+        navigate('/dashboard')
       }
     } catch (err) {
       setError('Error al iniciar sesión')
