@@ -1,83 +1,112 @@
-import { useState, useEffect, FormEvent } from 'react';
+import { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Box,
+  Alert
+} from '@mui/material';
 import { Diet } from '../../types/Diet';
 
 interface DietFormProps {
-  onSubmit: (diet: Omit<Diet, 'id'>) => void;
-  dietToEdit?: Diet | null;
-  onCancelEdit?: () => void;
+  open: boolean;
+  diet?: Diet | null;
+  onClose: () => void;
+  onSubmit: (dietData: Omit<Diet, 'id'>) => void;
+  error?: string | null;
 }
 
-export const DietForm = ({ onSubmit, dietToEdit, onCancelEdit }: DietFormProps) => {
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [calories, setCalories] = useState('');
+export const DietForm = ({ open, diet, onClose, onSubmit, error }: DietFormProps) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    calories: '',
+  });
 
   useEffect(() => {
-    if (dietToEdit) {
-      setName(dietToEdit.name);
-      setDescription(dietToEdit.description);
-      setCalories(dietToEdit.calories.toString());
+    if (diet) {
+      setFormData({
+        name: diet.name || '',
+        description: diet.description || '',
+        calories: diet.calories !== null && diet.calories !== undefined ? diet.calories.toString() : '',
+      });
     } else {
-      setName('');
-      setDescription('');
-      setCalories('');
+      setFormData({
+        name: '',
+        description: '',
+        calories: '',
+      });
     }
-  }, [dietToEdit]);
+  }, [diet, open]);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!name.trim() || !description.trim() || !calories.trim()) {
-      alert('Por favor completa todos los campos');
+  const handleSubmit = () => {
+    const calories = parseInt(formData.calories);
+    if (isNaN(calories) || calories <= 0) {
       return;
     }
+
     onSubmit({
-      name,
-      description,
-      calories: Number(calories),
+      name: formData.name,
+      description: formData.description,
+      calories,
     });
-    if (!dietToEdit) {
-      setName('');
-      setDescription('');
-      setCalories('');
-    }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="form">
-      <div className="form-group">
-        <input
-          type="text"
-          placeholder="Nombre de la dieta"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-      </div>
-      <div className="form-group">
-        <input
-          type="text"
-          placeholder="Descripción"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-      </div>
-      <div className="form-group">
-        <input
-          type="number"
-          placeholder="Calorías"
-          value={calories}
-          onChange={(e) => setCalories(e.target.value)}
-        />
-      </div>
-      <div className="form-buttons">
-        <button type="submit">
-          {dietToEdit ? 'Actualizar' : 'Agregar'} Dieta
-        </button>
-        {dietToEdit && onCancelEdit && (
-          <button type="button" onClick={onCancelEdit}>
-            Cancel
-          </button>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        {diet ? 'Editar Dieta' : 'Nueva Dieta'}
+      </DialogTitle>
+      <DialogContent>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
         )}
-      </div>
-    </form>
+        <Box sx={{ mt: 2 }}>
+          <TextField
+            fullWidth
+            label="Nombre"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            margin="normal"
+            required
+          />
+          <TextField
+            fullWidth
+            label="Descripción"
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            margin="normal"
+            multiline
+            rows={3}
+            required
+          />
+          <TextField
+            fullWidth
+            label="Calorías"
+            type="number"
+            value={formData.calories}
+            onChange={(e) => setFormData({ ...formData, calories: e.target.value })}
+            margin="normal"
+            inputProps={{ min: 1 }}
+            required
+          />
+        </Box>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancelar</Button>
+        <Button
+          onClick={handleSubmit}
+          variant="contained"
+          disabled={!formData.name || !formData.description || !formData.calories}
+        >
+          {diet ? 'Actualizar' : 'Crear'}
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };

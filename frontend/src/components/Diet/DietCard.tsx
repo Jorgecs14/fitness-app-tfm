@@ -1,3 +1,13 @@
+import { 
+  Card, 
+  CardContent, 
+  Typography, 
+  Chip, 
+  IconButton, 
+  Box, 
+  Stack 
+} from '@mui/material';
+import { Iconify } from '../../utils/iconify';
 import { Diet } from '../../types/Diet';
 
 interface DietCardProps {
@@ -8,17 +18,50 @@ interface DietCardProps {
 
 export const DietCard = ({ diet, onEdit, onDelete }: DietCardProps) => {
   return (
-    <div className="client">
-      <div className="client-info">
-        <h3>{diet.nombre}</h3>
-        <p><strong>Descripción:</strong> {diet.descripcion}</p>
-        <p><strong>Calorías:</strong> {diet.calorias}</p>
-        <p><strong>Proteínas:</strong> {diet.proteinas}g</p>
-      </div>
-      <div className="client-actions">
-        <button onClick={() => onEdit(diet)}>Editar</button>
-        <button onClick={() => onDelete(diet.id)}>Eliminar</button>
-      </div>
-    </div>
+    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ flexGrow: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+            {diet.name}
+          </Typography>
+          <Stack direction="row" spacing={0.5}>
+            <IconButton
+              size="small"
+              color="primary"
+              onClick={() => onEdit(diet)}
+              sx={{ p: 0.5 }}
+            >
+              <Iconify icon="solar:pen-bold" width={16} />
+            </IconButton>
+            <IconButton
+              size="small"
+              color="error"
+              onClick={() => onDelete(diet.id)}
+              sx={{ p: 0.5 }}
+            >
+              <Iconify icon="solar:trash-bin-trash-bold" width={16} />
+            </IconButton>
+          </Stack>
+        </Box>
+
+        <Typography 
+          variant="body2" 
+          color="text.secondary" 
+          sx={{ mb: 2, minHeight: 60 }}
+        >
+          {diet.description}
+        </Typography>
+
+        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+          <Chip
+            icon={<Iconify icon="solar:fire-bold" width={16} />}
+            label={`${diet.calories} kcal`}
+            color="primary"
+            variant="outlined"
+            size="medium"
+          />
+        </Box>
+      </CardContent>
+    </Card>
   );
 };

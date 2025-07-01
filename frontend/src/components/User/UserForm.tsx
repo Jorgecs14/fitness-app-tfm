@@ -1,83 +1,192 @@
 import { useState, useEffect, FormEvent } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
+  Button,
+  Stack,
+  MenuItem,
+  Typography,
+  Alert,
+} from '@mui/material';
 import { User } from '../../types/User';
 
 interface UserFormProps {
+  open: boolean;
+  onClose: () => void;
   onSubmit: (user: Omit<User, 'id' | 'created_at'>) => void;
   userToEdit?: User | null;
-  onCancelEdit?: () => void;
 }
 
-export const UserForm = ({ onSubmit, userToEdit, onCancelEdit }: UserFormProps) => {
-  const [name, setName] = useState('');
-  const [surname, setSurname] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [birthDate, setBirthDate] = useState('');
-  const [role, setRole] = useState('');
+export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    surname: '',
+    email: '',
+    password: '',
+    birth_date: '',
+    role: 'client',
+  });
+  const [errors, setErrors] = useState<string[]>([]);
 
   useEffect(() => {
     if (userToEdit) {
-      setName(userToEdit.name);
-      setSurname(userToEdit.surname);
-      setEmail(userToEdit.email);
-      setBirthDate(userToEdit.birth_date);
-      setRole(userToEdit.role);
+      setFormData({
+        name: userToEdit.name,
+        surname: userToEdit.surname,
+        email: userToEdit.email,
+        password: '',
+        birth_date: userToEdit.birth_date,
+        role: userToEdit.role,
+      });
     } else {
-      setName('');
-      setSurname('');
-      setEmail('');
-      setPassword('');
-      setBirthDate('');
-      setRole('');
+      setFormData({
+        name: '',
+        surname: '',
+        email: '',
+        password: '',
+        birth_date: '',
+        role: 'client',
+      });
     }
-  }, [userToEdit]);
+    setErrors([]);
+  }, [userToEdit, open]);
+
+  const validateForm = () => {
+    const newErrors: string[] = [];
+    
+    if (!formData.name.trim()) newErrors.push('El nombre es obligatorio');
+    if (!formData.surname.trim()) newErrors.push('El apellido es obligatorio');
+    if (!formData.email.trim()) newErrors.push('El email es obligatorio');
+    if (!formData.email.includes('@')) newErrors.push('El email debe ser válido');
+    if (!userToEdit && !formData.password) newErrors.push('La contraseña es obligatoria');
+    if (!formData.role) newErrors.push('El rol es obligatorio');
+
+    setErrors(newErrors);
+    return newErrors.length === 0;
+  };
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-
-    if (!name || !surname || !email || (!userToEdit && !password)) {
-      alert('Faltan campos obligatorios');
-      return;
-    }
+    
+    if (!validateForm()) return;
 
     onSubmit({
-      name,
-      surname,
-      email,
-      password,
-      birth_date: birthDate,
-      role: role || 'client',
+      name: formData.name.trim(),
+      surname: formData.surname.trim(),
+      email: formData.email.trim(),
+      password: formData.password,
+      birth_date: formData.birth_date,
+      role: formData.role,
     });
+
+    onClose();
+  };
+
+  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: e.target.value,
+    }));
   };
 
   return (
-    <form onSubmit={handleSubmit} className="form">
-      <div className="form-group">
-        <input type="text" placeholder="Nombre" value={name} onChange={e => setName(e.target.value)} />
-      </div>
-      <div className="form-group">
-        <input type="text" placeholder="Apellido" value={surname} onChange={e => setSurname(e.target.value)} />
-      </div>
-      <div className="form-group">
-        <input type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
-      </div>
-      {!userToEdit && (
-        <div className="form-group">
-          <input type="password" placeholder="Contraseña" value={password} onChange={e => setPassword(e.target.value)} />
-        </div>
-      )}
-      <div className="form-group">
-        <input type="date" placeholder="Fecha de nacimiento" value={birthDate} onChange={e => setBirthDate(e.target.value)} />
-      </div>
-      <div className="form-group">
-        <input type="text" placeholder="Rol (opcional)" value={role} onChange={e => setRole(e.target.value)} />
-      </div>
-      <div className="form-buttons">
-        <button type="submit">{userToEdit ? 'Actualizar' : 'Agregar'} Usuario</button>
-        {userToEdit && onCancelEdit && (
-          <button type="button" onClick={onCancelEdit}>Cancelar</button>
-        )}
-      </div>
-    </form>
+    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+      <form onSubmit={handleSubmit}>
+        <DialogTitle>
+          <Typography variant="h6" component="h2">
+            {userToEdit ? 'Editar Usuario' : 'Nuevo Usuario'}
+          </Typography>
+        </DialogTitle>
+
+        <DialogContent>
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            {errors.length > 0 && (
+              <Alert severity="error">
+                <ul style={{ margin: 0, paddingLeft: '1.5rem' }}>
+                  {errors.map((error, index) => (
+                    <li key={index}>{error}</li>
+                  ))}
+                </ul>
+              </Alert>
+            )}
+
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <TextField
+                fullWidth
+                label="Nombre"
+                value={formData.name}
+                onChange={handleChange('name')}
+                error={errors.some(e => e.includes('nombre'))}
+                required
+              />
+              <TextField
+                fullWidth
+                label="Apellido"
+                value={formData.surname}
+                onChange={handleChange('surname')}
+                error={errors.some(e => e.includes('apellido'))}
+                required
+              />
+            </Stack>
+
+            <TextField
+              fullWidth
+              label="Email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange('email')}
+              error={errors.some(e => e.includes('email'))}
+              required
+            />
+
+            {!userToEdit && (
+              <TextField
+                fullWidth
+                label="Contraseña"
+                type="password"
+                value={formData.password}
+                onChange={handleChange('password')}
+                error={errors.some(e => e.includes('contraseña'))}
+                required
+              />
+            )}
+
+            <TextField
+              fullWidth
+              label="Fecha de Nacimiento"
+              type="date"
+              value={formData.birth_date}
+              onChange={handleChange('birth_date')}
+              InputLabelProps={{ shrink: true }}
+            />
+
+            <TextField
+              select
+              fullWidth
+              label="Rol"
+              value={formData.role}
+              onChange={handleChange('role')}
+              error={errors.some(e => e.includes('rol'))}
+              required
+            >
+              <MenuItem value="client">Cliente</MenuItem>
+              <MenuItem value="admin">Administrador</MenuItem>
+            </TextField>
+          </Stack>
+        </DialogContent>
+
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={onClose} variant="outlined">
+            Cancelar
+          </Button>
+          <Button type="submit" variant="contained" sx={{ ml: 1 }}>
+            {userToEdit ? 'Actualizar' : 'Crear'} Usuario
+          </Button>
+        </DialogActions>
+      </form>
+    </Dialog>
   );
 };

@@ -10,6 +10,12 @@ export const getWorkouts = async (): Promise<Workout[]> => {
   return response.json();
 };
 
+export const getWorkoutsWithExercises = async (): Promise<WorkoutWithExercises[]> => {
+  const response = await fetch(`${API_URL}/with-exercises`);
+  if (!response.ok) throw new Error('Error al obtener entrenamientos con ejercicios');
+  return response.json();
+};
+
 export const createWorkout = async (workout: Omit<Workout, 'id'>): Promise<Workout> => {
   const response = await fetch(API_URL, {
     method: 'POST',

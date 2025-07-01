@@ -15,6 +15,36 @@ router.get('/', async (req, res) => {
   }
 })
 
+router.get('/with-exercises', async (req, res) => {
+  try {
+    const { data: workouts, error: workoutsError } = await supabase
+      .from('workouts')
+      .select(`
+        *,
+        workout_exercises (
+          id,
+          sets,
+          reps,
+          exercises (
+            id,
+            name,
+            description,
+            execution_time
+          )
+        )
+      `)
+      .order('id')
+
+    if (workoutsError) throw workoutsError
+    res.json(workouts)
+  } catch (err) {
+    console.error('Error al obtener entrenamientos con ejercicios:', err)
+    res
+      .status(500)
+      .json({ error: 'Error al obtener entrenamientos con ejercicios' })
+  }
+})
+
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
@@ -34,27 +64,27 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    console.log('📦 Body recibido en POST /workouts:', req.body);
-    const { user_id, name, category, notes } = req.body;
+    console.log('📦 Body recibido en POST /workouts:', req.body)
+    const { user_id, name, category, notes } = req.body
 
     if (!user_id || !name || !category) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
+      return res.status(400).json({ error: 'Faltan campos requeridos' })
     }
 
     const { data, error } = await supabase
       .from('workouts')
       .insert([{ user_id, name, category, notes }])
       .select()
-      .single();
+      .single()
 
-    if (error) throw error;
+    if (error) throw error
 
-    res.status(201).json(data);
+    res.status(201).json(data)
   } catch (err) {
-    console.error('🔥 Error en POST /workouts:', err); 
-    res.status(500).json({ error: 'Error al crear entrenamiento' });
+    console.error('🔥 Error en POST /workouts:', err)
+    res.status(500).json({ error: 'Error al crear entrenamiento' })
   }
-});
+})
 
 router.put('/:id', async (req, res) => {
   try {
@@ -139,16 +169,16 @@ router.get('/:id/full', async (req, res) => {
 })
 
 router.get('/:id/details', async (req, res) => {
-  const { id } = req.params;
+  const { id } = req.params
 
   try {
     const { data: workout, error: workoutError } = await supabase
       .from('workouts')
       .select('*')
       .eq('id', id)
-      .single();
+      .single()
 
-    if (workoutError) throw workoutError;
+    if (workoutError) throw workoutError
 
     const { data: exercises, error: exercisesError } = await supabase
       .from('workout_exercises')
@@ -163,9 +193,9 @@ router.get('/:id/details', async (req, res) => {
           execution_time
         )
       `)
-      .eq('workout_id', id);
+      .eq('workout_id', id)
 
-    if (exercisesError) throw exercisesError;
+    if (exercisesError) throw exercisesError
 
     const flattenedExercises = exercises.map((ex) => ({
       link_id: ex.id,
@@ -175,18 +205,16 @@ router.get('/:id/details', async (req, res) => {
       name: ex.exercises.name,
       description: ex.exercises.description,
       execution_time: ex.exercises.execution_time
-    }));
+    }))
 
     res.json({
       ...workout,
       exercises: flattenedExercises
-    });
+    })
   } catch (err) {
-    console.error('Error cargando detalles del entrenamiento:', err);
-    res.status(500).json({ error: 'Error cargando detalles del entrenamiento' });
+    console.error('Error cargando detalles del entrenamiento:', err)
+    res.status(500).json({ error: 'Error cargando detalles del entrenamiento' })
   }
-});
-
-
+})
 
 module.exports = router

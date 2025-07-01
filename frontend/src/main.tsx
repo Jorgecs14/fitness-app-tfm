@@ -1,40 +1,93 @@
-/**
- * Main application entry point
- * Sets up routing for the Fitness Management System
- */
-
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import './index.css'
+import './styles/global.css'
+import './styles/components.css'
+import App from './App'
 import { 
-  Route, 
   RouterProvider, 
   createBrowserRouter, 
-  createRoutesFromElements 
+  Outlet,
+  Navigate
 } from 'react-router-dom'
-import { Layout } from './Layout'
+import { DashboardLayout } from './layouts/dashboard'
+import { AuthLayout } from './layouts/auth'
 import { HomePage } from './pages/HomePage'
 import { UsersPage } from './pages/UsersPage'
 import { DietsPage } from './pages/DietsPage'
 import { WorkoutsPage } from './pages/WorkoutsPage'
 import { ProductsPage } from './pages/ProductsPage'
+import { ProfilePage } from './pages/ProfilePage'
+import { SignInPage } from './pages/SignInPage'
+import { SignUpPage } from './pages/SignUpPage'
 
-// Create application routes
-const router = createBrowserRouter(
-  createRoutesFromElements(
-    <Route path="/" element={<Layout />}>
-      <Route index element={<HomePage />} />
-      <Route path="users" element={<UsersPage />} />
-      <Route path="diets" element={<DietsPage />} />
-      <Route path="workouts" element={<WorkoutsPage />} />
-      <Route path="products" element={<ProductsPage />} />
-    </Route>
-  )
-)
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  return isAuthenticated ? <>{children}</> : <Navigate to="/sign-in" replace />;
+};
 
-// Render app with React Router
+const router = createBrowserRouter([
+  {
+    path: '/sign-in',
+    element: (
+      <App>
+        <AuthLayout>
+          <SignInPage />
+        </AuthLayout>
+      </App>
+    ),
+  },
+  {
+    path: '/register',
+    element: (
+      <App>
+        <AuthLayout>
+          <SignUpPage />
+        </AuthLayout>
+      </App>
+    ),
+  },
+  {
+    path: '/',
+    element: (
+      <ProtectedRoute>
+        <App>
+          <DashboardLayout>
+            <Outlet />
+          </DashboardLayout>
+        </App>
+      </ProtectedRoute>
+    ),
+    children: [
+      {
+        index: true,
+        element: <HomePage />,
+      },
+      {
+        path: 'users',
+        element: <UsersPage />,
+      },
+      {
+        path: 'products',
+        element: <ProductsPage />,
+      },
+      {
+        path: 'diets',
+        element: <DietsPage />,
+      },
+      {
+        path: 'workouts',
+        element: <WorkoutsPage />,
+      },
+      {
+        path: 'profile',
+        element: <ProfilePage />,
+      },
+    ],
+  },
+]);
+
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <RouterProvider router={router} />
-  </React.StrictMode>,
+  </React.StrictMode>
 )
