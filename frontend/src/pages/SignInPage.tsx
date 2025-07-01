@@ -24,7 +24,7 @@ export const SignInPage = () => {
     try {
       if (email === 'admin@fitness.com' && password === 'admin123') {
         localStorage.setItem('isAuthenticated', 'true');
-        navigate('/');
+        navigate('/dashboard');
       } else {
         setError('Credenciales incorrectas');
       }
