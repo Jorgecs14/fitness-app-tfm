@@ -34,3 +34,26 @@ export const deleteDiet = async (id: number): Promise<void> => {
   });
   if (!response.ok) throw new Error('Error al eliminar dieta');
 };
+
+export const getDietUsers = async (dietId: number): Promise<any[]> => {
+  const response = await fetch(`${API_URL}/${dietId}/users`);
+  if (!response.ok) throw new Error('Error al obtener usuarios de la dieta');
+  return response.json();
+};
+
+export const assignUserToDiet = async (dietId: number, userId: number): Promise<void> => {
+  const response = await fetch(`${API_URL}/${dietId}/users/${userId}`, {
+    method: 'POST',
+  });
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Error al asignar usuario');
+  }
+};
+
+export const removeUserFromDiet = async (dietId: number, userId: number): Promise<void> => {
+  const response = await fetch(`${API_URL}/${dietId}/users/${userId}`, {
+    method: 'DELETE',
+  });
+  if (!response.ok) throw new Error('Error al remover usuario de la dieta');
+};

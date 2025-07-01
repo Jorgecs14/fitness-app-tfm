@@ -17,6 +17,7 @@ import { useToast } from '../../utils/notifications';
 import { useExport } from '../../utils/hooks/useExport';
 import { DietList } from './DietList';
 import { DietForm } from './DietForm';
+import { DietUsersDialog } from './DietUsersDialog';
 
 export const DietManager = () => {
   const [diets, setDiets] = useState<Diet[]>([]);
@@ -27,6 +28,9 @@ export const DietManager = () => {
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [userCounts, setUserCounts] = useState<Record<number, number>>({});
+  const [managingDiet, setManagingDiet] = useState<Diet | null>(null);
+  const [usersDialogOpen, setUsersDialogOpen] = useState(false);
   
   const { showToast, ToastContainer } = useToast();
   const { exportToCSV, exportToPDF, exportToExcel } = useExport();
@@ -44,11 +48,27 @@ export const DietManager = () => {
       setLoading(true);
       const data = await dietService.getDiets();
       setDiets(data);
+      await loadUserCounts(data);
     } catch (error) {
       console.error('Error loading diets:', error);
       showToast('Error al cargar dietas', 'error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadUserCounts = async (diets: Diet[]) => {
+    try {
+      const counts: Record<number, number> = {};
+      await Promise.all(
+        diets.map(async (diet) => {
+          const users = await dietService.getDietUsers(diet.id);
+          counts[diet.id] = users.length;
+        })
+      );
+      setUserCounts(counts);
+    } catch (error) {
+      console.error('Error loading user counts:', error);
     }
   };
 
@@ -110,6 +130,23 @@ export const DietManager = () => {
   const handleClose = () => {
     setOpen(false);
     setError(null);
+  };
+
+  const handleManageUsers = (diet: Diet) => {
+    setManagingDiet(diet);
+    setUsersDialogOpen(true);
+  };
+
+  const handleUsersDialogClose = () => {
+    setUsersDialogOpen(false);
+    setManagingDiet(null);
+  };
+
+  const handleUsersUpdate = async () => {
+    if (managingDiet) {
+      const users = await dietService.getDietUsers(managingDiet.id);
+      setUserCounts(prev => ({ ...prev, [managingDiet.id]: users.length }));
+    }
   };
 
   const handleExport = (format: 'csv' | 'pdf' | 'excel') => {
@@ -211,6 +248,8 @@ export const DietManager = () => {
         diets={filteredDiets}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onManageUsers={handleManageUsers}
+        userCounts={userCounts}
         loading={loading}
       />
 
@@ -242,6 +281,14 @@ export const DietManager = () => {
           Exportar a CSV
         </MenuItem>
       </Menu>
+
+      {/* User Management Dialog */}
+      <DietUsersDialog
+        open={usersDialogOpen}
+        diet={managingDiet}
+        onClose={handleUsersDialogClose}
+        onUpdate={handleUsersUpdate}
+      />
     </Box>
   );
 };

@@ -24,10 +24,12 @@ interface DietListProps {
   diets: Diet[];
   onEdit: (diet: Diet) => void;
   onDelete: (id: number) => void;
+  onManageUsers?: (diet: Diet) => void;
+  userCounts?: Record<number, number>;
   loading?: boolean;
 }
 
-export const DietList = ({ diets, onEdit, onDelete, loading }: DietListProps) => {
+export const DietList = ({ diets, onEdit, onDelete, onManageUsers, userCounts = {}, loading }: DietListProps) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const theme = useTheme();
@@ -73,6 +75,8 @@ export const DietList = ({ diets, onEdit, onDelete, loading }: DietListProps) =>
                 diet={diet}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                onManageUsers={onManageUsers}
+                userCount={userCounts[diet.id] || 0}
               />
             </Grid>
           ))}
@@ -101,6 +105,7 @@ export const DietList = ({ diets, onEdit, onDelete, loading }: DietListProps) =>
               <TableCell>Nombre</TableCell>
               <TableCell>Descripción</TableCell>
               <TableCell align="center">Calorías</TableCell>
+              <TableCell align="center">Usuarios</TableCell>
               <TableCell align="right">Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -125,6 +130,19 @@ export const DietList = ({ diets, onEdit, onDelete, loading }: DietListProps) =>
                     variant="outlined"
                     size="small"
                   />
+                </TableCell>
+                <TableCell align="center">
+                  {onManageUsers && (
+                    <Chip
+                      icon={<Iconify icon="solar:users-group-rounded-bold" width={16} />}
+                      label={userCounts[diet.id] || 0}
+                      onClick={() => onManageUsers(diet)}
+                      sx={{ cursor: 'pointer' }}
+                      color="default"
+                      variant="outlined"
+                      size="small"
+                    />
+                  )}
                 </TableCell>
                 <TableCell align="right">
                   <IconButton

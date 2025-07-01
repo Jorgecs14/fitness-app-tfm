@@ -14,9 +14,11 @@ interface DietCardProps {
   diet: Diet;
   onEdit: (diet: Diet) => void;
   onDelete: (id: number) => void;
+  onManageUsers?: (diet: Diet) => void;
+  userCount?: number;
 }
 
-export const DietCard = ({ diet, onEdit, onDelete }: DietCardProps) => {
+export const DietCard = ({ diet, onEdit, onDelete, onManageUsers, userCount = 0 }: DietCardProps) => {
   return (
     <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <CardContent sx={{ flexGrow: 1 }}>
@@ -52,7 +54,7 @@ export const DietCard = ({ diet, onEdit, onDelete }: DietCardProps) => {
           {diet.description}
         </Typography>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Chip
             icon={<Iconify icon="solar:fire-bold" width={16} />}
             label={`${diet.calories} kcal`}
@@ -60,6 +62,17 @@ export const DietCard = ({ diet, onEdit, onDelete }: DietCardProps) => {
             variant="outlined"
             size="medium"
           />
+          {onManageUsers && (
+            <Chip
+              icon={<Iconify icon="solar:users-group-rounded-bold" width={16} />}
+              label={`${userCount} usuarios`}
+              onClick={() => onManageUsers(diet)}
+              sx={{ cursor: 'pointer' }}
+              color="default"
+              variant="outlined"
+              size="medium"
+            />
+          )}
         </Box>
       </CardContent>
     </Card>
