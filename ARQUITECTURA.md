@@ -55,7 +55,7 @@ graph TB
 
 ### Infraestructura
 - **BaaS**: Supabase (Database + Auth)
-- **Desarrollo**: Docker para PostgreSQL local
+- **Base de Datos**: PostgreSQL gestionado por Supabase
 - **Autenticación**: Supabase Auth + OAuth providers
 
 ## 📊 Flujo de Datos

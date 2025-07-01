@@ -2,7 +2,7 @@
 
 ## 📋 Resumen
 
-API REST construida con Node.js y Express.js, conectada a PostgreSQL mediante Supabase Client, siguiendo principios RESTful.
+API REST construida con Node.js y Express.js, conectada a la base de datos PostgreSQL de Supabase mediante Supabase Client, siguiendo principios RESTful.
 
 ## 🏗️ Estructura del Servidor
 
@@ -24,11 +24,11 @@ graph TD
     H --> L
     I --> L
     
-    L --> M[(PostgreSQL)]
+    L --> M[(Supabase PostgreSQL)]
     
     style A fill:#68a063
     style L fill:#3ecf8e
-    style M fill:#336791
+    style M fill:#3ecf8e
 ```
 
 ## 📁 Organización del Código

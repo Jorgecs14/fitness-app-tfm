@@ -48,13 +48,13 @@ Este proyecto incluye documentación detallada para aprender paso a paso:
 - **Node.js** - Entorno de ejecución JavaScript
 - **Express.js 5.1.0** - Framework web minimalista
 - **Supabase** - Backend as a Service
-- **PostgreSQL** - Base de datos relacional
+- **PostgreSQL** - Base de datos relacional (gestionada por Supabase)
 - **CORS** - Middleware para peticiones cross-origin
 - **Nodemon** - Herramienta de desarrollo con auto-restart
 
 ### Infraestructura
-- **Docker Compose** - Contenerización de PostgreSQL
-- **PostgreSQL 15** - Base de datos en contenedor
+- **Supabase** - BaaS que proporciona PostgreSQL, Auth y APIs
+- **Docker** - Opcional para desarrollo local
 
 ## 📁 Estructura del Proyecto
 
@@ -100,8 +100,7 @@ RepoEjemplo/
 - Node.js (v14 o superior)
 - npm o yarn
 - Git
-- Cuenta en Supabase (para base de datos)
-- Docker (opcional, para PostgreSQL local)
+- Cuenta en Supabase (para base de datos y autenticación)
 
 ### Pasos de Instalación
 
@@ -111,17 +110,11 @@ git clone [url-del-repositorio]
 cd RepoEjemplo
 ```
 
-2. **Configurar Base de Datos**
+2. **Configurar Base de Datos en Supabase**
 
-Opción A - Usar Supabase:
 - Crear proyecto en [Supabase](https://supabase.com)
 - Ejecutar el script `backend/database/schema.sql` en el SQL Editor
-- Copiar las credenciales al archivo `.env`
-
-Opción B - PostgreSQL local con Docker:
-```bash
-docker-compose up -d
-```
+- Copiar las credenciales (URL y API Key)
 
 3. **Configurar Variables de Entorno**
 
