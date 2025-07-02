@@ -282,12 +282,6 @@ export const SignUpPage = () => {
         >
           Registrarse con Google
         </Button>
-        <IconButton color="inherit">
-          <Iconify width={22} icon="logos:facebook" />
-        </IconButton>
-        <IconButton color="inherit">
-          <Iconify width={22} icon="logos:twitter" />
-        </IconButton>
       </Box>
     </>
   );

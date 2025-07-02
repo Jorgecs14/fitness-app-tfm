@@ -179,26 +179,16 @@ export const SignInPage = () => {
           justifyContent: "center",
         }}
       >
-        
-        <IconButton color="inherit">
-          <Iconify width={22} icon="logos:facebook" />
-        </IconButton>
-        <IconButton
-          color="inherit"
+        <Button
+          fullWidth
+          variant="outlined"
+          size="large"
           onClick={handleGoogleSignIn}
-          sx={{
-            border: "1px solid",
-            borderColor: "divider",
-            "&:hover": {
-              backgroundColor: "action.hover",
-            },
-          }}
+          startIcon={<Iconify width={22} icon="logos:google-icon" />}
+          sx={{ mb: 3 }}
         >
-          <Iconify width={22} icon="logos:google-icon" />
-        </IconButton>
-        <IconButton color="inherit">
-          <Iconify width={22} icon="logos:twitter" />
-        </IconButton>
+          logeate con Google
+        </Button>
       </Box>
     </>
   );
