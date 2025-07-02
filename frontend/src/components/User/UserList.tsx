@@ -151,7 +151,7 @@ export const UserList = ({
         </Stack>
       </Box>
 
-      {/* Search and Filters */}
+      
       <Card sx={{ p: 3, mb: 3 }}>
         <Stack
           direction={{ xs: "column", md: "row" }}
@@ -163,7 +163,7 @@ export const UserList = ({
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setPage(0); // Reset page when searching
+              setPage(0); 
             }}
             InputProps={{
               startAdornment: (
@@ -191,9 +191,9 @@ export const UserList = ({
         </Stack>
       </Card>
 
-      {/* Content - Responsive View */}
+      
       {isMobile ? (
-        // Mobile: Card Grid View
+        
         <>
           <Grid container spacing={2}>
             {loading ? (
@@ -219,7 +219,7 @@ export const UserList = ({
             )}
           </Grid>
 
-          {/* Mobile Pagination */}
+          
           {filteredUsers.length > 0 && (
             <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
               <TablePagination
@@ -239,7 +239,7 @@ export const UserList = ({
           )}
         </>
       ) : (
-        // Desktop: Table View
+        
         <Card>
           <TableContainer sx={{ overflow: "auto" }}>
             <Table sx={{ minWidth: { xs: 600, md: "auto" } }}>
@@ -300,7 +300,7 @@ export const UserList = ({
                       >
                         <Typography variant="body2" color="text.secondary">
                           {user.birth_date
-                            ? new Date(user.birth_date).toLocaleDateString()
+                            ? new Date(user.birth_date).toLocaleDateString('es-ES')
                             : "N/A"}
                         </Typography>
                       </TableCell>

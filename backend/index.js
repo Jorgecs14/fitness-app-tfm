@@ -1,11 +1,9 @@
-/**
- * Main API server for the Fitness Management System
- * @description Backend handling clients, diets, workouts and products
- */
 
+require('dotenv').config();
 
 const express = require('express')
 const cors = require('cors')
+const { authenticateToken } = require('./middleware/auth')
 const usersRouter = require('./routes/users')
 const dietsRouter = require('./routes/diets')
 const workoutsRouter = require('./routes/workouts')
@@ -25,12 +23,13 @@ app.use((req, res, next) => {
   next()
 })
 
-app.use('/api/users', usersRouter)
-app.use('/api/diets', dietsRouter)
-app.use('/api/workouts', workoutsRouter)
-app.use('/api/products', ecommerceRouter)
-app.use('/api/exercises', exercisesRouter)
-app.use('/api/workouts_exercises', workoutsExercisesRouter)
+
+app.use('/api/users', authenticateToken, usersRouter)
+app.use('/api/diets', authenticateToken, dietsRouter)
+app.use('/api/workouts', authenticateToken, workoutsRouter)
+app.use('/api/products', authenticateToken, ecommerceRouter)
+app.use('/api/exercises', authenticateToken, exercisesRouter)
+app.use('/api/workouts_exercises', authenticateToken, workoutsExercisesRouter)
 
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`)

@@ -144,6 +144,7 @@ export const SignUpPage = () => {
         value={formData.password}
         onChange={handleInputChange('password')}
         type={showPassword ? 'text' : 'password'}
+        helperText="Mínimo 8 caracteres con mayúsculas, minúsculas y números"
         slotProps={{
           input: {
             endAdornment: (
@@ -172,6 +173,7 @@ export const SignUpPage = () => {
         value={formData.confirmPassword}
         onChange={handleInputChange('confirmPassword')}
         type={showConfirmPassword ? 'text' : 'password'}
+        helperText="Debe coincidir con la contraseña anterior"
         slotProps={{
           input: {
             endAdornment: (

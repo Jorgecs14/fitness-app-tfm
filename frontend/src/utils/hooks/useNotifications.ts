@@ -16,6 +16,11 @@ export function useNotifications() {
 
   useEffect(() => {
     loadNotifications();
+    
+    // Refresh automático cada 5 minutos
+    const interval = setInterval(loadNotifications, 5 * 60 * 1000);
+    
+    return () => clearInterval(interval);
   }, []);
 
   const loadNotifications = async () => {

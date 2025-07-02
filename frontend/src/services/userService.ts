@@ -1,71 +1,66 @@
 import { User } from '../types/User';
+import axiosInstance from '../lib/axios';
 
-const API_URL = 'http://localhost:3001/api/users';
 
-/**
- * Obtener todos los usuarios desde la API
- */
 export const getUsers = async (): Promise<User[]> => {
   console.log('Frontend: Solicitando lista de usuarios');
-  const response = await fetch(API_URL);
-  if (!response.ok) throw new Error('Error al obtener usuarios');
-  const data = await response.json();
-  console.log(`Frontend: Recibidos ${data.length} usuarios`);
-  return data;
+  try {
+    const response = await axiosInstance.get('/users');
+    console.log(`Frontend: Recibidos ${response.data.length} usuarios`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al obtener usuarios:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al obtener usuarios');
+  }
 };
 
-/**
- * Obtener un usuario por ID
- */ 
+
 export const getUser = async (id: number): Promise<User> => {
   console.log(`Frontend: Solicitando usuario con ID ${id}`);
-  const response = await fetch(`${API_URL}/${id}`);
-  if (!response.ok) throw new Error('Error al obtener usuario');
-  const data = await response.json();
-  console.log('Frontend: Usuario recibido', data);
-  return data;
+  try {
+    const response = await axiosInstance.get(`/users/${id}`);
+    console.log('Frontend: Usuario recibido', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al obtener usuario:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al obtener usuario');
+  }
 };
 
-/**
- * Crear un nuevo usuario
- */
+
 export const createUser = async (user: Omit<User, 'id' | 'created_at'>): Promise<User> => {
   console.log('Frontend: Creando nuevo usuario', user);
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(user),
-  });
-  if (!response.ok) throw new Error('Error al crear usuario');
-  const newUser = await response.json();
-  console.log('Frontend: Usuario creado exitosamente', newUser);
-  return newUser;
+  try {
+    const response = await axiosInstance.post('/users', user);
+    console.log('Frontend: Usuario creado exitosamente', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al crear usuario:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al crear usuario');
+  }
 };
 
-/**
- * Actualizar un usuario existente
- */
+
 export const updateUser = async (id: number, user: Partial<Omit<User, 'id' | 'created_at'>>): Promise<User> => {
   console.log(`Frontend: Actualizando usuario con ID ${id}`);
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(user),
-  });
-  if (!response.ok) throw new Error('Error al actualizar usuario');
-  const updatedUser = await response.json();
-  console.log('Frontend: Usuario actualizado', updatedUser);
-  return updatedUser;
+  try {
+    const response = await axiosInstance.put(`/users/${id}`, user);
+    console.log('Frontend: Usuario actualizado', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al actualizar usuario:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al actualizar usuario');
+  }
 };
 
-/**
- * Eliminar un usuario
- */
+
 export const deleteUser = async (id: number): Promise<void> => {
   console.log(`Frontend: Eliminando usuario con ID ${id}`);
-  const response = await fetch(`${API_URL}/${id}`, {
-    method: 'DELETE',
-  });
-  if (!response.ok) throw new Error('Error al eliminar usuario');
-  console.log('Frontend: Usuario eliminado exitosamente');
+  try {
+    await axiosInstance.delete(`/users/${id}`);
+    console.log('Frontend: Usuario eliminado exitosamente');
+  } catch (error: any) {
+    console.error('Error al eliminar usuario:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al eliminar usuario');
+  }
 };

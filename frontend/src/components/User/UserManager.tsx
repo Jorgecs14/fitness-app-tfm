@@ -93,7 +93,7 @@ export const UserManager = () => {
       user.name,
       user.surname,
       user.email,
-      user.birth_date ? new Date(user.birth_date).toLocaleDateString() : 'N/A',
+      user.birth_date ? new Date(user.birth_date).toLocaleDateString('es-ES') : 'N/A',
       user.role === 'admin' ? 'Administrador' : 'Cliente'
     ]);
 

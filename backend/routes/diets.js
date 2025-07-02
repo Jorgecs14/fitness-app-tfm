@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../database/supabaseClient');
+const { supabase } = require('../database/supabaseClient');
 
 router.get('/', async (req, res) => {
   try {
@@ -66,7 +66,7 @@ router.delete('/:id', async (req, res) => {
   }
 });
 
-// Get users assigned to a diet
+
 router.get('/:id/users', async (req, res) => {
   try {
     const { id } = req.params;
@@ -82,7 +82,7 @@ router.get('/:id/users', async (req, res) => {
   }
 });
 
-// Assign user to diet
+
 router.post('/:id/users/:userId', async (req, res) => {
   try {
     const { id, userId } = req.params;
@@ -103,7 +103,7 @@ router.post('/:id/users/:userId', async (req, res) => {
   }
 });
 
-// Remove user from diet
+
 router.delete('/:id/users/:userId', async (req, res) => {
   try {
     const { id, userId } = req.params;
