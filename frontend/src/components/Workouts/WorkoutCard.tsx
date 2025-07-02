@@ -17,6 +17,7 @@ interface WorkoutCardProps {
   onDelete: (id: number) => void;
   onViewDetails: (workout: WorkoutWithExercises) => void;
   onManageExercises?: (workout: WorkoutWithExercises) => void;
+  onManageUser?: (workout: WorkoutWithExercises) => void;
 }
 
 export const WorkoutCard = ({
@@ -25,7 +26,8 @@ export const WorkoutCard = ({
   onEdit,
   onDelete,
   onViewDetails,
-  onManageExercises
+  onManageExercises,
+  onManageUser
 }: WorkoutCardProps) => {
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
@@ -125,6 +127,21 @@ export const WorkoutCard = ({
               }}
             >
               <Iconify icon="solar:dumbbell-bold" sx={{ width: 18, height: 18 }} />
+            </IconButton>
+          )}
+          
+          {onManageUser && (
+            <IconButton
+              size="small"
+              onClick={() => onManageUser(workout)}
+              sx={{
+                color: 'info.main',
+                '&:hover': { bgcolor: 'info.lighter' },
+                mr: 0.5,
+              }}
+              title="Gestionar usuario"
+            >
+              <Iconify icon="solar:user-bold" sx={{ width: 18, height: 18 }} />
             </IconButton>
           )}
           

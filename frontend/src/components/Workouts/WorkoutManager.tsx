@@ -22,6 +22,7 @@ import { WorkoutList } from './WorkoutList';
 import { WorkoutForm } from './WorkoutForm';
 import { WorkoutDetail } from './WorkoutDetail';
 import { WorkoutExercisesManager } from './workout-exercises-manager';
+import { WorkoutUserDialog } from './WorkoutUserDialog';
 
 export const WorkoutManager = () => {
   const [workouts, setWorkouts] = useState<WorkoutWithExercises[]>([]);
@@ -30,9 +31,11 @@ export const WorkoutManager = () => {
   const [editingWorkout, setEditingWorkout] = useState<WorkoutWithExercises | null>(null);
   const [viewingWorkout, setViewingWorkout] = useState<WorkoutWithExercises | null>(null);
   const [exerciseManagerWorkout, setExerciseManagerWorkout] = useState<WorkoutWithExercises | null>(null);
+  const [userManagerWorkout, setUserManagerWorkout] = useState<WorkoutWithExercises | null>(null);
   const [formOpen, setFormOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [exerciseManagerOpen, setExerciseManagerOpen] = useState(false);
+  const [userManagerOpen, setUserManagerOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
   const [error, setError] = useState<string | null>(null);
@@ -120,6 +123,11 @@ export const WorkoutManager = () => {
     setExerciseManagerOpen(true);
   };
 
+  const handleManageUser = (workout: WorkoutWithExercises) => {
+    setUserManagerWorkout(workout);
+    setUserManagerOpen(true);
+  };
+
   const handleSubmit = async (workoutData: any) => {
     try {
       setError(null);
@@ -153,14 +161,17 @@ export const WorkoutManager = () => {
     setExerciseManagerWorkout(null);
   };
 
+  const handleUserManagerClose = () => {
+    setUserManagerOpen(false);
+    setUserManagerWorkout(null);
+  };
+
   const handleSaveExercises = async (exercises: WorkoutExerciseDetail[]) => {
     if (!exerciseManagerWorkout) return;
     
     try {
-      // Primero eliminar todos los ejercicios existentes del workout
       await workoutService.removeAllExercisesFromWorkout(exerciseManagerWorkout.id);
       
-      // Luego agregar los nuevos ejercicios
       if (exercises.length > 0) {
         const selectedExercises = exercises.map(ex => ({
           exercise_id: ex.exercise_id,
@@ -186,7 +197,7 @@ export const WorkoutManager = () => {
       workout.id.toString(),
       workout.name,
       workout.category,
-      'N/A', // Aquí iría el nombre del usuario si estuviera disponible
+      'N/A', 
       workout.exercises?.length.toString() || '0'
     ]);
 
@@ -221,7 +232,7 @@ export const WorkoutManager = () => {
         </Alert>
       )}
       
-      {/* Header */}
+      
       <Box sx={{ 
         display: 'flex', 
         flexDirection: { xs: 'column', sm: 'row' },
@@ -257,7 +268,7 @@ export const WorkoutManager = () => {
         </Stack>
       </Box>
 
-      {/* Search */}
+      
       <Box sx={{ mb: 3 }}>
         <TextField
           fullWidth
@@ -275,7 +286,7 @@ export const WorkoutManager = () => {
         />
       </Box>
 
-      {/* Workout List */}
+      
       <WorkoutList
         workouts={filteredWorkouts}
         users={users}
@@ -283,10 +294,11 @@ export const WorkoutManager = () => {
         onDelete={handleDelete}
         onViewDetails={handleViewDetails}
         onManageExercises={handleManageExercises}
+        onManageUser={handleManageUser}
         loading={loading}
       />
 
-      {/* Workout Form Dialog */}
+      
       <WorkoutForm
         open={formOpen}
         workoutToEdit={editingWorkout}
@@ -295,7 +307,7 @@ export const WorkoutManager = () => {
         onSubmit={handleSubmit}
       />
 
-      {/* Workout Detail Dialog */}
+      
       {viewingWorkout && (
         <WorkoutDetail
           open={detailOpen}
@@ -304,7 +316,7 @@ export const WorkoutManager = () => {
         />
       )}
 
-      {/* Exercise Manager Dialog */}
+      
       {exerciseManagerWorkout && (
         <WorkoutExercisesManager
           open={exerciseManagerOpen}
@@ -323,7 +335,15 @@ export const WorkoutManager = () => {
         />
       )}
 
-      {/* Export Menu */}
+      
+      <WorkoutUserDialog
+        open={userManagerOpen}
+        workout={userManagerWorkout}
+        onClose={handleUserManagerClose}
+        onUpdate={loadWorkouts}
+      />
+
+      
       <Menu
         anchorEl={exportMenuAnchor}
         open={Boolean(exportMenuAnchor)}

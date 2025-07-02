@@ -42,20 +42,24 @@ export const deleteDiet = async (id: number): Promise<void> => {
 
 export const getDietUsers = async (dietId: number): Promise<any[]> => {
   try {
+    console.log(`📋 Obteniendo usuarios para dieta ${dietId}`);
     const response = await axiosInstance.get(`/diets/${dietId}/users`);
+    console.log('👥 Usuarios obtenidos:', response.data);
     return response.data;
   } catch (error: any) {
-    console.error('Error al obtener usuarios de la dieta:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Error al obtener usuarios de la dieta');
+    console.error('❌ Error al obtener usuarios de la dieta:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.error || error.response?.data?.message || 'Error al obtener usuarios de la dieta');
   }
 };
 
 export const assignUserToDiet = async (dietId: number, userId: number): Promise<void> => {
   try {
-    await axiosInstance.post(`/diets/${dietId}/users/${userId}`);
+    console.log(`🔗 Asignando usuario ${userId} a dieta ${dietId}`);
+    const response = await axiosInstance.post(`/diets/${dietId}/users/${userId}`);
+    console.log('✅ Respuesta del servidor:', response.data);
   } catch (error: any) {
-    console.error('Error al asignar usuario:', error.response?.data || error.message);
-    throw new Error(error.response?.data?.message || 'Error al asignar usuario');
+    console.error('❌ Error al asignar usuario:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.error || error.response?.data?.message || 'Error al asignar usuario');
   }
 };
 

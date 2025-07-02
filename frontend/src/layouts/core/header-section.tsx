@@ -80,7 +80,7 @@ const HeaderRoot = styled(AppBar)(({ theme }) => ({
   zIndex: 'var(--layout-header-zIndex)',
   minHeight: 'var(--layout-header-mobile-height)',
   backdropFilter: `blur(var(--layout-header-blur))`,
-  backgroundColor: theme.palette.background.default,
+  backgroundColor: '#ffffff8c',
   color: theme.palette.text.primary,
   width: '100%',
   left: 0,

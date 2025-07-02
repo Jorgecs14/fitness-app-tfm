@@ -13,7 +13,6 @@ import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { useTheme } from '@mui/material/styles';
 
 import { Iconify } from '../utils/iconify';
 
@@ -56,7 +55,6 @@ type DashboardLayoutProps = {
 };
 
 export function DashboardLayout({ children }: DashboardLayoutProps) {
-  const theme = useTheme();
   const [open, setOpen] = useState(false);
 
   const handleDrawerToggle = () => {
@@ -110,7 +108,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         sx={{
           width: { sm: `calc(100% - ${DRAWER_WIDTH}px)` },
           ml: { sm: `${DRAWER_WIDTH}px` },
-          bgcolor: 'background.paper',
+          bgcolor: '#ffffff8c',
           color: 'text.primary',
           boxShadow: (theme: Theme) => theme.shadows[1],
         }}

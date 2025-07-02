@@ -98,3 +98,40 @@ export const removeAllExercisesFromWorkout = async (workoutId: number): Promise<
     throw new Error(error.response?.data?.message || 'Error al eliminar ejercicios del entrenamiento');
   }
 };
+
+// Obtener el usuario propietario de un workout
+export const getWorkoutUser = async (workoutId: number): Promise<any | null> => {
+  try {
+    console.log(` Obteniendo usuario propietario del workout ${workoutId}`);
+    const response = await axiosInstance.get(`/workouts/${workoutId}/user`);
+    console.log('👤 Usuario propietario obtenido:', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ Error al obtener usuario del workout:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.error || error.response?.data?.message || 'Error al obtener usuario del workout');
+  }
+};
+
+// Cambiar el propietario de un workout
+export const changeWorkoutOwner = async (workoutId: number, userId: number): Promise<void> => {
+  try {
+    console.log(`🔄 Cambiando propietario del workout ${workoutId} a usuario ${userId}`);
+    const response = await axiosInstance.put(`/workouts/${workoutId}/user/${userId}`);
+    console.log('✅ Respuesta del servidor:', response.data);
+  } catch (error: any) {
+    console.error('❌ Error al cambiar propietario:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.error || error.response?.data?.message || 'Error al cambiar propietario');
+  }
+};
+
+// Quitar el propietario de un workout
+export const removeWorkoutOwner = async (workoutId: number): Promise<void> => {
+  try {
+    console.log(`🗑️ Quitando propietario del workout ${workoutId}`);
+    const response = await axiosInstance.delete(`/workouts/${workoutId}/user`);
+    console.log('✅ Propietario quitado:', response.data);
+  } catch (error: any) {
+    console.error('❌ Error al quitar propietario:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.error || error.response?.data?.message || 'Error al quitar propietario');
+  }
+};

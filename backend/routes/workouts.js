@@ -217,4 +217,158 @@ router.get('/:id/details', async (req, res) => {
   }
 })
 
+
+router.get('/:id/user', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`📋 Backend: Obteniendo usuario para workout ${id}`);
+    
+    const { data, error } = await supabase
+      .from('workouts')
+      .select('user_id, users(id, name, surname, email)')
+      .eq('id', id)
+      .single();
+      
+    if (error) {
+      console.error('❌ Error en Supabase al obtener usuario:', error);
+      throw error;
+    }
+    
+    if (!data) {
+      return res.status(404).json({ error: 'Workout no encontrado' });
+    }
+    
+
+    if (!data.user_id) {
+      console.log(`👤 Workout ${id} no tiene usuario asignado`);
+      return res.json(null);
+    }
+    
+    console.log(`👤 Usuario del workout ${id}:`, data.users);
+    res.json(data.users);
+  } catch (error) {
+    console.error('❌ Error al obtener usuario del workout:', error);
+    res.status(500).json({ error: 'Error al obtener usuario del workout' });
+  }
+});
+
+
+router.put('/:id/user/:userId', async (req, res) => {
+  try {
+    const { id, userId } = req.params;
+    console.log(`🔄 Backend: Cambiando propietario del workout ${id} a usuario ${userId}`);
+    
+    const { data, error } = await supabase
+      .from('workouts')
+      .update({ user_id: userId })
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) {
+      console.error('❌ Error en Supabase:', error);
+      throw error;
+    }
+    
+    if (!data) {
+      return res.status(404).json({ error: 'Workout no encontrado' });
+    }
+    
+    console.log('✅ Propietario cambiado correctamente:', data);
+    res.json({ message: 'Propietario cambiado correctamente', data });
+  } catch (error) {
+    console.error('❌ Error al cambiar propietario del workout:', error);
+    res.status(500).json({ error: 'Error al cambiar propietario del workout' });
+  }
+});
+
+
+router.delete('/:id/user', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`🗑️ Backend: Quitando propietario del workout ${id}`);
+    
+    const { data, error } = await supabase
+      .from('workouts')
+      .update({ user_id: null })
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) {
+      console.error('❌ Error en Supabase:', error);
+      throw error;
+    }
+    
+    if (!data) {
+      return res.status(404).json({ error: 'Workout no encontrado' });
+    }
+    
+    console.log('✅ Propietario quitado correctamente');
+    res.json({ message: 'Propietario quitado correctamente' });
+  } catch (error) {
+    console.error('❌ Error al quitar propietario del workout:', error);
+    res.status(500).json({ error: 'Error al quitar propietario del workout' });
+  }
+});
+
+
+router.get('/:id/user', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log(`👤 Backend: Obteniendo usuario propietario del workout ${id}`);
+    
+    const { data, error } = await supabase
+      .from('workouts')
+      .select('user_id, users(id, name, surname, email)')
+      .eq('id', id)
+      .single();
+      
+    if (error) {
+      console.error('❌ Error en Supabase al obtener usuario:', error);
+      throw error;
+    }
+    
+    if (!data || !data.user_id) {
+      return res.json(null); 
+    }
+    
+    console.log('👤 Usuario propietario obtenido:', data.users);
+    res.json(data.users);
+  } catch (error) {
+    console.error('❌ Error al obtener usuario del workout:', error);
+    res.status(500).json({ error: 'Error al obtener usuario del workout' });
+  }
+});
+
+
+router.put('/:id/user/:userId', async (req, res) => {
+  try {
+    const { id, userId } = req.params;
+    console.log(`🔄 Backend: Cambiando propietario del workout ${id} al usuario ${userId}`);
+    
+    const { data, error } = await supabase
+      .from('workouts')
+      .update({ user_id: userId })
+      .eq('id', id)
+      .select()
+      .single();
+      
+    if (error) {
+      console.error('❌ Error en Supabase:', error);
+      throw error;
+    }
+    
+    if (!data) {
+      return res.status(404).json({ error: 'Workout no encontrado' });
+    }
+    
+    console.log('✅ Propietario cambiado correctamente:', data);
+    res.json({ message: 'Propietario cambiado correctamente', data });
+  } catch (error) {
+    console.error('❌ Error al cambiar propietario del workout:', error);
+    res.status(500).json({ error: 'Error al cambiar propietario del workout' });
+  }
+});
+
 module.exports = router
