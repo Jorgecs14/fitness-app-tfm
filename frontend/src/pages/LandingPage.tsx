@@ -8,13 +8,59 @@ export const LandingPage = () => {
   return (
     <>
       <AppBar position="absolute" color="transparent" elevation={0}>
-        <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1, color: '#222', fontWeight: 700 }}>
-            Fitness Pro
-          </Typography>
-          <Button color="inherit" onClick={() => navigate('/sign-in')} sx={{ color: '#222', fontWeight: 700 }}>
-            Iniciar Sesión
-          </Button>
+        <Toolbar sx={{ justifyContent: 'space-between', minHeight: 80 }}>
+          {/* Logo LB a la izquierda */}
+          <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+            <Box
+              sx={{
+                background: '#222',
+                borderRadius: '50%',
+                p: 1,
+                boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 48,
+                width: 48,
+              }}
+            >
+              <img
+                src="/src/assets/logo_LB.png"
+                alt="Logo LB"
+                style={{ height: 32, width: 32, objectFit: 'contain', cursor: 'pointer' }}
+                onClick={() => window.open('https://lifeboost1.com/', '_blank')}
+              />
+            </Box>
+          </Box>
+          {/* Logo principal centrado SIN logo LB encima */}
+          <Box
+            sx={{
+              position: 'relative',
+              flex: 1,
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              minHeight: 120,
+            }}
+          >
+            {/* Logo principal */}
+            <img
+              src="/src/assets/logo.png"
+              alt="Logo principal"
+              style={{ height: 56, cursor: 'pointer', zIndex: 1, marginTop: 32 }}
+              onClick={() => navigate('/')}
+            />
+          </Box>
+          {/* Botón a la derecha */}
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end', alignItems: 'center' }}>
+            <Button
+              color="inherit"
+              onClick={() => navigate('/sign-in')}
+              sx={{ color: '#222', fontWeight: 700, fontSize: 18, mr: 1 }}
+            >
+              Iniciar Sesión
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
       <Box
@@ -24,7 +70,7 @@ export const LandingPage = () => {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          pt: 6,
+          pt: 20, // más espacio para el header
         }}
       >
         <Container maxWidth="md">
