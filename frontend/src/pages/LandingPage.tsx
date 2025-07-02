@@ -1,11 +1,35 @@
+// Página principal de presentación de la plataforma para entrenadoras personales
+// Inspirada en https://lifeboost1.com/ pero con estilo minimalista y profesional
+//
+// Características principales:
+// - Hero section con logos y CTA destacado
+// - Sección de características con animaciones de hover
+// - CTA final para registro
+// - Footer con información de contacto y branding
+// - Animaciones de entrada sutiles
+
 import { AppBar, Toolbar, Card, CardContent } from '@mui/material'
 import { useNavigate } from 'react-router-dom';
 import { Box, Button, Container, Typography, Stack } from '@mui/material';
 import { Iconify } from '../utils/iconify';
 
+// COMPONENTE PRINCIPAL: LandingPage
+// Estructura general:
+// 1. Animaciones globales (keyframes)
+// 2. Header con navegación y branding
+// 3. Hero Section: título, subtítulo, logos y CTA
+// 4. Features Section: cards con características
+// 5. CTA Section: llamada a la acción final
+// 6. Footer: contacto y derechos
+
 export const LandingPage = () => {
   const navigate = useNavigate();
 
+  // FEATURES SECTION
+  // - Grid de las cards con las principales funcionalidades de la plataforma
+  // - Cada card tiene un icono, título y descripción
+  // - Animación de hover en las cards e iconos
+  
   const features = [
     {
       icon: 'mdi:calendar-clock',
@@ -41,7 +65,7 @@ export const LandingPage = () => {
 
   return (
     <>
-      {/* Global Animations */}
+      {/* GLOBAL ANIMATIONS */}
       <Box
         sx={{
           '@keyframes fadeInUp': {
@@ -57,7 +81,7 @@ export const LandingPage = () => {
         }}
       />
       
-      {/* Navigation */}
+      {/* NAVIGATION (HEADER) */}
       <AppBar 
         position="fixed" 
         sx={{ 
@@ -98,7 +122,7 @@ export const LandingPage = () => {
         </Toolbar>
       </AppBar>
 
-      {/* Hero Section */}
+      {/* HERO SECTION */}
       <Box
         sx={{
           minHeight: '100vh',
@@ -244,7 +268,7 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* Features Section */}
+      {/* FEATURES SECTION */}
       <Box sx={{ py: 10, background: 'linear-gradient(180deg, #f8f9fa 0%, #e9ecef 100%)' }}>
         <Container maxWidth="lg">
           <Box sx={{ textAlign: 'center', mb: 8 }}>
@@ -325,7 +349,7 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* CTA Section */}
+      {/* CTA SECTION */}
       <Box
         sx={{
           py: 10,
@@ -382,7 +406,7 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* Footer */}
+      {/* FOOTER */}
       <Box sx={{ py: 6, background: '#000', color: 'white' }}>
         <Container maxWidth="lg">
           <Box sx={{ 
