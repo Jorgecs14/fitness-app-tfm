@@ -12,6 +12,8 @@ const workoutsRouter = require('./routes/workouts')
 const exercisesRouter = require('./routes/exercises')
 const workoutsExercisesRouter = require('./routes/workouts_exercises')
 const ecommerceRouter = require('./routes/ecommerce')
+const foodsRouter = require('./routes/foods')
+const dietFoodsRouter = require('./routes/diet_foods')
 
 
 const app = express()
@@ -31,6 +33,8 @@ app.use('/api/workouts', workoutsRouter)
 app.use('/api/products', ecommerceRouter)
 app.use('/api/exercises', exercisesRouter)
 app.use('/api/workouts_exercises', workoutsExercisesRouter)
+app.use('/api/foods', foodsRouter)
+app.use('/api/diet_foods', dietFoodsRouter)
 
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`)
@@ -41,5 +45,7 @@ app.listen(PORT, () => {
   console.log('  - /api/products')
   console.log('  - /api/exercises')
   console.log('  - /api/workouts_exercises')
+  console.log('  - /api/foods')
+  console.log('  - /api/diet_foods')
 })
 
