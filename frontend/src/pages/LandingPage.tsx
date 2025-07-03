@@ -447,7 +447,7 @@ export const LandingPage = () => {
                   📧 info@lifeboost-platform.com
                 </Typography>
                 <Typography sx={{ color: '#ccc' }}>
-                  📱 +34 727 733 331
+                  📱 +34 727 733 332
                 </Typography>
                 <Typography sx={{ color: '#ccc' }}>
                   📍 Granada, España
