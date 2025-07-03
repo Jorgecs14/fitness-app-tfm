@@ -1,30 +1,31 @@
-import { WorkoutExercise, WorkoutExerciseDetail } from '../types/WorkoutExercise'
+import { WorkoutExercise, WorkoutExerciseDetail } from '../types/WorkoutExercise';
+import axiosInstance from '../lib/axios';
 
-const API_URL = 'http://localhost:3001/api/workout_exercises';
-
-export const getWorkoutExercises = async (workoutId: number):
-Promise<WorkoutExerciseDetail[]> => {
-    const response = await
-    fetch(`${API_URL}/workout/${workoutId}`);
-    if (!response.ok) throw new Error('Error al obtener ejercicios del entrenamiento');
-    return response.json();
+export const getWorkoutExercises = async (workoutId: number): Promise<WorkoutExerciseDetail[]> => {
+  try {
+    const response = await axiosInstance.get(`/workout_exercises/workout/${workoutId}`);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al obtener ejercicios del entrenamiento:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al obtener ejercicios del entrenamiento');
+  }
 };
 
-export const addExerciseToWorkout = async (data: 
-    WorkoutExercise): Promise<WorkoutExercise> => {
-        const response = await fetch(API_URL, {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        });
-        if(!response.ok) throw new Error('Error al agregar ejercicio al entrenamiento');
-        return response.json();
-    };
+export const addExerciseToWorkout = async (data: WorkoutExercise): Promise<WorkoutExercise> => {
+  try {
+    const response = await axiosInstance.post('/workout_exercises', data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al agregar ejercicio al entrenamiento:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al agregar ejercicio al entrenamiento');
+  }
+};
 
-export const removeExerciseFromWorkout = async (linkId:
-    number): Promise<void> => {
-      const response = await fetch(`${API_URL}/${linkId}`,{
-        method: 'DELETE',
-      });
-      if (!response.ok) throw new Error('Error al eliminar ejercicio del entrenamiento');
-    };
+export const removeExerciseFromWorkout = async (linkId: number): Promise<void> => {
+  try {
+    await axiosInstance.delete(`/workout_exercises/${linkId}`);
+  } catch (error: any) {
+    console.error('Error al eliminar ejercicio del entrenamiento:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al eliminar ejercicio del entrenamiento');
+  }
+};

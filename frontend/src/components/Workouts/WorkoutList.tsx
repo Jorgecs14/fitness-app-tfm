@@ -28,6 +28,7 @@ interface WorkoutListProps {
   onDelete: (id: number) => void;
   onViewDetails: (workout: WorkoutWithExercises) => void;
   onManageExercises: (workout: WorkoutWithExercises) => void;
+  onManageUser: (workout: WorkoutWithExercises) => void;
   loading?: boolean;
 }
 
@@ -38,6 +39,7 @@ export const WorkoutList = ({
   onDelete, 
   onViewDetails, 
   onManageExercises, 
+  onManageUser,
   loading 
 }: WorkoutListProps) => {
   const [page, setPage] = useState(0);
@@ -94,6 +96,7 @@ export const WorkoutList = ({
                 onDelete={onDelete}
                 onViewDetails={onViewDetails}
                 onManageExercises={onManageExercises}
+                onManageUser={onManageUser}
               />
             </Grid>
           ))}
@@ -175,6 +178,14 @@ export const WorkoutList = ({
                     onClick={() => onManageExercises(workout)}
                   >
                     <Iconify icon="solar:dumbbell-bold" width={16} />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="info"
+                    onClick={() => onManageUser(workout)}
+                    title="Gestionar usuario"
+                  >
+                    <Iconify icon="solar:user-bold" width={16} />
                   </IconButton>
                   <IconButton
                     size="small"

@@ -33,13 +33,18 @@ export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps)
 
   useEffect(() => {
     if (userToEdit) {
+      let formattedDate = '';
+      if (userToEdit.birth_date) {
+        formattedDate = userToEdit.birth_date;
+      }
+
       setFormData({
-        name: userToEdit.name,
-        surname: userToEdit.surname,
-        email: userToEdit.email,
+        name: userToEdit.name || '',
+        surname: userToEdit.surname || '',
+        email: userToEdit.email || '',
         password: '',
-        birth_date: userToEdit.birth_date,
-        role: userToEdit.role,
+        birth_date: formattedDate,
+        role: userToEdit.role || 'client',
       });
     } else {
       setFormData({
@@ -62,6 +67,7 @@ export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps)
     if (!formData.email.trim()) newErrors.push('El email es obligatorio');
     if (!formData.email.includes('@')) newErrors.push('El email debe ser válido');
     if (!userToEdit && !formData.password) newErrors.push('La contraseña es obligatoria');
+    if (!formData.birth_date) newErrors.push('La fecha de nacimiento es obligatoria');
     if (!formData.role) newErrors.push('El rol es obligatorio');
 
     setErrors(newErrors);
@@ -73,15 +79,18 @@ export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps)
     
     if (!validateForm()) return;
 
-    onSubmit({
+
+    const submitData = {
       name: formData.name.trim(),
       surname: formData.surname.trim(),
       email: formData.email.trim(),
       password: formData.password,
-      birth_date: formData.birth_date,
+      birth_date: formData.birth_date, 
       role: formData.role,
-    });
+    };
 
+    console.log('Frontend: Enviando datos de usuario:', submitData);
+    onSubmit(submitData);
     onClose();
   };
 
@@ -161,6 +170,8 @@ export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps)
               value={formData.birth_date}
               onChange={handleChange('birth_date')}
               InputLabelProps={{ shrink: true }}
+              error={errors.some(e => e.includes('fecha de nacimiento'))}
+              required
             />
 
             <TextField

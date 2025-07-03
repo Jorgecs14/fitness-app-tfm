@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+import axiosInstance from '../lib/axios';
 
 export interface SystemNotification {
   id: string;
@@ -12,65 +12,99 @@ export interface SystemNotification {
 
 export const generateSystemNotifications = async (): Promise<SystemNotification[]> => {
   try {
-    const [users, diets] = await Promise.all([
-      fetch(`${API_BASE_URL}/users`).then(r => r.json()).catch(() => []),
-      fetch(`${API_BASE_URL}/diets`).then(r => r.json()).catch(() => []),
+    const [usersResponse, dietsResponse, workoutsResponse, productsResponse] = await Promise.all([
+      axiosInstance.get('/users').catch(() => ({ data: [] })),
+      axiosInstance.get('/diets').catch(() => ({ data: [] })),
+      axiosInstance.get('/workouts').catch(() => ({ data: [] })),
+      axiosInstance.get('/products').catch(() => ({ data: [] })),
     ]);
+
+    const users = usersResponse.data;
+    const diets = dietsResponse.data;
+    const workouts = workoutsResponse.data;
+    const products = productsResponse.data;
+
+    console.log('📊 Datos para notificaciones:', { 
+      usuarios: users.length, 
+      dietas: diets.length, 
+      entrenamientos: workouts.length, 
+      productos: products.length 
+    });
+
+    // Debug: ver la estructura de los usuarios
+    if (users.length > 0) {
+      console.log('👤 Ejemplo de usuario:', users[0]);
+      console.log('📅 Fechas de usuarios:', users.map((u: any) => ({
+        id: u.id,
+        name: u.name,
+        created_at: u.created_at,
+        fechaParsed: u.created_at ? new Date(u.created_at) : 'Sin fecha'
+      })));
+    }
 
     const notifications: SystemNotification[] = [];
     const now = new Date();
 
-    // Solo usuarios de las últimas 24 horas
+    // Solo usuarios de los últimos 3 días
     const recentUsers = users.filter((user: any) => {
-      if (!user.created_at) return false;
+      if (!user.created_at) {
+        console.log('❌ Usuario sin created_at:', user);
+        return false;
+      }
       const created = new Date(user.created_at);
-      return (now.getTime() - created.getTime()) < 24 * 60 * 60 * 1000;
-    }).slice(0, 2);
+      if (isNaN(created.getTime())) {
+        console.log('❌ Fecha inválida para usuario:', user.created_at);
+        return false;
+      }
+      const diffMs = now.getTime() - created.getTime();
+      
+      return diffMs < 3 * 24 * 60 * 60 * 1000; // 3 días
+    }).slice(0, 100); // Mostrar hasta 10 usuarios recientes
 
-    recentUsers.forEach((user: any, i: number) => {
+    console.log('👥 Usuarios recientes encontrados:', recentUsers.length);
+
+    // Crear una sola notificación con el contador de usuarios recientes
+    if (recentUsers.length > 0) {
+      const userNames = recentUsers.slice(0, 3).map((u: any) => u.name || 'Usuario').join(', ');
+      const moreCount = recentUsers.length > 3 ? ` y ${recentUsers.length - 3} más` : '';
+      
       notifications.push({
-        id: `user-${user.id}`,
-        title: 'Nuevo usuario',
-        message: `${user.name || 'Usuario'} se registró`,
+        id: 'recent-users',
+        title: 'Nuevos usuarios registrados',
+        message: `${recentUsers.length} usuario${recentUsers.length > 1 ? 's' : ''} registrado${recentUsers.length > 1 ? 's' : ''} en los últimos 3 días: ${userNames}${moreCount}`,
         type: 'success',
-        timestamp: new Date(user.created_at),
-        read: i > 0,
-        icon: 'solar:user-plus-bold-duotone',
-      });
-    });
-
-    // Solo dietas recientes
-    const recentDiets = diets.filter((diet: any) => {
-      if (!diet.created_at) return false;
-      const created = new Date(diet.created_at);
-      return (now.getTime() - created.getTime()) < 12 * 60 * 60 * 1000;
-    }).slice(0, 1);
-
-    recentDiets.forEach((diet: any) => {
-      notifications.push({
-        id: `diet-${diet.id}`,
-        title: 'Nueva dieta',
-        message: `"${diet.name}" creada`,
-        type: 'info',
-        timestamp: new Date(diet.created_at),
+        timestamp: new Date(recentUsers[0].created_at), // Usar la fecha del más reciente
         read: false,
-        icon: 'solar:chef-hat-bold-duotone',
+        icon: 'solar:users-group-two-rounded-bold-duotone',
       });
-    });
+    }
 
-    // Notificación de bienvenida si no hay datos recientes
+    // Notificaciones de bienvenida y estado del sistema
     if (notifications.length === 0) {
+      // Mostrar estadísticas generales si no hay actividad reciente
+      notifications.push({
+        id: 'system-stats',
+        title: 'Sistema Fitness App',
+        message: `Sistema activo: ${users.length} usuarios, ${diets.length} dietas, ${workouts.length} entrenamientos`,
+        type: 'info',
+        timestamp: new Date(now.getTime() - 10 * 60 * 1000), // 10 minutos atrás
+        read: false,
+        icon: 'solar:chart-bold-duotone',
+      });
+      
       notifications.push({
         id: 'welcome',
-        title: 'Sistema activo',
-        message: 'Todo funcionando correctamente',
+        title: 'Bienvenido al Dashboard',
+        message: 'Todo funcionando correctamente. Gestiona usuarios, dietas y entrenamientos desde aquí.',
         type: 'success',
-        timestamp: new Date(now.getTime() - 5 * 60 * 1000),
+        timestamp: new Date(now.getTime() - 5 * 60 * 1000), // 5 minutos atrás
         read: false,
         icon: 'solar:shield-check-bold-duotone',
       });
     }
 
+    console.log('🔔 Notificaciones generadas:', notifications.length);
+    
     return notifications.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
 
   } catch (error) {

@@ -43,15 +43,23 @@ export const DietUsersDialog = ({ open, diet, onClose, onUpdate }: DietUsersDial
   const loadData = async () => {
     if (!diet) return;
     setLoading(true);
+    
+    console.log('📊 Cargando datos para dieta:', diet.id);
+    
     try {
       const [assigned, all] = await Promise.all([
         dietService.getDietUsers(diet.id),
         userService.getUsers(),
       ]);
+      
+      console.log('📋 Usuarios asignados:', assigned);
+      console.log('👥 Todos los usuarios:', all.length);
+      
       setAssignedUsers(assigned);
       setAllUsers(all);
-    } catch (error) {
-      console.error('Error loading data:', error);
+    } catch (error: any) {
+      console.error('❌ Error loading data:', error);
+      alert(`Error al cargar datos: ${error.message || error}`);
     } finally {
       setLoading(false);
     }
@@ -59,13 +67,22 @@ export const DietUsersDialog = ({ open, diet, onClose, onUpdate }: DietUsersDial
 
   const handleAssignUser = async () => {
     if (!diet || !selectedUser) return;
+    
+    console.log('🔄 Asignando usuario:', { 
+      dietId: diet.id, 
+      userId: selectedUser.id, 
+      userName: selectedUser.name 
+    });
+    
     try {
       await dietService.assignUserToDiet(diet.id, selectedUser.id);
+      console.log('✅ Usuario asignado exitosamente');
       setSelectedUser(null);
       await loadData();
       onUpdate();
-    } catch (error) {
-      console.error('Error assigning user:', error);
+    } catch (error: any) {
+      console.error('❌ Error asignando usuario:', error);
+      alert(`Error al asignar usuario: ${error.message || error}`);
     }
   };
 

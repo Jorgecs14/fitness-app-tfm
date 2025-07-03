@@ -21,6 +21,8 @@ import { ProfilePage } from './pages/ProfilePage'
 import { SignInPage } from './pages/SignInPage'
 import { SignUpPage } from './pages/SignUpPage'
 import { LandingPage } from './pages/LandingPage'
+import { UserDetailPage } from './pages/UserDetailPage'
+
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
@@ -113,6 +115,10 @@ const router = createBrowserRouter([
       {
         path: 'users',
         element: <UsersPage />
+      },
+      {
+        path: 'users/:id',
+        element: <UserDetailPage />,
       },
       {
         path: 'products',

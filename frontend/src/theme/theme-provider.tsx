@@ -1,5 +1,3 @@
-import type { Theme } from '@mui/material/styles';
-
 import CssBaseline from '@mui/material/CssBaseline';
 import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
 
@@ -27,6 +25,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         styleOverrides: {
           root: {
             textTransform: 'none',
+          },
+        },
+      },
+      MuiAppBar: {
+        styleOverrides: {
+          root: {
+            backgroundColor: '#ffffff8c',
           },
         },
       },

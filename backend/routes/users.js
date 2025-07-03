@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../database/supabaseClient');
+const { supabase, supabaseAdmin } = require('../database/supabaseClient');
 
 
 router.get('/', async (req, res) => {
@@ -38,20 +38,84 @@ router.post('/', async (req, res) => {
   try {
     const { email, password, name, surname, birth_date, role } = req.body;
 
-    if (!email || !password || !name || !surname) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
+    if (!email || !password || !name || !surname || !birth_date) {
+      return res.status(400).json({ error: 'Faltan campos requeridos (email, password, name, surname, birth_date)' });
     }
 
-    const { data, error } = await supabase.from('users').insert([
-      { email, password, name, surname, birth_date, role: role || 'client' }
-    ]).select().single();
+ 
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateRegex.test(birth_date)) {
+      return res.status(400).json({ error: 'La fecha de nacimiento debe estar en formato YYYY-MM-DD' });
+    }
 
-    if (error) throw error;
+    console.log('POST /api/users - Datos recibidos:', { email, name, surname, birth_date, role });
 
-    res.status(201).json(data);
+ 
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true, 
+      user_metadata: {
+        first_name: name,      
+        last_name: surname,    
+        name,                  
+        surname,               
+        birth_date: birth_date,
+        role: role || 'client'
+      }
+    });
+
+    if (authError) {
+      console.error('Error creando usuario en Supabase Auth:', authError);
+      throw authError;
+    }
+
+    console.log('Usuario creado y auto-confirmado desde dashboard:', authData.user.id);
+
+    await new Promise(resolve => setTimeout(resolve, 500)); 
+
+    const { data: userData, error: userError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('auth_user_id', authData.user.id)
+      .single();
+
+    if (userError || !userData) {
+      console.error('Error obteniendo usuario de public.users:', userError);
+      console.log('Creando usuario manualmente en public.users...');
+      
+
+      const { data: manualUserData, error: manualError } = await supabase
+        .from('users')
+        .insert([{
+          auth_user_id: authData.user.id,
+          email,
+          name,
+          surname,
+          birth_date: birth_date, 
+          role: role || 'client',
+          created_at: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (manualError) {
+        console.error('Error creando usuario manualmente:', manualError);
+        throw manualError;
+      }
+
+      console.log('Usuario creado manualmente exitosamente:', manualUserData);
+      res.status(201).json(manualUserData);
+    } else {
+      console.log('Usuario creado por trigger exitosamente:', userData);
+      res.status(201).json(userData);
+    }
   } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: 'Error al crear usuario' });
+    console.error('Error al crear usuario:', error);
+    res.status(500).json({ 
+      error: 'Error al crear usuario',
+      details: error.message 
+    });
   }
 });
 

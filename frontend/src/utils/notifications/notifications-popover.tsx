@@ -22,16 +22,7 @@ interface NotificationsPopoverProps {
 }
 
 export function NotificationsPopover({ anchorEl, onClose }: NotificationsPopoverProps) {
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
-
-  const formatTimeAgo = (timestamp: Date) => {
-    const now = new Date();
-    const minutes = Math.floor((now.getTime() - timestamp.getTime()) / 60000);
-    if (minutes < 1) return 'Ahora';
-    if (minutes < 60) return `${minutes}m`;
-    if (minutes < 1440) return `${Math.floor(minutes / 60)}h`;
-    return `${Math.floor(minutes / 1440)}d`;
-  };
+  const { notifications, unreadCount, markAsRead, markAllAsRead, refreshNotifications } = useNotifications();
 
   const getNotificationColor = (type: string) => {
     const colors = { success: 'success', warning: 'warning', error: 'error' };
@@ -60,9 +51,18 @@ export function NotificationsPopover({ anchorEl, onClose }: NotificationsPopover
       <Box sx={{ p: 2 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
           <Typography variant="h6">Notificaciones</Typography>
-          <Badge badgeContent={unreadCount} color="error">
-            <Iconify icon="solar:bell-bold-duotone" width={24} />
-          </Badge>
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Button 
+              size="small" 
+              onClick={refreshNotifications}
+              sx={{ minWidth: 'auto', p: 0.5 }}
+            >
+              <Iconify icon="solar:refresh-bold-duotone" width={20} />
+            </Button>
+            <Badge badgeContent={unreadCount} color="error">
+              <Iconify icon="solar:bell-bold-duotone" width={24} />
+            </Badge>
+          </Stack>
         </Stack>
         {unreadCount > 0 && (
           <Button size="small" onClick={markAllAsRead} sx={{ mb: 1 }}>
@@ -98,24 +98,19 @@ export function NotificationsPopover({ anchorEl, onClose }: NotificationsPopover
                   </ListItemAvatar>
                   <ListItemText
                     primary={
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: notification.read ? 400 : 600, flex: 1 }}>
-                          {notification.title}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatTimeAgo(notification.timestamp)}
-                        </Typography>
-                      </Stack>
+                      <Typography variant="subtitle2" sx={{ fontWeight: notification.read ? 400 : 600 }}>
+                        {notification.title}
+                      </Typography>
                     }
                     secondary={
-                      <Box>
-                        <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                      <>
+                        <Typography variant="body2" color="text.secondary" component="span" sx={{ display: 'block', mt: 0.5 }}>
                           {notification.message}
                         </Typography>
                         {!notification.read && (
-                          <Chip label="Nuevo" size="small" color="primary" variant="outlined" sx={{ mt: 1, height: 20, fontSize: '0.7rem' }} />
+                          <Chip label="Nuevo" size="small" color="primary" variant="outlined" sx={{ height: 20, fontSize: '0.7rem', mt: 0.5, display: 'inline-block' }} />
                         )}
-                      </Box>
+                      </>
                     }
                   />
                 </ListItem>
