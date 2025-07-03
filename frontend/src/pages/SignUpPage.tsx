@@ -96,154 +96,196 @@ export const SignUpPage = () => {
     }
   }, [formData, navigate])
 
+  const handleGoogleSignIn = async () => {
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}/`
+      }
+    });
+    
+    if (error) {
+      setError('Error al registrarse con Google');
+    }
+  } catch (err) {
+    setError('Error al conectar con Google');
+  }
+};
+
   const renderForm = (
-    <Box component='form' sx={{ mt: 1 }}>
-      {error && (
-        <Alert severity='error' sx={{ mb: 2 }}>
-          {error}
-        </Alert>
-      )}
+    <>
+      <Box component="form" sx={{ mt: 1 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
 
-      {success && (
-        <Alert severity='success' sx={{ mb: 2 }}>
-          {success}
-        </Alert>
-      )}
+        {success && (
+          <Alert severity="success" sx={{ mb: 2 }}>
+            {success}
+          </Alert>
+        )}
 
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
+        <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+          <TextField
+            fullWidth
+            name="firstName"
+            label="Nombre"
+            value={formData.firstName}
+            onChange={handleInputChange("firstName")}
+          />
+          <TextField
+            fullWidth
+            name="lastName"
+            label="Apellido"
+            value={formData.lastName}
+            onChange={handleInputChange("lastName")}
+          />
+        </Box>
+
         <TextField
           fullWidth
-          name='firstName'
-          label='Nombre'
-          value={formData.firstName}
-          onChange={handleInputChange('firstName')}
+          name="email"
+          label="Correo electrónico"
+          type="email"
+          value={formData.email}
+          onChange={handleInputChange("email")}
+          sx={{ mb: 3 }}
         />
+
         <TextField
           fullWidth
-          name='lastName'
-          label='Apellido'
-          value={formData.lastName}
-          onChange={handleInputChange('lastName')}
+          name="password"
+          label="Contraseña"
+          value={formData.password}
+          onChange={handleInputChange("password")}
+          type={showPassword ? "text" : "password"}
+          helperText="Mínimo 8 caracteres con mayúsculas, minúsculas y números"
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    <Iconify
+                      icon={
+                        showPassword
+                          ? "solar:eye-bold"
+                          : "solar:eye-closed-bold"
+                      }
+                    />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+          sx={{ mb: 3 }}
         />
+
+        <TextField
+          fullWidth
+          name="confirmPassword"
+          label="Confirmar contraseña"
+          value={formData.confirmPassword}
+          onChange={handleInputChange("confirmPassword")}
+          type={showConfirmPassword ? "text" : "password"}
+          helperText="Debe coincidir con la contraseña anterior"
+          slotProps={{
+            input: {
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    edge="end"
+                  >
+                    <Iconify
+                      icon={
+                        showConfirmPassword
+                          ? "solar:eye-bold"
+                          : "solar:eye-closed-bold"
+                      }
+                    />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            },
+          }}
+          sx={{ mb: 3 }}
+        />
+
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={formData.acceptTerms}
+              onChange={handleInputChange("acceptTerms")}
+              color="primary"
+            />
+          }
+          label={
+            <Typography variant="body2">
+              Acepto los{" "}
+              <Link href="#" color="primary" sx={{ textDecoration: "none" }}>
+                términos y condiciones
+              </Link>{" "}
+              y la{" "}
+              <Link href="#" color="primary" sx={{ textDecoration: "none" }}>
+                política de privacidad
+              </Link>
+            </Typography>
+          }
+          sx={{ mb: 3 }}
+        />
+
+        <Button
+          fullWidth
+          size="large"
+          type="button"
+          color="primary"
+          variant="contained"
+          onClick={handleSignUp}
+          disabled={!!success}
+          sx={{ mb: 2 }}
+        >
+          Crear Cuenta
+        </Button>
+
+        <Button
+          fullWidth
+          size="large"
+          color="inherit"
+          variant="outlined"
+          onClick={() => navigate("/sign-in")}
+          sx={{ mb: 3 }}
+        >
+          Ya tengo una cuenta
+        </Button>
       </Box>
 
-      <TextField
-        fullWidth
-        name='email'
-        label='Correo electrónico'
-        type='email'
-        value={formData.email}
-        onChange={handleInputChange('email')}
-        sx={{ mb: 3 }}
-      />
-
-      <TextField
-        fullWidth
-        name='password'
-        label='Contraseña'
-        value={formData.password}
-        onChange={handleInputChange('password')}
-        type={showPassword ? 'text' : 'password'}
-        helperText="Mínimo 8 caracteres con mayúsculas, minúsculas y números"
-        slotProps={{
-          input: {
-            endAdornment: (
-              <InputAdornment position='end'>
-                <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
-                  edge='end'
-                >
-                  <Iconify
-                    icon={
-                      showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'
-                    }
-                  />
-                </IconButton>
-              </InputAdornment>
-            )
-          }
+      <Box
+        sx={{
+          gap: 1,
+          display: "flex",
+          justifyContent: "center",
         }}
-        sx={{ mb: 3 }}
-      />
-
-      <TextField
-        fullWidth
-        name='confirmPassword'
-        label='Confirmar contraseña'
-        value={formData.confirmPassword}
-        onChange={handleInputChange('confirmPassword')}
-        type={showConfirmPassword ? 'text' : 'password'}
-        helperText="Debe coincidir con la contraseña anterior"
-        slotProps={{
-          input: {
-            endAdornment: (
-              <InputAdornment position='end'>
-                <IconButton
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  edge='end'
-                >
-                  <Iconify
-                    icon={
-                      showConfirmPassword
-                        ? 'solar:eye-bold'
-                        : 'solar:eye-closed-bold'
-                    }
-                  />
-                </IconButton>
-              </InputAdornment>
-            )
-          }
-        }}
-        sx={{ mb: 3 }}
-      />
-
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={formData.acceptTerms}
-            onChange={handleInputChange('acceptTerms')}
-            color='primary'
-          />
-        }
-        label={
-          <Typography variant='body2'>
-            Acepto los{' '}
-            <Link href='#' color='primary' sx={{ textDecoration: 'none' }}>
-              términos y condiciones
-            </Link>{' '}
-            y la{' '}
-            <Link href='#' color='primary' sx={{ textDecoration: 'none' }}>
-              política de privacidad
-            </Link>
-          </Typography>
-        }
-        sx={{ mb: 3 }}
-      />
-
-      <Button
-        fullWidth
-        size='large'
-        type='button'
-        color='primary'
-        variant='contained'
-        onClick={handleSignUp}
-        disabled={!!success}
-        sx={{ mb: 2 }}
       >
-        Crear Cuenta
-      </Button>
-
-      <Button
-        fullWidth
-        size='large'
-        color='inherit'
-        variant='outlined'
-        onClick={() => navigate('/sign-in')}
-      >
-        Ya tengo una cuenta
-      </Button>
-    </Box>
-  )
+        <Button
+          fullWidth
+          variant="outlined"
+          size="large"
+          onClick={handleGoogleSignIn}
+          startIcon={<Iconify width={22} icon="logos:google-icon" />}
+          sx={{ mb: 3 }}
+        >
+          Registrarse con Google
+        </Button>
+      </Box>
+    </>
+  );
+  
 
   return (
     <>
