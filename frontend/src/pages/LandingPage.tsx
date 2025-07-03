@@ -237,7 +237,7 @@ export const LandingPage = () => {
                   flexDirection: 'column',
                   justifyContent: 'center',
                   alignItems: 'center',
-                  gap: 3
+                  gap: 0
                 }}
               >
                 {/* Logo LB más grande */}
@@ -248,18 +248,20 @@ export const LandingPage = () => {
                     height: 140, 
                     width: 140, 
                     objectFit: 'contain',
-                    animation: 'fadeInUp 1s ease-out'
+                    animation: 'fadeInUp 1s ease-out',
+                    marginBottom: 0
                   }}
                 />
                 
                 {/* Logo principal debajo */}
                 <img
-                  src="/src/assets/logo.png"
+                  src="/src/assets/logo_white.png"
                   alt="Logo principal"
                   style={{ 
                     height: 60, 
                     objectFit: 'contain',
-                    animation: 'fadeInUp 1s ease-out 0.3s both'
+                    animation: 'fadeInUp 1s ease-out 0.3s both',
+                    marginTop: 0
                   }}
                 />
               </Box>
