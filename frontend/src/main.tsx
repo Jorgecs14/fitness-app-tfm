@@ -109,7 +109,11 @@ const router = createBrowserRouter([
     ),
     children: [
       {
-        index: true,
+        path: '',
+        element: <Navigate to="/dashboard/home" replace />
+      },
+      {
+        path: 'home',
         element: <HomePage />
       },
       {

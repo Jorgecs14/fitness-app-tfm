@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const supabase = require('../database/supabaseClient')
+const { supabase } = require('../database/supabaseClient')
 
 // Obtener todas las relaciones dieta-alimento
 router.get('/', async (req, res) => {

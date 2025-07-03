@@ -63,7 +63,7 @@ axiosInstance.interceptors.response.use(
         
         if (refreshError || !session) {
           console.error('No se pudo refrescar la sesión, redirigiendo al login');
-          window.location.href = '/signin';
+          window.location.href = '/sign-in';
           return Promise.reject(error);
         }
 
@@ -73,7 +73,7 @@ axiosInstance.interceptors.response.use(
         
       } catch (refreshError) {
         console.error('Error al refrescar sesión:', refreshError);
-        window.location.href = '/signin';
+        window.location.href = '/sign-in';
         return Promise.reject(error);
       }
     }

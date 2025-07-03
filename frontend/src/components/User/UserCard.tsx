@@ -62,7 +62,7 @@ export const UserCard = ({ user, onEdit, onDelete }: UserCardProps) => {
         },
       }}
     >
-      <CardActionArea onClick={() => navigate(`/users/${user.id}`)}>
+      <CardActionArea onClick={() => navigate(`/dashboard/users/${user.id}`)}>
         <CardContent sx={{ flexGrow: 1, p: 3 }}>
           <Box sx={{ display: "flex", alignItems: "flex-start", mb: 2 }}>
             <Avatar
@@ -135,7 +135,7 @@ export const UserCard = ({ user, onEdit, onDelete }: UserCardProps) => {
       <CardActions sx={{ p: 2, pt: 0, justifyContent: "flex-end" }}>
         <IconButton
           size="small"
-          onClick={() => navigate(`/users/${user.id}`)}
+          onClick={() => navigate(`/dashboard/users/${user.id}`)}
           sx={{
             color: "info.main",
             "&:hover": { bgcolor: "info.lighter" },

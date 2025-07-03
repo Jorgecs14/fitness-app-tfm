@@ -107,22 +107,49 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    const { id } = req.params
+    const { id } = req.params;
+    console.log(`🗑️ Backend: Eliminando entrenamiento ${id}`);
+    
+    // Primero eliminar todos los ejercicios asociados al entrenamiento
+    const { error: deleteExercisesError } = await supabase
+      .from('workout_exercises')
+      .delete()
+      .eq('workout_id', id);
+    
+    if (deleteExercisesError) {
+      console.error('❌ Error al eliminar ejercicios del entrenamiento:', deleteExercisesError);
+      throw deleteExercisesError;
+    }
+    
+    console.log('✅ Ejercicios del entrenamiento eliminados');
+    
+    // Luego eliminar el entrenamiento
     const { data, error } = await supabase
       .from('workouts')
       .delete()
       .eq('id', id)
       .select('name')
-      .single()
+      .single();
 
-    if (error) throw error
-    if (!data)
-      return res.status(404).json({ error: 'Entrenamiento no encontrado' })
+    if (error) {
+      console.error('❌ Error al eliminar entrenamiento:', error);
+      throw error;
+    }
+    
+    if (!data) {
+      return res.status(404).json({ error: 'Entrenamiento no encontrado' });
+    }
+    
+    console.log(`✅ Entrenamiento "${data.name}" eliminado correctamente`);
     res.json({
       message: `Entrenamiento "${data.name}" eliminado correctamente`
-    })
+    });
   } catch (err) {
-    res.status(500).json({ error: 'Error al eliminar entrenamiento' })
+    console.error('❌ Error al eliminar entrenamiento:', err);
+    res.status(500).json({ 
+      error: 'Error al eliminar entrenamiento', 
+      details: err.message 
+    });
   }
 })
 

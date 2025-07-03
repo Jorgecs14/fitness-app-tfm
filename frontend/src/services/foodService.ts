@@ -1,41 +1,41 @@
 import { Food } from '../types/Food';
+import axiosInstance from '../lib/axios';
 
-const API_URL = 'http://localhost:3001/api/foods';
-
-export const getFoods = async (): Promise<Food[]> =>
-{
-    const response = await fetch(API_URL);
-    if (!response.ok) throw new Error('Error al obtener alimentos');
-    return response.json();
+export const getFoods = async (): Promise<Food[]> => {
+  try {
+    const response = await axiosInstance.get('/foods');
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al obtener alimentos:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al obtener alimentos');
+  }
 };
 
 export const createFood = async (food: Omit<Food, 'id'>): Promise<Food> => {
-
-    const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(food),
-    });
-    if (!response.ok) throw new Error('Error al crear alimento');
-    return response.json();
-
-};    
+  try {
+    const response = await axiosInstance.post('/foods', food);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al crear alimento:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al crear alimento');
+  }
+};
 
 export const updateFood = async (id: number, food: Omit<Food, 'id'>): Promise<Food> => {
-    const response = await fetch(`${API_URL}/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json'},
-        body: JSON.stringify(food),
-
-    });
-    if(!response.ok) throw new Error('Error al actualizar alimento');
-    return response.json();
+  try {
+    const response = await axiosInstance.put(`/foods/${id}`, food);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al actualizar alimento:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al actualizar alimento');
+  }
 };
 
 export const deleteFood = async (id: number): Promise<void> => {
-    const response = await fetch(`${API_URL}/${id}`, {
-        method: 'DELETE',
-
-    });
-    if (!response.ok) throw new Error('Error al eliminar alimento');
+  try {
+    await axiosInstance.delete(`/foods/${id}`);
+  } catch (error: any) {
+    console.error('Error al eliminar alimento:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al eliminar alimento');
+  }
 };

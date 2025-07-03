@@ -21,14 +21,24 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params;
+    console.log(`📋 Backend: Obteniendo usuario con ID ${id}`);
+    
     const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
 
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: 'Usuario no encontrado' });
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      throw error;
+    }
+    
+    if (!data) {
+      console.warn(`⚠️ Usuario con ID ${id} no encontrado`);
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
 
+    console.log('✅ Usuario encontrado:', data);
     res.json(data);
   } catch (error) {
-    console.error('Error:', error);
+    console.error('❌ Error al buscar usuario:', error);
     res.status(500).json({ error: 'Error al buscar usuario' });
   }
 });

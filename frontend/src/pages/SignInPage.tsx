@@ -32,7 +32,7 @@ export const SignInPage = () => {
       if (error) {
         setError(error.message);
       } else if (data.user) {
-        navigate("/");
+        navigate("/dashboard/home");
 
       }
     } catch (err) {
@@ -45,7 +45,7 @@ export const SignInPage = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: `${window.location.origin}/dashboard/home`,
         },
       });
 

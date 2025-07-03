@@ -322,7 +322,7 @@ export const UserList = ({
                           <IconButton
                             size="small"
                             color="info"
-                            onClick={() => navigate(`/users/${user.id}`)}
+                            onClick={() => navigate(`/dashboard/users/${user.id}`)}
                             title="Ver detalles"
                           >
                             <Iconify icon="solar:eye-bold" />

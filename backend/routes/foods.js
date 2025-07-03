@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const supabase = require('../database/supabaseClient')
+const { supabase } = require('../database/supabaseClient')
 
 // Obtener todos los alimentos
 router.get('/', async (req, res) => {
@@ -19,19 +19,46 @@ router.get('/', async (req, res) => {
 // Crear alimento
 router.post('/', async (req, res) => {
   try {
-    const { name, description, calories } = req.body
+    console.log('📝 Backend: Creando alimento con datos:', req.body);
+    
+    const { name, description, calories } = req.body;
+    
+    console.log('📝 Campos recibidos:', { name, description, calories });
+    console.log('📝 Tipos:', { 
+      name: typeof name, 
+      description: typeof description, 
+      calories: typeof calories 
+    });
+    
     if (!name || !description || calories == null) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' })
+      console.error('❌ Faltan campos:', { name: !!name, description: !!description, calories: calories != null });
+      return res.status(400).json({ 
+        error: 'Faltan campos requeridos',
+        received: { name, description, calories },
+        missing: {
+          name: !name,
+          description: !description,
+          calories: calories == null
+        }
+      });
     }
+    
     const { data, error } = await supabase
       .from('foods')
       .insert([{ name, description, calories }])
       .select()
-      .single()
-    if (error) throw error
-    res.status(201).json(data)
+      .single();
+      
+    if (error) {
+      console.error('❌ Error de Supabase:', error);
+      throw error;
+    }
+    
+    console.log('✅ Alimento creado:', data);
+    res.status(201).json(data);
   } catch (err) {
-    res.status(500).json({ error: 'Error al crear alimento' })
+    console.error('❌ Error al crear alimento:', err);
+    res.status(500).json({ error: 'Error al crear alimento', details: err.message });
   }
 })
 

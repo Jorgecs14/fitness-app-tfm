@@ -55,10 +55,13 @@ export const DietManager = () => {
   const loadDiets = async () => {
     try {
       setLoading(true);
+      console.log('🔍 DietManager: Cargando dietas...');
       const data = await dietService.getDietsWithFoods();
+      console.log('✅ DietManager: Dietas cargadas:', data.length);
       setDiets(data);
-    } catch (error) {
-      showToast("Error al cargar dietas", "error");
+    } catch (error: any) {
+      console.error('❌ DietManager: Error al cargar dietas:', error);
+      showToast(`Error al cargar dietas: ${error.message}`, "error");
     } finally {
       setLoading(false);
     }

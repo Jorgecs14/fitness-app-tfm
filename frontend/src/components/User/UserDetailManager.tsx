@@ -5,13 +5,11 @@ import {
   Typography,
   Box,
   Paper,
-  Grid,
   Chip,
   Button,
   Stack,
   Card,
   CardContent,
-  IconButton,
   Divider,
 } from "@mui/material";
 import { User } from "../../types/User";
@@ -49,7 +47,7 @@ export const UserDetailManager = () => {
       const dietsWithUsers = await Promise.all(
         allDiets.map(async (diet) => {
           const users = await dietService.getDietUsers(diet.id);
-          return { diet, hasUser: users.some((u) => u.id === parseInt(id)) };
+          return { diet, hasUser: users.some((u: any) => u.id === parseInt(id)) };
         })
       );
       setUserDiets(dietsWithUsers.filter((d) => d.hasUser).map((d) => d.diet));
@@ -89,7 +87,7 @@ export const UserDetailManager = () => {
       <Box sx={{ mb: 4 }}>
         <Button
           startIcon={<Iconify icon="eva:arrow-back-fill" />}
-          onClick={() => navigate("/users")}
+          onClick={() => navigate("/dashboard/users")}
           sx={{ mb: 2 }}
         >
           Volver
@@ -102,8 +100,8 @@ export const UserDetailManager = () => {
 
       {/* User Info Card */}
       <Paper sx={{ p: 3, mb: 3 }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3 }}>
+          <Box sx={{ flex: 1 }}>
             <Typography variant="h5" gutterBottom>
               {user.name}
             </Typography>
@@ -121,20 +119,18 @@ export const UserDetailManager = () => {
                 />
               </Box>
             </Stack>
-          </Grid>
-          <Grid item xs={12} md={6}>
-            <Box sx={{ textAlign: { xs: "left", md: "right" } }}>
-              <Typography variant="body2" color="text.secondary">
-                ID: {user.id}
-              </Typography>
-            </Box>
-          </Grid>
-        </Grid>
+          </Box>
+          <Box sx={{ textAlign: { xs: "left", md: "right" } }}>
+            <Typography variant="body2" color="text.secondary">
+              ID: {user.id}
+            </Typography>
+          </Box>
+        </Box>
       </Paper>
 
       {/* Stats Overview */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={6}>
+      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 3, mb: 3 }}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box
@@ -158,9 +154,9 @@ export const UserDetailManager = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
+        </Box>
 
-        <Grid item xs={12} md={6}>
+        <Box sx={{ flex: 1 }}>
           <Card>
             <CardContent>
               <Box
@@ -184,8 +180,8 @@ export const UserDetailManager = () => {
               </Box>
             </CardContent>
           </Card>
-        </Grid>
-      </Grid>
+        </Box>
+      </Box>
 
       {/* Diets Section */}
       <Paper sx={{ p: 3, mb: 3 }}>
@@ -199,32 +195,34 @@ export const UserDetailManager = () => {
             No hay dietas asignadas a este usuario
           </Typography>
         ) : (
-          <Grid container spacing={2}>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, 
+            gap: 2 
+          }}>
             {userDiets.map((diet) => (
-              <Grid item xs={12} md={6} key={diet.id}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      {diet.name}
+              <Card variant="outlined" key={diet.id}>
+                <CardContent>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    {diet.name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    {diet.description}
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <Iconify icon="solar:fire-bold" />
+                    <Typography variant="body2">
+                      {diet.calories} calorías
                     </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      {diet.description}
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Iconify icon="solar:fire-bold" />
-                      <Typography variant="body2">
-                        {diet.total_calories} calorías
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
+                  </Box>
+                </CardContent>
+              </Card>
             ))}
-          </Grid>
+          </Box>
         )}
       </Paper>
 
@@ -240,38 +238,35 @@ export const UserDetailManager = () => {
             No hay rutinas asignadas a este usuario
           </Typography>
         ) : (
-          <Grid container spacing={2}>
+          <Box sx={{ 
+            display: 'grid', 
+            gridTemplateColumns: { xs: '1fr', md: 'repeat(2, 1fr)' }, 
+            gap: 2 
+          }}>
             {userWorkouts.map((workout) => (
-              <Grid item xs={12} md={6} key={workout.id}>
-                <Card variant="outlined">
-                  <CardContent>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      {workout.name}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ mb: 1 }}
-                    >
-                      {workout.notes || "Sin descripción"}
-                    </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Chip
-                        label={workout.duration || "Sin duración"}
-                        size="small"
-                        icon={<Iconify icon="eva:clock-outline" />}
-                      />
-                      <Chip
-                        label={workout.category}
-                        size="small"
-                        color="primary"
-                      />
-                    </Box>
-                  </CardContent>
-                </Card>
-              </Grid>
+              <Card variant="outlined" key={workout.id}>
+                <CardContent>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    {workout.name}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 1 }}
+                  >
+                    {workout.notes || "Sin descripción"}
+                  </Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Chip
+                      label={workout.category}
+                      size="small"
+                      color="primary"
+                    />
+                  </Box>
+                </CardContent>
+              </Card>
             ))}
-          </Grid>
+          </Box>
         )}
       </Paper>
     </Container>
