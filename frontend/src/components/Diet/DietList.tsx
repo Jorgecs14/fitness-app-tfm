@@ -17,19 +17,27 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { Iconify } from '../../utils/iconify';
-import { Diet } from '../../types/Diet';
+import { DietWithFoods } from '../../types/DietWithFoods';
 import { DietCard } from './DietCard';
+import { calculateDietCalories, formatCalories } from '../../utils/dietUtils';
 
 interface DietListProps {
-  diets: Diet[];
-  onEdit: (diet: Diet) => void;
+  diets: DietWithFoods[];
+  onEdit: (diet: DietWithFoods) => void;
   onDelete: (id: number) => void;
-  onManageUsers?: (diet: Diet) => void;
-  userCounts?: Record<number, number>;
+  onViewDetails: (diet: DietWithFoods) => void;
+  onManageFoods: (diet: DietWithFoods) => void;
   loading?: boolean;
 }
 
-export const DietList = ({ diets, onEdit, onDelete, onManageUsers, userCounts = {}, loading }: DietListProps) => {
+export const DietList = ({
+  diets,
+  onEdit,
+  onDelete,
+  onViewDetails,
+  onManageFoods,
+  loading,
+}: DietListProps) => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const theme = useTheme();
@@ -75,8 +83,8 @@ export const DietList = ({ diets, onEdit, onDelete, onManageUsers, userCounts = 
                 diet={diet}
                 onEdit={onEdit}
                 onDelete={onDelete}
-                onManageUsers={onManageUsers}
-                userCount={userCounts[diet.id] || 0}
+                onViewDetails={onViewDetails}
+                onManageFoods={onManageFoods}
               />
             </Grid>
           ))}
@@ -104,8 +112,8 @@ export const DietList = ({ diets, onEdit, onDelete, onManageUsers, userCounts = 
             <TableRow>
               <TableCell>Nombre</TableCell>
               <TableCell>Descripción</TableCell>
-              <TableCell align="center">Calorías</TableCell>
-              <TableCell align="center">Usuarios</TableCell>
+              <TableCell>Calorías</TableCell>
+              <TableCell align="center">Alimentos</TableCell>
               <TableCell align="right">Acciones</TableCell>
             </TableRow>
           </TableHead>
@@ -118,33 +126,41 @@ export const DietList = ({ diets, onEdit, onDelete, onManageUsers, userCounts = 
                   </Typography>
                 </TableCell>
                 <TableCell>
-                  <Typography variant="body2" color="text.secondary">
-                    {diet.description}
-                  </Typography>
+                  <Typography variant="body2">{diet.description}</Typography>
                 </TableCell>
-                <TableCell align="center">
+                <TableCell>
                   <Chip
-                    icon={<Iconify icon="solar:fire-bold" width={16} />}
-                    label={`${diet.calories} kcal`}
+                    label={formatCalories(calculateDietCalories(diet))}
                     color="primary"
                     variant="outlined"
                     size="small"
                   />
                 </TableCell>
                 <TableCell align="center">
-                  {onManageUsers && (
-                    <Chip
-                      icon={<Iconify icon="solar:users-group-rounded-bold" width={16} />}
-                      label={userCounts[diet.id] || 0}
-                      onClick={() => onManageUsers(diet)}
-                      sx={{ cursor: 'pointer' }}
-                      color="default"
-                      variant="outlined"
-                      size="small"
-                    />
-                  )}
+                  <Chip
+                    icon={<Iconify icon="solar:apple-bold" width={16} />}
+                    label={diet.diet_foods?.length ?? diet.foods?.length ?? 0}
+                    color="secondary"
+                    variant="outlined"
+                    size="small"
+                  />
                 </TableCell>
                 <TableCell align="right">
+                  <IconButton
+                    size="small"
+                    color="info"
+                    onClick={() => onViewDetails(diet)}
+                  >
+                    <Iconify icon="solar:eye-bold" width={16} />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="secondary"
+                    onClick={() => onManageFoods(diet)}
+                    title="Gestionar alimentos"
+                  >
+                    <Iconify icon="mdi:food-apple" width={16} />
+                  </IconButton>
                   <IconButton
                     size="small"
                     color="primary"
@@ -153,7 +169,7 @@ export const DietList = ({ diets, onEdit, onDelete, onManageUsers, userCounts = 
                     <Iconify icon="solar:pen-bold" width={16} />
                   </IconButton>
                   <IconButton
-                    size="small" 
+                    size="small"
                     color="error"
                     onClick={() => onDelete(diet.id)}
                   >

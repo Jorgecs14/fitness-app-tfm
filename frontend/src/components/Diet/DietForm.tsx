@@ -1,111 +1,60 @@
 import { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Box,
-  Alert
-} from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
 import { Diet } from '../../types/Diet';
+import { User } from '../../types/User';
 
 interface DietFormProps {
   open: boolean;
-  diet?: Diet | null;
+  dietToEdit?: Diet | null;
+  users: User[];
   onClose: () => void;
-  onSubmit: (dietData: Omit<Diet, 'id'>) => void;
-  error?: string | null;
+  onSubmit: (diet: Partial<Diet>) => void;
 }
 
-export const DietForm = ({ open, diet, onClose, onSubmit, error }: DietFormProps) => {
-  const [formData, setFormData] = useState({
+export const DietForm = ({ open, dietToEdit, onClose, onSubmit }: DietFormProps) => {
+  const [formData, setFormData] = useState<Partial<Diet>>({
+    user_id: undefined,
     name: '',
     description: '',
-    calories: '',
   });
 
   useEffect(() => {
-    if (diet) {
-      setFormData({
-        name: diet.name || '',
-        description: diet.description || '',
-        calories: diet.calories !== null && diet.calories !== undefined ? diet.calories.toString() : '',
-      });
-    } else {
-      setFormData({
-        name: '',
-        description: '',
-        calories: '',
-      });
-    }
-  }, [diet, open]);
+    if (dietToEdit) setFormData({ name: dietToEdit.name, description: dietToEdit.description, user_id: dietToEdit.user_id });
+    else setFormData({ user_id: undefined, name: '', description: '' });
+  }, [dietToEdit, open]);
+
+  const handleChange = (field: keyof Diet) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData(prev => ({ ...prev, [field]: e.target.value }));
+  };
 
   const handleSubmit = () => {
-    const calories = parseInt(formData.calories);
-    if (isNaN(calories) || calories <= 0) {
-      return;
-    }
-
-    onSubmit({
-      name: formData.name,
-      description: formData.description,
-      calories,
-    });
+    const { user_id, ...dietData } = formData; // Elimina user_id si existe
+    // Las calorías se calcularán dinámicamente, pero enviamos 0 por defecto para la base de datos
+    onSubmit({ ...dietData, calories: 0 });
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
-        {diet ? 'Editar Dieta' : 'Nueva Dieta'}
-      </DialogTitle>
+      <DialogTitle>{dietToEdit ? 'Editar Dieta' : 'Nueva Dieta'}</DialogTitle>
       <DialogContent>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-        <Box sx={{ mt: 2 }}>
-          <TextField
-            fullWidth
-            label="Nombre"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Descripción"
-            value={formData.description}
-            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            margin="normal"
-            multiline
-            rows={3}
-            required
-          />
-          <TextField
-            fullWidth
-            label="Calorías"
-            type="number"
-            value={formData.calories}
-            onChange={(e) => setFormData({ ...formData, calories: e.target.value })}
-            margin="normal"
-            inputProps={{ min: 1 }}
-            required
-          />
-        </Box>
+        <TextField
+          label="Nombre"
+          value={formData.name}
+          onChange={handleChange('name')}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Descripción"
+          value={formData.description}
+          onChange={handleChange('description')}
+          fullWidth
+          margin="normal"
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancelar</Button>
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={!formData.name || !formData.description || !formData.calories}
-        >
-          {diet ? 'Actualizar' : 'Crear'}
-        </Button>
+        <Button onClick={handleSubmit} variant="contained">Guardar</Button>
       </DialogActions>
     </Dialog>
   );

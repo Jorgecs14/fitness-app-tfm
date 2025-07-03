@@ -145,28 +145,28 @@ export const HomePage = () => {
       description: 'Gestiona los perfiles de tus clientes',
       icon: 'solar:users-group-two-rounded-bold-duotone',
       color: '#4CAF50',
-      path: '/users',
+      path: '/dashboard/users',
     },
     {
       title: 'Dietas',
       description: 'Crea y administra planes nutricionales',
       icon: 'solar:chef-hat-bold-duotone',
       color: '#2196F3',
-      path: '/diets',
+      path: '/dashboard/diets',
     },
     {
       title: 'Entrenamientos',
       description: 'Diseña rutinas de ejercicios personalizadas',
       icon: 'solar:dumbbell-bold-duotone',
       color: '#FF9800',
-      path: '/workouts',
+      path: '/dashboard/workouts',
     },
     {
       title: 'Productos',
       description: 'Administra tu catálogo de productos',
       icon: 'solar:bag-4-bold-duotone',
       color: '#9C27B0',
-      path: '/products',
+      path: '/dashboard/products',
     },
   ];
 

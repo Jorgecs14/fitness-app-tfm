@@ -1,80 +1,137 @@
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  Chip, 
-  IconButton, 
-  Box, 
-  Stack 
+import {
+  Card,
+  CardContent,
+  CardActions,
+  Typography,
+  IconButton,
+  Box,
+  Chip,
 } from '@mui/material';
 import { Iconify } from '../../utils/iconify';
-import { Diet } from '../../types/Diet';
+import { DietWithFoods } from '../../types/DietWithFoods';
+import { calculateDietCalories, formatCalories } from '../../utils/dietUtils';
 
 interface DietCardProps {
-  diet: Diet;
-  onEdit: (diet: Diet) => void;
+  diet: DietWithFoods;
+  userName?: string;
+  onEdit: (diet: DietWithFoods) => void;
   onDelete: (id: number) => void;
-  onManageUsers?: (diet: Diet) => void;
-  userCount?: number;
+  onViewDetails: (diet: DietWithFoods) => void;
+  onManageFoods?: (diet: DietWithFoods) => void;
 }
 
-export const DietCard = ({ diet, onEdit, onDelete, onManageUsers, userCount = 0 }: DietCardProps) => {
+export const DietCard = ({
+  diet,
+  userName,
+  onEdit,
+  onDelete,
+  onViewDetails,
+  onManageFoods,
+}: DietCardProps) => {
+  const foodsCount = diet.diet_foods?.length ?? diet.foods?.length ?? 0;
+
   return (
-    <Card sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <CardContent sx={{ flexGrow: 1 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+    <Card
+      sx={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        transition: 'all 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: (theme) => theme.shadows[8],
+        },
+      }}
+    >
+      <CardContent sx={{ flexGrow: 1, p: 3 }}>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 1 }}>
             {diet.name}
           </Typography>
-          <Stack direction="row" spacing={0.5}>
-            <IconButton
-              size="small"
-              color="primary"
-              onClick={() => onEdit(diet)}
-              sx={{ p: 0.5 }}
-            >
-              <Iconify icon="solar:pen-bold" width={16} />
-            </IconButton>
-            <IconButton
-              size="small"
-              color="error"
-              onClick={() => onDelete(diet.id)}
-              sx={{ p: 0.5 }}
-            >
-              <Iconify icon="solar:trash-bin-trash-bold" width={16} />
-            </IconButton>
-          </Stack>
-        </Box>
-
-        <Typography 
-          variant="body2" 
-          color="text.secondary" 
-          sx={{ mb: 2, minHeight: 60 }}
-        >
-          {diet.description}
-        </Typography>
-
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Chip
-            icon={<Iconify icon="solar:fire-bold" width={16} />}
-            label={`${diet.calories} kcal`}
-            color="primary"
-            variant="outlined"
-            size="medium"
-          />
-          {onManageUsers && (
-            <Chip
-              icon={<Iconify icon="solar:users-group-rounded-bold" width={16} />}
-              label={`${userCount} usuarios`}
-              onClick={() => onManageUsers(diet)}
-              sx={{ cursor: 'pointer' }}
-              color="default"
-              variant="outlined"
-              size="medium"
-            />
+          {userName && (
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+              Asignado a: {userName}
+            </Typography>
           )}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Chip
+              label={formatCalories(calculateDietCalories(diet))}
+              color="primary"
+              size="small"
+            />
+            <Chip
+              icon={<Iconify icon="solar:apple-bold" sx={{ width: 14, height: 14 }} />}
+              label={`${foodsCount} alimentos`}
+              size="small"
+              color="secondary"
+              variant="outlined"
+            />
+          </Box>
+        </Box>
+        <Box sx={{ mb: 2 }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            sx={{
+              lineHeight: 1.6,
+              display: '-webkit-box',
+              WebkitLineClamp: 3,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {diet.description}
+          </Typography>
         </Box>
       </CardContent>
+      <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
+        <IconButton
+          size="small"
+          onClick={() => onViewDetails(diet)}
+          sx={{
+            color: 'info.main',
+            '&:hover': { bgcolor: 'info.lighter' },
+          }}
+        >
+          <Iconify icon="eva:eye-outline" sx={{ width: 18, height: 18 }} />
+        </IconButton>
+        <Box>
+          {onManageFoods && (
+            <IconButton
+              size="small"
+              onClick={() => onManageFoods(diet)}
+              sx={{
+                color: 'secondary.main',
+                '&:hover': { bgcolor: 'secondary.lighter' },
+                mr: 0.5,
+              }}
+            >
+              <Iconify icon="solar:apple-bold" sx={{ width: 18, height: 18 }} />
+            </IconButton>
+          )}
+          <IconButton
+            size="small"
+            onClick={() => onEdit(diet)}
+            sx={{
+              color: 'primary.main',
+              '&:hover': { bgcolor: 'primary.lighter' },
+              mr: 0.5,
+            }}
+          >
+            <Iconify icon="eva:edit-2-outline" sx={{ width: 18, height: 18 }} />
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => onDelete(diet.id)}
+            sx={{
+              color: 'error.main',
+              '&:hover': { bgcolor: 'error.lighter' },
+            }}
+          >
+            <Iconify icon="eva:trash-2-outline" sx={{ width: 18, height: 18 }} />
+          </IconButton>
+        </Box>
+      </CardActions>
     </Card>
   );
 };

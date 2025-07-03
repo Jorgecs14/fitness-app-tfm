@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -9,34 +9,43 @@ import {
   TextField,
   Menu,
   MenuItem,
-} from '@mui/material';
-import { Iconify } from '../../utils/iconify';
-import { Diet } from '../../types/Diet';
-import * as dietService from '../../services/dietService';
-import { useToast } from '../../utils/notifications';
-import { useExport } from '../../utils/hooks/useExport';
-import { DietList } from './DietList';
-import { DietForm } from './DietForm';
-import { DietUsersDialog } from './DietUsersDialog';
+} from "@mui/material";
+import { Iconify } from "../../utils/iconify";
+import { DietWithFoods } from "../../types/DietWithFoods";
+import { User } from "../../types/User";
+import * as dietService from "../../services/dietService";
+import * as userService from "../../services/userService";
+import { useToast } from "../../utils/notifications";
+import { useExport } from "../../utils/hooks/useExport";
+import { DietList } from "./DietList";
+import { DietForm } from "./DietForm";
+import { DietDetail } from "./DietDetail";
+import { DietFoodsManager } from "./DietFoodsManager";
+import { calculateDietCalories, formatCalories } from "../../utils/dietUtils";
 
 export const DietManager = () => {
-  const [diets, setDiets] = useState<Diet[]>([]);
-  const [filteredDiets, setFilteredDiets] = useState<Diet[]>([]);
-  const [editingDiet, setEditingDiet] = useState<Diet | null>(null);
-  const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
+  const [diets, setDiets] = useState<DietWithFoods[]>([]);
+  const [filteredDiets, setFilteredDiets] = useState<DietWithFoods[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [editingDiet, setEditingDiet] = useState<DietWithFoods | null>(null);
+  const [viewingDiet, setViewingDiet] = useState<DietWithFoods | null>(null);
+  const [formOpen, setFormOpen] = useState(false);
+  const [detailOpen, setDetailOpen] = useState(false);
+  const [openFoodsManager, setOpenFoodsManager] = useState(false);
+  const [selectedDiet, setSelectedDiet] = useState<DietWithFoods | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [userCounts, setUserCounts] = useState<Record<number, number>>({});
-  const [managingDiet, setManagingDiet] = useState<Diet | null>(null);
-  const [usersDialogOpen, setUsersDialogOpen] = useState(false);
-  
+
   const { showToast, ToastContainer } = useToast();
   const { exportToCSV, exportToPDF, exportToExcel } = useExport();
 
   useEffect(() => {
     loadDiets();
+    loadUsers();
   }, []);
 
   useEffect(() => {
@@ -46,29 +55,21 @@ export const DietManager = () => {
   const loadDiets = async () => {
     try {
       setLoading(true);
-      const data = await dietService.getDiets();
+      const data = await dietService.getDietsWithFoods();
       setDiets(data);
-      await loadUserCounts(data);
     } catch (error) {
-      console.error('Error loading diets:', error);
-      showToast('Error al cargar dietas', 'error');
+      showToast("Error al cargar dietas", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const loadUserCounts = async (diets: Diet[]) => {
+  const loadUsers = async () => {
     try {
-      const counts: Record<number, number> = {};
-      await Promise.all(
-        diets.map(async (diet) => {
-          const users = await dietService.getDietUsers(diet.id);
-          counts[diet.id] = users.length;
-        })
-      );
-      setUserCounts(counts);
+      const data = await userService.getUsers();
+      setUsers(data);
     } catch (error) {
-      console.error('Error loading user counts:', error);
+      console.error("Error loading users:", error);
     }
   };
 
@@ -76,9 +77,10 @@ export const DietManager = () => {
     if (!searchQuery.trim()) {
       setFilteredDiets(diets);
     } else {
-      const filtered = diets.filter(diet =>
-        diet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        diet.description.toLowerCase().includes(searchQuery.toLowerCase())
+      const filtered = diets.filter(
+        (diet) =>
+          diet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          diet.description.toLowerCase().includes(searchQuery.toLowerCase())
       );
       setFilteredDiets(filtered);
     }
@@ -87,92 +89,96 @@ export const DietManager = () => {
   const handleAdd = () => {
     setEditingDiet(null);
     setError(null);
-    setOpen(true);
+    setFormOpen(true);
   };
 
-  const handleEdit = (diet: Diet) => {
+  const handleEdit = (diet: DietWithFoods) => {
     setEditingDiet(diet);
     setError(null);
-    setOpen(true);
+    setFormOpen(true);
   };
 
   const handleDelete = async (id: number) => {
-    if (window.confirm('¿Estás seguro de que quieres eliminar esta dieta?')) {
+    if (window.confirm("¿Estás seguro de que quieres eliminar esta dieta?")) {
       try {
         await dietService.deleteDiet(id);
-        showToast('Dieta eliminada exitosamente', 'success');
+        showToast("Dieta eliminada exitosamente", "success");
         loadDiets();
       } catch (error) {
-        console.error('Error deleting diet:', error);
-        showToast('Error al eliminar dieta', 'error');
+        console.error("Error deleting diet:", error);
+        showToast("Error al eliminar dieta", "error");
       }
     }
   };
 
-  const handleSubmit = async (dietData: Omit<Diet, 'id'>) => {
+  const handleViewDetails = (diet: DietWithFoods) => {
+    setViewingDiet(diet);
+    setDetailOpen(true);
+  };
+
+  const handleManageFoods = (diet: DietWithFoods) => {
+    setSelectedDiet(diet);
+    setOpenFoodsManager(true);
+  };
+  const handleCloseFoodsManager = () => {
+    setOpenFoodsManager(false);
+    setSelectedDiet(null);
+  };
+
+  const handleSubmit = async (dietData: any) => {
     try {
       setError(null);
       if (editingDiet) {
         await dietService.updateDiet(editingDiet.id, dietData);
-        showToast('Dieta actualizada exitosamente', 'success');
+        showToast("Dieta actualizada exitosamente", "success");
       } else {
         await dietService.createDiet(dietData);
-        showToast('Dieta creada exitosamente', 'success');
+        showToast("Dieta creada exitosamente", "success");
       }
-      setOpen(false);
+      setFormOpen(false);
       loadDiets();
     } catch (error) {
-      console.error('Error saving diet:', error);
-      setError('Error al guardar la dieta. Por favor, intenta de nuevo.');
+      setError("Error al guardar la dieta. Por favor, intenta de nuevo.");
     }
   };
 
-  const handleClose = () => {
-    setOpen(false);
+  const handleFormClose = () => {
+    setFormOpen(false);
     setError(null);
   };
 
-  const handleManageUsers = (diet: Diet) => {
-    setManagingDiet(diet);
-    setUsersDialogOpen(true);
+  const handleDetailClose = () => {
+    setDetailOpen(false);
+    setViewingDiet(null);
   };
 
-  const handleUsersDialogClose = () => {
-    setUsersDialogOpen(false);
-    setManagingDiet(null);
-  };
-
-  const handleUsersUpdate = async () => {
-    if (managingDiet) {
-      const users = await dietService.getDietUsers(managingDiet.id);
-      setUserCounts(prev => ({ ...prev, [managingDiet.id]: users.length }));
-    }
-  };
-
-  const handleExport = (format: 'csv' | 'pdf' | 'excel') => {
-    const headers = ['ID', 'Nombre', 'Descripción', 'Calorías'];
-    const data = filteredDiets.map(diet => [
+  const handleExport = (format: "csv" | "pdf" | "excel") => {
+    const headers = ["ID", "Nombre", "Descripción", "Calorías Calculadas", "Alimentos"];
+    const data = filteredDiets.map((diet) => [
       diet.id.toString(),
       diet.name,
-      diet.description,
-      diet.calories.toString()
+      diet.description || "Sin descripción",
+      formatCalories(calculateDietCalories(diet)),
+      diet.diet_foods?.length?.toString() ||
+        diet.foods?.length?.toString() ||
+        "0",
     ]);
 
     const exportData = {
       headers,
       data,
-      filename: 'dietas',
-      title: 'Dietas'
+      filename: "dietas",
+      title: "Dietas",
     };
 
     switch (format) {
-      case 'csv':
+      case "csv":
         exportToCSV(exportData);
         break;
-      case 'pdf':
+      case "pdf":
         exportToPDF(exportData);
         break;
-      case 'excel':
+      case "excel":
         exportToExcel(exportData);
         break;
     }
@@ -182,35 +188,40 @@ export const DietManager = () => {
   return (
     <Box sx={{ p: { xs: 2, sm: 3 } }}>
       <ToastContainer />
-      
+
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
-      
+
       {/* Header */}
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: { xs: 'column', sm: 'row' },
-        justifyContent: 'space-between', 
-        alignItems: { xs: 'stretch', sm: 'center' }, 
-        mb: 3,
-        gap: { xs: 2, sm: 0 }
-      }}>
-        <Typography variant="h4" sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: { xs: "column", sm: "row" },
+          justifyContent: "space-between",
+          alignItems: { xs: "stretch", sm: "center" },
+          mb: 3,
+          gap: { xs: 2, sm: 0 },
+        }}
+      >
+        <Typography
+          variant="h4"
+          sx={{ fontSize: { xs: "1.75rem", sm: "2.125rem" } }}
+        >
           Gestión de Dietas
         </Typography>
-        <Stack 
-          direction={{ xs: 'column', sm: 'row' }} 
+        <Stack
+          direction={{ xs: "column", sm: "row" }}
           spacing={2}
-          sx={{ width: { xs: '100%', sm: 'auto' } }}
+          sx={{ width: { xs: "100%", sm: "auto" } }}
         >
           <Button
             variant="outlined"
             startIcon={<Iconify icon="eva:download-fill" />}
             onClick={(e) => setExportMenuAnchor(e.currentTarget)}
-            sx={{ width: { xs: '100%', sm: 'auto' } }}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             Exportar
           </Button>
@@ -218,7 +229,7 @@ export const DietManager = () => {
             variant="contained"
             startIcon={<Iconify icon="mingcute:add-line" />}
             onClick={handleAdd}
-            sx={{ width: { xs: '100%', sm: 'auto' } }}
+            sx={{ width: { xs: "100%", sm: "auto" } }}
           >
             Nueva Dieta
           </Button>
@@ -248,19 +259,42 @@ export const DietManager = () => {
         diets={filteredDiets}
         onEdit={handleEdit}
         onDelete={handleDelete}
-        onManageUsers={handleManageUsers}
-        userCounts={userCounts}
+        onViewDetails={handleViewDetails}
+        onManageFoods={handleManageFoods}
         loading={loading}
       />
 
       {/* Diet Form Dialog */}
       <DietForm
-        open={open}
-        diet={editingDiet}
-        onClose={handleClose}
+        open={formOpen}
+        dietToEdit={editingDiet}
+        users={users}
+        onClose={handleFormClose}
         onSubmit={handleSubmit}
-        error={error}
       />
+
+      {/* Diet Detail Dialog */}
+      {viewingDiet && (
+        <DietDetail
+          open={detailOpen}
+          diet={viewingDiet}
+          onClose={handleDetailClose}
+        />
+      )}
+
+      {/* Foods Manager Dialog */}
+      {selectedDiet && (
+        <DietFoodsManager
+          open={openFoodsManager}
+          diet={selectedDiet}
+          onClose={handleCloseFoodsManager}
+          onSave={async () => {
+            // Puedes recargar las dietas aquí si lo necesitas
+            setOpenFoodsManager(false);
+            loadDiets();
+          }}
+        />
+      )}
 
       {/* Export Menu */}
       <Menu
@@ -268,27 +302,19 @@ export const DietManager = () => {
         open={Boolean(exportMenuAnchor)}
         onClose={() => setExportMenuAnchor(null)}
       >
-        <MenuItem onClick={() => handleExport('pdf')}>
+        <MenuItem onClick={() => handleExport("pdf")}>
           <Iconify icon="eva:file-text-fill" sx={{ mr: 2 }} />
           Exportar a PDF
         </MenuItem>
-        <MenuItem onClick={() => handleExport('excel')}>
+        <MenuItem onClick={() => handleExport("excel")}>
           <Iconify icon="eva:file-fill" sx={{ mr: 2 }} />
           Exportar a Excel
         </MenuItem>
-        <MenuItem onClick={() => handleExport('csv')}>
+        <MenuItem onClick={() => handleExport("csv")}>
           <Iconify icon="eva:file-text-outline" sx={{ mr: 2 }} />
           Exportar a CSV
         </MenuItem>
       </Menu>
-
-      {/* User Management Dialog */}
-      <DietUsersDialog
-        open={usersDialogOpen}
-        diet={managingDiet}
-        onClose={handleUsersDialogClose}
-        onUpdate={handleUsersUpdate}
-      />
     </Box>
   );
 };

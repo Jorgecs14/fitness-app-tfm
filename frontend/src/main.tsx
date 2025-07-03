@@ -20,7 +20,9 @@ import { ProductsPage } from './pages/ProductsPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { SignInPage } from './pages/SignInPage'
 import { SignUpPage } from './pages/SignUpPage'
+import { LandingPage } from './pages/LandingPage'
 import { UserDetailPage } from './pages/UserDetailPage'
+
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
@@ -69,6 +71,10 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
 const router = createBrowserRouter([
   {
+    path: '/',
+    element: <App><LandingPage /></App>,
+  },
+  {
     path: '/sign-in',
     element: (
       <App>
@@ -88,8 +94,10 @@ const router = createBrowserRouter([
       </App>
     )
   },
+  
+  // RUTAS PROTEGIDAS (requieren autenticación)
   {
-    path: '/',
+    path: '/dashboard',
     element: (
       <ProtectedRoute>
         <App>

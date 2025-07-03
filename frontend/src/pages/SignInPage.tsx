@@ -33,6 +33,7 @@ export const SignInPage = () => {
         setError(error.message);
       } else if (data.user) {
         navigate("/");
+
       }
     } catch (err) {
       setError("Error al iniciar sesión");
