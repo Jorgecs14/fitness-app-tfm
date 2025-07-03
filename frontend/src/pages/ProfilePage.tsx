@@ -96,9 +96,10 @@ export const ProfilePage = () => {
   const loadUserProfile = async () => {
     try {
       setLoading(true);
-      // Obtener el primer usuario como ejemplo (en una app real vendría del contexto de auth)
-      const users = await userService.getUsers();
-      const user = users[0];
+      setError(null);
+      
+      // Obtener el usuario actual autenticado
+      const user = await userService.getCurrentUser();
       
       setCurrentUser(user);
       setProfileForm({
@@ -107,9 +108,17 @@ export const ProfilePage = () => {
         email: user.email,
         birth_date: user.birth_date,
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading profile:', error);
-      setError('Error al cargar el perfil');
+      const errorMessage = error.message || 'Error al cargar el perfil';
+      setError(errorMessage);
+      
+      // Si es un error de autenticación, redirigir al login
+      if (errorMessage.includes('autenticado') || errorMessage.includes('inicia sesión')) {
+        setTimeout(() => {
+          window.location.href = '/sign-in';
+        }, 3000);
+      }
     } finally {
       setLoading(false);
     }

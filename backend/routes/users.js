@@ -1,6 +1,21 @@
 const express = require('express');
 const router = express.Router();
 const { supabase, supabaseAdmin } = require('../database/supabaseClient');
+const { authenticateToken } = require('../middleware/auth');
+
+// Obtener perfil del usuario autenticado (debe ir ANTES de /:id)
+router.get('/profile', authenticateToken, async (req, res) => {
+  try {
+    console.log('📋 Backend: Obteniendo perfil del usuario autenticado');
+    console.log('Usuario autenticado:', req.user);
+    
+    // El usuario ya viene del middleware de autenticación
+    res.json(req.user);
+  } catch (error) {
+    console.error('❌ Error al obtener perfil:', error);
+    res.status(500).json({ error: 'Error al obtener perfil del usuario' });
+  }
+});
 
 
 router.get('/', async (req, res) => {
@@ -155,7 +170,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params;
-
+    
     const { data, error } = await supabase.from('users')
       .delete()
       .eq('id', id)

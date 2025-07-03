@@ -1,5 +1,6 @@
 import { User } from '../types/User';
 import axiosInstance from '../lib/axios';
+import { supabase } from '../lib/supabase';
 
 
 export const getUsers = async (): Promise<User[]> => {
@@ -62,5 +63,33 @@ export const deleteUser = async (id: number): Promise<void> => {
   } catch (error: any) {
     console.error('Error al eliminar usuario:', error.response?.data || error.message);
     throw new Error(error.response?.data?.message || 'Error al eliminar usuario');
+  }
+};
+
+export const getCurrentUser = async (): Promise<User> => {
+  console.log('Frontend: Obteniendo usuario actual autenticado');
+  try {
+    // Obtener el usuario de la sesión de Supabase
+    const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+    
+    console.log('Supabase Auth User:', authUser);
+    console.log('Supabase Auth Error:', authError);
+    
+    if (authError || !authUser) {
+      console.error('No hay usuario autenticado:', authError);
+      throw new Error('No hay usuario autenticado. Por favor, inicia sesión.');
+    }
+
+    // Obtener el usuario correspondiente de nuestra tabla
+    console.log('Realizando petición a /users/profile...');
+    const response = await axiosInstance.get('/users/profile');
+    console.log('Frontend: Usuario actual recibido', response.data);
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al obtener usuario actual:', error.response?.data || error.message);
+    if (error.response?.status === 401) {
+      throw new Error('No estás autenticado. Por favor, inicia sesión.');
+    }
+    throw new Error(error.response?.data?.message || error.message || 'Error al obtener usuario actual');
   }
 };

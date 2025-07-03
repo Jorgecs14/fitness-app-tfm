@@ -26,7 +26,8 @@ app.use((req, res, next) => {
 })
 
 
-app.use('/api/users', authenticateToken, usersRouter)
+// Rutas públicas (no requieren autenticación)
+app.use('/api/users', usersRouter)
 app.use('/api/diets', authenticateToken, dietsRouter)
 app.use('/api/workouts', authenticateToken, workoutsRouter)
 app.use('/api/products', authenticateToken, ecommerceRouter)

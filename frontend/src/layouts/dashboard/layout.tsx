@@ -31,8 +31,6 @@ import type { LayoutSectionProps } from '../core/layout-section'
 import type { HeaderSectionProps } from '../core/header-section'
 import type { MainSectionProps } from '../core/main-section'
 
-// ----------------------------------------------------------------------
-
 type LayoutBaseProps = Pick<LayoutSectionProps, 'sx' | 'children' | 'cssVars'>
 
 export type DashboardLayoutProps = LayoutBaseProps & {
@@ -210,7 +208,7 @@ export function DashboardLayout({
               >
                 <MenuItem
                   onClick={() => {
-                    navigate('/profile')
+                    navigate('/dashboard/profile')
                     handleUserMenuClose()
                   }}
                 >
