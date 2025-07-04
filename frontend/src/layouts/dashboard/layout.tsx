@@ -26,6 +26,7 @@ import { MainSection } from '../core/main-section'
 import { NavDesktop, NavMobile } from './nav'
 import { navData } from '../nav-config-dashboard'
 import { dashboardLayoutVars } from './css-vars'
+import { FloatingChat } from '../../components/FloatingChat/FloatingChat'
 
 import type { LayoutSectionProps } from '../core/layout-section'
 import type { HeaderSectionProps } from '../core/header-section'
@@ -279,6 +280,7 @@ export function DashboardLayout({
       >
         {children}
       </MainSection>
+      <FloatingChat />
     </LayoutSection>
   )
 }
