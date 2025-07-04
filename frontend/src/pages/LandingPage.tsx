@@ -1,4 +1,4 @@
-// Página principal de presentación de la plataforma para entrenadoras personales
+// Página principal de presentación de la plataforma para entrenadores personales
 // Inspirada en https://lifeboost1.com/ pero con estilo minimalista y profesional
 //
 // Características principales:
@@ -93,13 +93,13 @@ export const LandingPage = () => {
         <Toolbar sx={{ justifyContent: 'space-between', minHeight: 70 }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <img
-              src="/src/assets/logo_LB.png"
+              src="/logo_LB.png"
               alt="Logo LB"
               style={{ height: 50, width: 50, objectFit: 'contain', cursor: 'pointer', marginRight: '16px' }}
               onClick={() => window.open('https://lifeboost1.com/', '_blank')}
             />
             <img
-              src="/src/assets/logo.png"
+              src="/logo_white.png"
               alt="Logo principal"
               style={{ height: 40, cursor: 'pointer' }}
               onClick={() => navigate('/')}
@@ -189,7 +189,7 @@ export const LandingPage = () => {
                   animation: 'fadeInUp 0.8s ease-out 0.2s both'
                 }}
               >
-                La plataforma completa para entrenadoras personales. Gestiona clientes, 
+                La plataforma completa para entrenadores personales. Gestiona clientes, 
                 crea planes personalizados y haz crecer tu negocio con herramientas profesionales.
               </Typography>
               
@@ -223,7 +223,7 @@ export const LandingPage = () => {
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Iconify icon="mdi:star" sx={{ color: '#888', fontSize: 20 }} />
                   <Typography sx={{ color: '#ccc', fontSize: '0.9rem' }}>
-                    +500 entrenadoras confían en nosotros
+                    +500 entrenadores confían en nosotros
                   </Typography>
                 </Box>
               </Box>
@@ -242,7 +242,7 @@ export const LandingPage = () => {
               >
                 {/* Logo LB más grande */}
                 <img
-                  src="/src/assets/logo_LB.png"
+                  src="/logo_LB.png"
                   alt="Logo LB"
                   style={{ 
                     height: 140, 
@@ -255,7 +255,7 @@ export const LandingPage = () => {
                 
                 {/* Logo principal debajo */}
                 <img
-                  src="/src/assets/logo_white.png"
+                  src="/logo_white.png"
                   alt="Logo principal"
                   style={{ 
                     height: 60, 
@@ -369,7 +369,7 @@ export const LandingPage = () => {
               mb: 3
             }}
           >
-            ¿LISTA PARA TRANSFORMAR TU NEGOCIO?
+            ¿LISTO PARA TRANSFORMAR TU NEGOCIO?
           </Typography>
           <Typography
             variant="h6"
@@ -379,7 +379,7 @@ export const LandingPage = () => {
               fontWeight: 400
             }}
           >
-            Únete a cientos de entrenadoras que ya están revolucionando 
+            Únete a cientos de entrenadores que ya están revolucionando 
             su forma de trabajar con nuestra plataforma
           </Typography>
           <Button
@@ -419,18 +419,18 @@ export const LandingPage = () => {
             <Box sx={{ flex: 1 }}>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
                 <img
-                  src="/src/assets/logo_LB.png"
+                  src="/logo_LB.png"
                   alt="Logo LB"
                   style={{ height: 40, width: 40, objectFit: 'contain', marginRight: '16px' }}
                 />
                 <img
-                  src="/src/assets/logo.png"
+                  src="/logo_white.png"
                   alt="Logo principal"
                   style={{ height: 40 }}
                 />
               </Box>
               <Typography sx={{ color: '#ccc', mb: 2 }}>
-                Plataforma integral para entrenadoras personales que buscan 
+                Plataforma integral para entrenadores personales que buscan 
                 profesionalizar y hacer crecer su negocio fitness.
               </Typography>
               <Typography sx={{ color: '#666', fontSize: '0.9rem' }}>
