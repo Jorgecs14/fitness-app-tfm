@@ -21,6 +21,7 @@ import { DietList } from "./DietList";
 import { DietForm } from "./DietForm";
 import { DietDetail } from "./DietDetail";
 import { DietFoodsManager } from "./DietFoodsManager";
+import { DietUsersDialog } from "./DietUsersDialog";
 import { calculateDietCalories, formatCalories } from "../../utils/dietUtils";
 
 export const DietManager = () => {
@@ -39,6 +40,8 @@ export const DietManager = () => {
   );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [usersDialogOpen, setUsersDialogOpen] = useState(false);
+  const [selectedDietForUsers, setSelectedDietForUsers] = useState<DietWithFoods | null>(null);
 
   const { showToast, ToastContainer } = useToast();
   const { exportToCSV, exportToPDF, exportToExcel } = useExport();
@@ -126,6 +129,16 @@ export const DietManager = () => {
   const handleCloseFoodsManager = () => {
     setOpenFoodsManager(false);
     setSelectedDiet(null);
+  };
+
+  const handleManageUsers = (diet: DietWithFoods) => {
+    setSelectedDietForUsers(diet);
+    setUsersDialogOpen(true);
+  };
+
+  const handleCloseUsersDialog = () => {
+    setUsersDialogOpen(false);
+    setSelectedDietForUsers(null);
   };
 
   const handleSubmit = async (dietData: any) => {
@@ -264,6 +277,7 @@ export const DietManager = () => {
         onDelete={handleDelete}
         onViewDetails={handleViewDetails}
         onManageFoods={handleManageFoods}
+        onManageUsers={handleManageUsers}
         loading={loading}
       />
 
@@ -296,6 +310,16 @@ export const DietManager = () => {
             setOpenFoodsManager(false);
             loadDiets();
           }}
+        />
+      )}
+
+      {/* Users Dialog */}
+      {selectedDietForUsers && (
+        <DietUsersDialog
+          open={usersDialogOpen}
+          diet={selectedDietForUsers}
+          onClose={handleCloseUsersDialog}
+          onUpdate={loadDiets}
         />
       )}
 

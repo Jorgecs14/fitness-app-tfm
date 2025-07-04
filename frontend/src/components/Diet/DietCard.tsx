@@ -18,6 +18,7 @@ interface DietCardProps {
   onDelete: (id: number) => void;
   onViewDetails: (diet: DietWithFoods) => void;
   onManageFoods?: (diet: DietWithFoods) => void;
+  onManageUsers?: (diet: DietWithFoods) => void;
 }
 
 export const DietCard = ({
@@ -27,6 +28,7 @@ export const DietCard = ({
   onDelete,
   onViewDetails,
   onManageFoods,
+  onManageUsers,
 }: DietCardProps) => {
   const foodsCount = diet.diet_foods?.length ?? diet.foods?.length ?? 0;
 
@@ -107,6 +109,20 @@ export const DietCard = ({
               }}
             >
               <Iconify icon="solar:apple-bold" sx={{ width: 18, height: 18 }} />
+            </IconButton>
+          )}
+          {onManageUsers && (
+            <IconButton
+              size="small"
+              onClick={() => onManageUsers(diet)}
+              sx={{
+                color: 'info.main',
+                '&:hover': { bgcolor: 'info.lighter' },
+                mr: 0.5,
+              }}
+              title="Gestionar usuarios"
+            >
+              <Iconify icon="solar:users-group-rounded-bold" sx={{ width: 18, height: 18 }} />
             </IconButton>
           )}
           <IconButton

@@ -27,6 +27,7 @@ interface DietListProps {
   onDelete: (id: number) => void;
   onViewDetails: (diet: DietWithFoods) => void;
   onManageFoods: (diet: DietWithFoods) => void;
+  onManageUsers: (diet: DietWithFoods) => void;
   loading?: boolean;
 }
 
@@ -36,6 +37,7 @@ export const DietList = ({
   onDelete,
   onViewDetails,
   onManageFoods,
+  onManageUsers,
   loading,
 }: DietListProps) => {
   const [page, setPage] = useState(0);
@@ -85,6 +87,7 @@ export const DietList = ({
                 onDelete={onDelete}
                 onViewDetails={onViewDetails}
                 onManageFoods={onManageFoods}
+                onManageUsers={onManageUsers}
               />
             </Grid>
           ))}
@@ -160,6 +163,14 @@ export const DietList = ({
                     title="Gestionar alimentos"
                   >
                     <Iconify icon="mdi:food-apple" width={16} />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    color="info"
+                    onClick={() => onManageUsers(diet)}
+                    title="Gestionar usuarios"
+                  >
+                    <Iconify icon="solar:users-group-rounded-bold" width={16} />
                   </IconButton>
                   <IconButton
                     size="small"
