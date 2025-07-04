@@ -32,15 +32,26 @@ Creamos un archivo de configuración para Jest:
 **backend/jest.config.js**
 ```javascript
 module.exports = {
+  // Configura Jest para ejecutar en ambiente Node.js (no navegador)
   testEnvironment: 'node',
+  
+  // Ignora node_modules al calcular cobertura de código
   coveragePathIgnorePatterns: ['/node_modules/'],
+  
+  // Busca archivos de test con extensión .test.js en carpeta tests
   testMatch: ['**/tests/**/*.test.js'],
+  
+  // Archivos a incluir en el reporte de cobertura
   collectCoverageFrom: [
-    'routes/**/*.js',
-    'middleware/**/*.js',
-    '!**/node_modules/**'
+    'routes/**/*.js',       // Incluye todas las rutas
+    'middleware/**/*.js',   // Incluye todos los middlewares
+    '!**/node_modules/**'   // Excluye node_modules
   ],
+  
+  // Muestra detalles de cada test mientras se ejecuta
   verbose: true,
+  
+  // Archivo que se ejecuta antes de cada suite de tests
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js']
 };
 ```
@@ -50,6 +61,7 @@ module.exports = {
 **backend/tests/setup.js**
 ```javascript
 // Configurar variables de entorno para tests
+// Estas son falsas y solo se usan para que el código no falle al iniciar
 process.env.JWT_SECRET = 'test-secret';
 process.env.SUPABASE_URL = 'https://test.supabase.co';
 process.env.SUPABASE_ANON_KEY = 'test-anon-key';
@@ -82,61 +94,70 @@ const request = require('supertest');
 const express = require('express');
 
 // Mock Supabase antes de importar el middleware
+// Esto es CRÍTICO: debe estar antes de cualquier import que use Supabase
 jest.mock('../database/supabaseClient', () => ({
   supabaseAdmin: {
     auth: {
-      getUser: jest.fn()
+      getUser: jest.fn()  // Simula el método getUser de Supabase Auth
     },
-    from: jest.fn()
+    from: jest.fn()       // Simula el método from para queries de BD
   }
 }));
 
+// Ahora sí importamos (después del mock)
 const { supabaseAdmin } = require('../database/supabaseClient');
 const { authenticateToken } = require('../middleware/auth');
 
-// Crear app de prueba
+// Crear app de prueba minimalista
 const app = express();
-app.use(express.json());
+app.use(express.json());  // Para parsear JSON en requests
 
-// Ruta de prueba con autenticación
+// Ruta de prueba que usa el middleware de autenticación
 app.get('/test-auth', authenticateToken, (req, res) => {
   res.json({ message: 'Authenticated', user: req.user });
 });
 
 describe('Authentication Middleware', () => {
+  // Limpia todos los mocks antes de cada test
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
   test('debería retornar 401 cuando no hay token', async () => {
+    // Hace petición sin header Authorization
     const res = await request(app)
       .get('/test-auth');
     
+    // Verifica respuesta esperada
     expect(res.statusCode).toBe(401);
     expect(res.body).toHaveProperty('error', 'Token de acceso requerido');
   });
 
   test('debería retornar 403 cuando el token es inválido', async () => {
-    // Mock de Supabase auth para retornar error
+    // Mock: Simula que Supabase no puede validar el token
     supabaseAdmin.auth.getUser.mockResolvedValue({
       data: { user: null },
       error: new Error('Invalid token')
     });
 
+    // Hace petición con token inválido
     const res = await request(app)
       .get('/test-auth')
       .set('Authorization', 'Bearer invalidtoken');
     
+    // Verifica que se rechace correctamente
     expect(res.statusCode).toBe(403);
     expect(res.body).toHaveProperty('error', 'Token inválido o expirado');
   });
 
   test('debería permitir acceso con token válido', async () => {
+    // Datos simulados del usuario autenticado
     const mockAuthUser = { 
       id: 'auth-123', 
       email: 'test@example.com'
     };
     
+    // Datos simulados del usuario en la BD
     const mockDbUser = {
       id: 1,
       auth_user_id: 'auth-123',
@@ -145,13 +166,14 @@ describe('Authentication Middleware', () => {
       role: 'client'
     };
 
-    // Mock de autenticación exitosa
+    // Mock 1: Simula que el token es válido
     supabaseAdmin.auth.getUser.mockResolvedValue({
       data: { user: mockAuthUser },
       error: null
     });
 
-    // Mock de consulta a base de datos
+    // Mock 2: Simula la búsqueda del usuario en la BD
+    // Nota: mockReturnThis() permite encadenar métodos
     supabaseAdmin.from.mockReturnValue({
       select: jest.fn().mockReturnThis(),
       eq: jest.fn().mockReturnThis(),
@@ -161,10 +183,12 @@ describe('Authentication Middleware', () => {
       })
     });
 
+    // Hace petición con token válido
     const res = await request(app)
       .get('/test-auth')
       .set('Authorization', 'Bearer validtoken');
     
+    // Verifica éxito
     expect(res.statusCode).toBe(200);
     expect(res.body.message).toBe('Authenticated');
   });
@@ -180,19 +204,20 @@ Ahora creamos tests para las operaciones CRUD básicas:
 const request = require('supertest');
 const express = require('express');
 
-// Mock de todo antes de importar
+// Mock de Supabase completo antes de importar
 jest.mock('../database/supabaseClient', () => ({
   supabase: {
-    from: jest.fn()
+    from: jest.fn()  // Cliente normal para queries
   },
   supabaseAdmin: {
     auth: {
       getUser: jest.fn()
     },
-    from: jest.fn()
+    from: jest.fn()  // Cliente admin (aunque no lo usamos aquí)
   }
 }));
 
+// Importar después del mock
 const { supabase } = require('../database/supabaseClient');
 const dietsRouter = require('../routes/diets');
 
@@ -200,7 +225,8 @@ const dietsRouter = require('../routes/diets');
 const app = express();
 app.use(express.json());
 
-// Montar rutas SIN middleware de auth para simplificar
+// Montar rutas SIN middleware de auth para simplificar tests
+// En producción estas rutas estarían protegidas
 app.use('/api/diets', dietsRouter);
 
 describe('Diets API Routes', () => {
@@ -210,35 +236,39 @@ describe('Diets API Routes', () => {
 
   describe('GET /api/diets', () => {
     test('debería retornar lista de dietas exitosamente', async () => {
+      // Datos de prueba
       const mockDiets = [
         { id: 1, name: 'Dieta Keto', description: 'Baja en carbohidratos', calories: 1800 },
         { id: 2, name: 'Dieta Mediterránea', description: 'Balanceada', calories: 2000 }
       ];
 
-      // Mock de la cadena completa de Supabase
+      // Mock de la cadena: supabase.from('diets').select('*').order('id')
+      // Se construye de atrás hacia adelante
       const mockOrder = jest.fn().mockResolvedValue({
         data: mockDiets,
         error: null
       });
       
       const mockSelect = jest.fn().mockReturnValue({
-        order: mockOrder
+        order: mockOrder  // select() retorna objeto con método order()
       });
       
       supabase.from.mockReturnValue({
-        select: mockSelect
+        select: mockSelect  // from() retorna objeto con método select()
       });
 
+      // Ejecutar petición
       const res = await request(app)
         .get('/api/diets');
 
+      // Verificar respuesta
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual(mockDiets);
       expect(supabase.from).toHaveBeenCalledWith('diets');
     });
 
     test('debería retornar 500 en error de base de datos', async () => {
-      // Mock de error
+      // Simula un error de Supabase
       const mockOrder = jest.fn().mockResolvedValue({
         data: null,
         error: new Error('Database connection failed')
@@ -252,9 +282,11 @@ describe('Diets API Routes', () => {
         select: mockSelect
       });
 
+      // Ejecutar petición
       const res = await request(app)
         .get('/api/diets');
 
+      // Verificar manejo de error
       expect(res.statusCode).toBe(500);
       expect(res.body).toHaveProperty('error', 'Error al obtener dietas');
     });
@@ -269,27 +301,29 @@ describe('Diets API Routes', () => {
         calories: 1800 
       };
 
-      // Mock de la cadena completa
+      // Mock: supabase.from('diets').select('*').eq('id', id).single()
       const mockSingle = jest.fn().mockResolvedValue({
         data: mockDiet,
         error: null
       });
       
       const mockEq = jest.fn().mockReturnValue({
-        single: mockSingle
+        single: mockSingle  // eq() retorna objeto con single()
       });
       
       const mockSelect = jest.fn().mockReturnValue({
-        eq: mockEq
+        eq: mockEq  // select() retorna objeto con eq()
       });
       
       supabase.from.mockReturnValue({
-        select: mockSelect
+        select: mockSelect  // from() retorna objeto con select()
       });
 
+      // Petición con ID específico
       const res = await request(app)
         .get('/api/diets/1');
 
+      // Verificar que retorna la dieta correcta
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual(mockDiet);
     });
@@ -323,36 +357,40 @@ describe('Diets API Routes', () => {
 
   describe('POST /api/diets', () => {
     test('debería crear una nueva dieta con datos válidos', async () => {
+      // Datos de la nueva dieta
       const newDiet = {
         name: 'Dieta Vegana',
         description: 'Basada en plantas',
         calories: 1900
       };
 
+      // Respuesta simulada (incluye ID generado)
       const createdDiet = { id: 3, ...newDiet };
 
-      // Mock de la cadena completa
+      // Mock: supabase.from('diets').insert([dietData]).select().single()
       const mockSingle = jest.fn().mockResolvedValue({
         data: createdDiet,
         error: null
       });
       
       const mockSelect = jest.fn().mockReturnValue({
-        single: mockSingle
+        single: mockSingle  // select() retorna objeto con single()
       });
       
       const mockInsert = jest.fn().mockReturnValue({
-        select: mockSelect
+        select: mockSelect  // insert() retorna objeto con select()
       });
       
       supabase.from.mockReturnValue({
-        insert: mockInsert
+        insert: mockInsert  // from() retorna objeto con insert()
       });
 
+      // Enviar petición POST con datos
       const res = await request(app)
         .post('/api/diets')
         .send(newDiet);
 
+      // Verificar creación exitosa
       expect(res.statusCode).toBe(201);
       expect(res.body).toEqual(createdDiet);
     });
@@ -360,13 +398,15 @@ describe('Diets API Routes', () => {
     test('debería retornar 400 cuando faltan campos requeridos', async () => {
       const incompleteDiet = {
         name: 'Dieta Test'
-        // Faltan description y calories
+        // Faltan description y calories - campos obligatorios
       };
 
+      // No necesitamos mock - la validación ocurre antes
       const res = await request(app)
         .post('/api/diets')
         .send(incompleteDiet);
 
+      // Verifica que se rechace por validación
       expect(res.statusCode).toBe(400);
       expect(res.body).toHaveProperty('error', 'Faltan campos requeridos');
     });
@@ -374,40 +414,44 @@ describe('Diets API Routes', () => {
 
   describe('PUT /api/diets/:id', () => {
     test('debería actualizar una dieta con datos válidos', async () => {
+      // Datos para actualizar
       const updateData = {
         name: 'Dieta Actualizada',
         description: 'Descripción actualizada',
         calories: 2100
       };
 
+      // Respuesta simulada después de actualizar
       const updatedDiet = { id: 1, ...updateData };
 
-      // Mock de la cadena completa
+      // Mock: supabase.from('diets').update(updateData).eq('id', id).select().single()
       const mockSingle = jest.fn().mockResolvedValue({
         data: updatedDiet,
         error: null
       });
       
       const mockSelect = jest.fn().mockReturnValue({
-        single: mockSingle
+        single: mockSingle  // select() retorna objeto con single()
       });
       
       const mockEq = jest.fn().mockReturnValue({
-        select: mockSelect
+        select: mockSelect  // eq() retorna objeto con select()
       });
       
       const mockUpdate = jest.fn().mockReturnValue({
-        eq: mockEq
+        eq: mockEq  // update() retorna objeto con eq()
       });
       
       supabase.from.mockReturnValue({
-        update: mockUpdate
+        update: mockUpdate  // from() retorna objeto con update()
       });
 
+      // Enviar petición PUT
       const res = await request(app)
         .put('/api/diets/1')
         .send(updateData);
 
+      // Verificar actualización exitosa
       expect(res.statusCode).toBe(200);
       expect(res.body).toEqual(updatedDiet);
     });
@@ -415,31 +459,33 @@ describe('Diets API Routes', () => {
 
   describe('DELETE /api/diets/:id', () => {
     test('debería eliminar una dieta exitosamente', async () => {
-      // Mock de la cadena completa
+      // Mock: supabase.from('diets').delete().eq('id', id).select('name').single()
       const mockSingle = jest.fn().mockResolvedValue({
-        data: { name: 'Dieta Eliminada' },
+        data: { name: 'Dieta Eliminada' },  // Solo retorna el nombre
         error: null
       });
       
       const mockSelect = jest.fn().mockReturnValue({
-        single: mockSingle
+        single: mockSingle  // select() retorna objeto con single()
       });
       
       const mockEq = jest.fn().mockReturnValue({
-        select: mockSelect
+        select: mockSelect  // eq() retorna objeto con select()
       });
       
       const mockDelete = jest.fn().mockReturnValue({
-        eq: mockEq
+        eq: mockEq  // delete() retorna objeto con eq()
       });
       
       supabase.from.mockReturnValue({
-        delete: mockDelete
+        delete: mockDelete  // from() retorna objeto con delete()
       });
 
+      // Enviar petición DELETE
       const res = await request(app)
         .delete('/api/diets/1');
 
+      // Verificar eliminación exitosa
       expect(res.statusCode).toBe(200);
       expect(res.body).toHaveProperty('message', 'Dieta eliminada correctamente');
     });
@@ -464,13 +510,14 @@ jest.mock('../database/supabaseClient', () => ({
   supabaseAdmin: {
     auth: {
       admin: {
-        createUser: jest.fn()
+        createUser: jest.fn()  // Para crear usuarios en Supabase Auth
       }
     },
     from: jest.fn()
   }
 }));
 
+// Importar después del mock
 const { supabase, supabaseAdmin } = require('../database/supabaseClient');
 const usersRouter = require('../routes/users');
 
@@ -515,6 +562,7 @@ describe('Users API Routes', () => {
 
   describe('POST /api/users', () => {
     test('debería crear un nuevo usuario con datos válidos', async () => {
+      // Datos del nuevo usuario
       const newUser = {
         name: 'Carlos',
         surname: 'López',
@@ -523,10 +571,12 @@ describe('Users API Routes', () => {
         birth_date: '1990-01-01'
       };
 
+      // Respuesta simulada de Supabase Auth
       const mockAuthUser = {
         user: { id: 'auth-789', email: 'carlos@example.com' }
       };
 
+      // Usuario creado en la BD (incluye auth_user_id)
       const createdUser = { 
         id: 3, 
         auth_user_id: 'auth-789',
@@ -534,16 +584,16 @@ describe('Users API Routes', () => {
         surname: 'López',
         email: 'carlos@example.com',
         birth_date: '1990-01-01',
-        role: 'client'
+        role: 'client'  // Por defecto es 'client'
       };
 
-      // Mock de Supabase auth admin
+      // Mock 1: Crear usuario en Supabase Auth
       supabaseAdmin.auth.admin.createUser.mockResolvedValue({
         data: mockAuthUser,
         error: null
       });
 
-      // Mock de búsqueda de usuario
+      // Mock 2: Buscar el usuario creado en la BD
       const mockSingle = jest.fn().mockResolvedValue({
         data: createdUser,
         error: null
@@ -561,10 +611,12 @@ describe('Users API Routes', () => {
         select: mockSelect
       });
 
+      // Enviar petición POST
       const res = await request(app)
         .post('/api/users')
         .send(newUser);
 
+      // Verificar creación exitosa
       expect(res.statusCode).toBe(201);
       expect(res.body).toMatchObject({
         name: 'Carlos',
@@ -654,14 +706,15 @@ backend/
 
 ### 2. Patrón de Mockeo Consistente
 ```javascript
-// Siempre mockear antes de importar
+// SIEMPRE mockear ANTES de importar
+// Jest reemplaza el módulo real con el mock
 jest.mock('../database/supabaseClient', () => ({
   supabase: {
     from: jest.fn()
   }
 }));
 
-// Luego importar
+// DESPUÉS importar (ya está mockeado)
 const { supabase } = require('../database/supabaseClient');
 ```
 
@@ -670,9 +723,14 @@ const { supabase } = require('../database/supabaseClient');
 describe('Entidad API Routes', () => {
   describe('GET /api/entidad', () => {
     test('debería hacer X cuando Y', async () => {
-      // Arrange - Preparar
-      // Act - Actuar
-      // Assert - Verificar
+      // Arrange - Preparar datos y mocks
+      const mockData = { /* ... */ };
+      
+      // Act - Ejecutar la acción
+      const res = await request(app).get('/api/entidad');
+      
+      // Assert - Verificar resultados
+      expect(res.statusCode).toBe(200);
     });
   });
 });
@@ -681,9 +739,12 @@ describe('Entidad API Routes', () => {
 ### 4. Mockear Cadenas Completas de Supabase
 ```javascript
 // Mock correcto para: supabase.from('tabla').select('*').order('id')
+// Se construye de atrás hacia adelante:
 const mockOrder = jest.fn().mockResolvedValue({ data: mockData, error: null });
 const mockSelect = jest.fn().mockReturnValue({ order: mockOrder });
 supabase.from.mockReturnValue({ select: mockSelect });
+
+// Cada método debe retornar un objeto con el siguiente método en la cadena
 ```
 
 ## 🚨 Errores Comunes y Soluciones
@@ -704,11 +765,11 @@ supabase.from.mockReturnValue({ select: mockSelect });
 **Causa**: Los mensajes exactos pueden variar entre rutas.
 **Solución**: Siempre verificar los mensajes reales en el código fuente:
 ```javascript
-// ❌ Asumir que todos usan el mismo mensaje
+// ❌ MAL: Asumir que todos usan el mismo mensaje
 expect(res.body).toHaveProperty('error', 'Todos los campos son requeridos');
 
-// ✅ Verificar el mensaje exacto en la ruta
-// routes/users.js línea 67:
+// ✅ BIEN: Verificar el mensaje exacto en la ruta
+// Revisar en routes/users.js línea 67:
 // 'Faltan campos requeridos (email, password, name, surname, birth_date)'
 expect(res.body).toHaveProperty('error', 'Faltan campos requeridos (email, password, name, surname, birth_date)');
 ```
@@ -719,6 +780,7 @@ expect(res.body).toHaveProperty('error', 'Faltan campos requeridos (email, passw
 ```javascript
 // Dietas: select('name') → "Dieta eliminada correctamente"
 // Usuarios: select('email') → "Usuario ${email} eliminado correctamente"
+// El mensaje depende de lo que retorna el select() en cada ruta
 ```
 
 ## 📚 Recursos Adicionales
