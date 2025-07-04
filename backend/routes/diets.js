@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const supabase = require('../database/supabaseClient')
+const { supabase } = require('../database/supabaseClient')
 
 
 // Obtener todas las dietas
@@ -144,15 +144,18 @@ router.get('/:id/users', async (req, res) => {
 });
 
 
-router.post('/:id/users/:userId', async (req, res) => {
+router.post('/:id/users', async (req, res) => {
   try {
-    const { id, userId } = req.params;
+    const { id } = req.params;
+    const { userId } = req.body;
     console.log(`🔗 Backend: Asignando usuario ${userId} a dieta ${id}`);
   
     const { data, error } = await supabase
-      .from('diets')
-      .update({ name, description, calories })
-      .eq('id', id)
+      .from('user_diets')
+      .insert([{ 
+        user_id: userId, 
+        diet_id: id 
+      }])
       .select()
       .single();
       
@@ -176,22 +179,27 @@ router.post('/:id/users/:userId', async (req, res) => {
 
 router.delete('/:id/users/:userId', async (req, res) => {
   try {
-    const { id } = req.params
+    const { id, userId } = req.params;
+    console.log(`🔗 Backend: Quitando usuario ${userId} de dieta ${id}`);
+    
     const { data, error } = await supabase
-      .from('diets')
+      .from('user_diets')
       .delete()
-      .eq('id', id)
-      .select('name')
-      .single()
+      .eq('diet_id', id)
+      .eq('user_id', userId)
+      .select()
+      .single();
 
-    if (error) throw error
-    if (!data)
-      return res.status(404).json({ error: 'Dieta no encontrada' })
-    res.json({
-      message: `Dieta "${data.name}" eliminada correctamente`
-    })
+    if (error) {
+      console.error('❌ Error en Supabase:', error);
+      throw error;
+    }
+    
+    console.log('✅ Usuario quitado correctamente');
+    res.json({ message: 'Usuario quitado de la dieta correctamente' });
   } catch (err) {
-    res.status(500).json({ error: 'Error al eliminar dieta' })
+    console.error('❌ Error al quitar usuario de la dieta:', err);
+    res.status(500).json({ error: 'Error al quitar usuario de la dieta' });
   }
 })
 

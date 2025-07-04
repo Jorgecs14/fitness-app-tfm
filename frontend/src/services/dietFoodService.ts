@@ -1,29 +1,40 @@
 import { DietFood } from '../types/DietFood';
-
-const API_URL = 'http://localhost:3001/api/diet_foods';
+import axiosInstance from '../lib/axios';
 
 // Obtener alimentos de una dieta
 export const getDietFoods = async (dietId: number): Promise<DietFood[]> => {
-  const response = await fetch(`${API_URL}?diet_id=${dietId}`);
-  if (!response.ok) throw new Error('Error al obtener alimentos de la dieta');
-  return response.json();
+  try {
+    const response = await axiosInstance.get('/diet_foods', {
+      params: { diet_id: dietId }
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al obtener alimentos de la dieta:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al obtener alimentos de la dieta');
+  }
 };
 
 // Añadir alimento a dieta
 export const addFoodToDiet = async (diet_id: number, food_id: number, quantity: number): Promise<DietFood> => {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ diet_id, food_id, quantity }),
-  });
-  if (!response.ok) throw new Error('Error al añadir alimento a la dieta');
-  return response.json();
+  try {
+    const response = await axiosInstance.post('/diet_foods', {
+      diet_id,
+      food_id,
+      quantity
+    });
+    return response.data;
+  } catch (error: any) {
+    console.error('Error al añadir alimento a la dieta:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al añadir alimento a la dieta');
+  }
 };
 
 // Eliminar alimento de dieta
 export const removeFoodFromDiet = async (dietFoodId: number): Promise<void> => {
-  const response = await fetch(`${API_URL}/${dietFoodId}`, {
-    method: 'DELETE',
-  });
-  if (!response.ok) throw new Error('Error al eliminar alimento de la dieta');
+  try {
+    await axiosInstance.delete(`/diet_foods/${dietFoodId}`);
+  } catch (error: any) {
+    console.error('Error al eliminar alimento de la dieta:', error.response?.data || error.message);
+    throw new Error(error.response?.data?.message || 'Error al eliminar alimento de la dieta');
+  }
 };

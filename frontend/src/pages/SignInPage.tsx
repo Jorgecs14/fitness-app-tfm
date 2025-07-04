@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
@@ -20,6 +20,17 @@ export const SignInPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/dashboard");
+      } else {
+        setLoading(false);
+      }
+    });
+  }, [navigate]);
 
   const handleSignIn = useCallback(async () => {
     try {
@@ -32,8 +43,7 @@ export const SignInPage = () => {
       if (error) {
         setError(error.message);
       } else if (data.user) {
-        navigate("/");
-
+        navigate("/dashboard");
       }
     } catch (err) {
       setError("Error al iniciar sesión");
@@ -45,7 +55,7 @@ export const SignInPage = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/`,
+          redirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
@@ -140,6 +150,21 @@ export const SignInPage = () => {
       </Button>
     </Box>
   );
+
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <Typography>Cargando...</Typography>
+      </Box>
+    );
+  }
 
   return (
     <>

@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 
@@ -31,6 +31,17 @@ export const SignUpPage = () => {
   })
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate("/dashboard");
+      } else {
+        setLoading(false);
+      }
+    });
+  }, [navigate]);
 
   const handleInputChange = (field: string) => (event: any) => {
     setFormData((prev) => ({
@@ -101,7 +112,7 @@ export const SignUpPage = () => {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`
+        redirectTo: `${window.location.origin}/dashboard`
       }
     });
     
@@ -286,6 +297,20 @@ export const SignUpPage = () => {
     </>
   );
   
+  if (loading) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+        }}
+      >
+        <Typography>Cargando...</Typography>
+      </Box>
+    );
+  }
 
   return (
     <>
