@@ -29,6 +29,7 @@ import { dashboardLayoutVars } from './css-vars'
 import type { LayoutSectionProps } from '../core/layout-section'
 import type { HeaderSectionProps } from '../core/header-section'
 import type { MainSectionProps } from '../core/main-section'
+import { FloatingChat } from '../../components/FloatingChat/FloatingChat'
 
 type LayoutBaseProps = Pick<LayoutSectionProps, 'sx' | 'children' | 'cssVars'>
 
@@ -284,6 +285,7 @@ export function DashboardLayout({
       >
         {children}
       </MainSection>
+      <FloatingChat />
     </LayoutSection>
   )
 }
