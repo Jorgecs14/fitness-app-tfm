@@ -1,15 +1,16 @@
-import './styles/global.css';
+/**
+ * Componente raíz de la aplicación fitness-app-tfm
+ * Envuelve toda la aplicación con el ThemeProvider para gestión de temas
+ */
 
-import { ThemeProvider } from './theme/theme-provider';
+import './styles/global.css'
+
+import { ThemeProvider } from './theme/theme-provider'
 
 type AppProps = {
-  children: React.ReactNode;
-};
+  children: React.ReactNode
+}
 
 export default function App({ children }: AppProps) {
-  return (
-    <ThemeProvider>
-      {children}
-    </ThemeProvider>
-  );
+  return <ThemeProvider>{children}</ThemeProvider>
 }

@@ -1,26 +1,24 @@
-import type { Theme, SxProps, CSSObject } from '@mui/material/styles';
+// Componente base para secciones de layout con soporte para CSS variables personalizadas
+import type { Theme, SxProps, CSSObject } from '@mui/material/styles'
 
-import { styled } from '@mui/material/styles';
-import GlobalStyles from '@mui/material/GlobalStyles';
+import { styled } from '@mui/material/styles'
+import GlobalStyles from '@mui/material/GlobalStyles'
 
-import { layoutClasses } from './classes';
-import { layoutSectionVars } from './css-vars';
+import { layoutClasses } from './classes'
+import { layoutSectionVars } from './css-vars'
 
-// ----------------------------------------------------------------------
-
-// Utility function to merge classes
 function mergeClasses(classes: (string | undefined)[]): string {
-  return classes.filter(Boolean).join(' ');
+  return classes.filter(Boolean).join(' ')
 }
 
 export type LayoutSectionProps = React.ComponentProps<'div'> & {
-  sx?: SxProps<Theme>;
-  cssVars?: CSSObject;
-  children?: React.ReactNode;
-  footerSection?: React.ReactNode;
-  headerSection?: React.ReactNode;
-  sidebarSection?: React.ReactNode;
-};
+  sx?: SxProps<Theme>
+  cssVars?: CSSObject
+  children?: React.ReactNode
+  footerSection?: React.ReactNode
+  headerSection?: React.ReactNode
+  sidebarSection?: React.ReactNode
+}
 
 export function LayoutSection({
   sx,
@@ -33,15 +31,19 @@ export function LayoutSection({
   ...other
 }: LayoutSectionProps) {
   const inputGlobalStyles = (
-    <GlobalStyles styles={(theme) => ({ body: { ...layoutSectionVars(theme), ...cssVars } })} />
-  );
+    <GlobalStyles
+      styles={(theme) => ({
+        body: { ...layoutSectionVars(theme), ...cssVars }
+      })}
+    />
+  )
 
   return (
     <>
       {inputGlobalStyles}
 
       <LayoutRoot
-        id="root__layout"
+        id='root__layout'
         className={mergeClasses([layoutClasses.root, className])}
         sx={sx}
         {...other}
@@ -64,15 +66,15 @@ export function LayoutSection({
         )}
       </LayoutRoot>
     </>
-  );
+  )
 }
 
 // ----------------------------------------------------------------------
 
-const LayoutRoot = styled('div')``;
+const LayoutRoot = styled('div')``
 
 const LayoutSidebarContainer = styled('div')(() => ({
   display: 'flex',
   flex: '1 1 auto',
-  flexDirection: 'column',
-}));
+  flexDirection: 'column'
+}))

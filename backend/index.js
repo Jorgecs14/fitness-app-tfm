@@ -1,3 +1,9 @@
+/**
+ * Servidor principal de la aplicación fitness-app-tfm
+ * Configura Express con CORS y rutas para gestionar usuarios, dietas, entrenamientos, ejercicios y productos
+ * Utiliza autenticación JWT de Supabase para proteger las rutas
+ */
+
 require('dotenv').config()
 
 const express = require('express')
@@ -24,12 +30,6 @@ const corsOptions = {
 app.use(cors(corsOptions))
 app.use(express.json())
 
-app.use((req, res, next) => {
-  console.log(`Petición recibida: ${req.method} ${req.url}`)
-  next()
-})
-
-// Rutas públicas (no requieren autenticación)
 app.use('/api/users', usersRouter)
 app.use('/api/diets', authenticateToken, dietsRouter)
 app.use('/api/workouts', authenticateToken, workoutsRouter)
@@ -41,13 +41,4 @@ app.use('/api/diet_foods', authenticateToken, dietFoodsRouter)
 
 app.listen(PORT, () => {
   console.log(`Servidor ejecutándose en http://localhost:${PORT}`)
-  console.log('Endpoints disponibles:')
-  console.log('  - /api/users')
-  console.log('  - /api/diets')
-  console.log('  - /api/workouts')
-  console.log('  - /api/products')
-  console.log('  - /api/exercises')
-  console.log('  - /api/workouts_exercises')
-  console.log('  - /api/foods')
-  console.log('  - /api/diet_foods')
 })

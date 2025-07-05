@@ -1,3 +1,4 @@
+// Layout principal del dashboard con navegación, header y gestión de notificaciones
 import type { Breakpoint } from '@mui/material/styles'
 
 import { useState } from 'react'

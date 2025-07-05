@@ -1,5 +1,10 @@
-const eexpress = require('express')
-const router = eexpress.Router()
+/**
+ * Rutas para gestionar relaciones entre entrenamientos y ejercicios en la aplicación fitness-app-tfm
+ * Permite añadir, actualizar y eliminar ejercicios de los entrenamientos con sets y repeticiones
+ */
+
+const express = require('express')
+const router = express.Router()
 const { supabase } = require('../database/supabaseClient')
 
 router.get('/', async (req, res) => {
@@ -34,7 +39,7 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const exercises = Array.isArray(req.body) ? req.body : [req.body];
+    const exercises = Array.isArray(req.body) ? req.body : [req.body]
 
     if (
       !exercises.every(
@@ -47,21 +52,22 @@ router.post('/', async (req, res) => {
     ) {
       return res
         .status(400)
-        .json({ error: 'Faltan campos requeridos en uno o más ejercicios' });
+        .json({ error: 'Faltan campos requeridos en uno o más ejercicios' })
     }
 
     const { data, error } = await supabase
       .from('workout_exercises')
       .insert(exercises)
-      .select();
+      .select()
 
-    if (error) throw error;
-    res.status(201).json(data);
+    if (error) throw error
+    res.status(201).json(data)
   } catch (err) {
-    console.error('❌ Error guardando ejercicios:', err);
-    res.status(500).json({ error: 'Error al guardar ejercicios del entrenamiento' });
+    res
+      .status(500)
+      .json({ error: 'Error al guardar ejercicios del entrenamiento' })
   }
-});
+})
 
 router.put('/:id', async (req, res) => {
   try {
@@ -101,21 +107,20 @@ router.delete('/:id', async (req, res) => {
 })
 
 router.delete('/workout/:workoutId', async (req, res) => {
-  const { workoutId } = req.params;
+  const { workoutId } = req.params
 
   try {
     const { error } = await supabase
       .from('workout_exercises')
       .delete()
-      .eq('workout_id', workoutId);
+      .eq('workout_id', workoutId)
 
-    if (error) throw error;
+    if (error) throw error
 
-    res.status(204).end();
+    res.status(204).end()
   } catch (err) {
-    console.error('❌ Error al eliminar ejercicios del entrenamiento:', err);
-    res.status(500).json({ error: 'No se pudieron eliminar los ejercicios' });
+    res.status(500).json({ error: 'No se pudieron eliminar los ejercicios' })
   }
-});
+})
 
 module.exports = router

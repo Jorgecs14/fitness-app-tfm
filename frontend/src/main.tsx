@@ -1,3 +1,8 @@
+/**
+ * Punto de entrada principal de la aplicación fitness-app-tfm
+ * Configura el enrutamiento con React Router, protección de rutas y autenticación con Supabase
+ */
+
 import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './styles/global.css'
@@ -23,7 +28,6 @@ import { SignUpPage } from './pages/SignUpPage'
 import { LandingPage } from './pages/LandingPage'
 import { UserDetailPage } from './pages/UserDetailPage'
 
-
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
@@ -36,7 +40,6 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
         setLoading(false)
       })
       .catch(() => {
-        // Si hay error con Supabase, redirigir al login
         setLoading(false)
         setIsAuthenticated(false)
       })
@@ -72,7 +75,11 @@ const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <App><LandingPage /></App>,
+    element: (
+      <App>
+        <LandingPage />
+      </App>
+    )
   },
   {
     path: '/sign-in',
@@ -94,8 +101,6 @@ const router = createBrowserRouter([
       </App>
     )
   },
-  
-  // RUTAS PROTEGIDAS (requieren autenticación)
   {
     path: '/dashboard',
     element: (
@@ -110,7 +115,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: '',
-        element: <Navigate to="/dashboard/home" replace />
+        element: <Navigate to='/dashboard/home' replace />
       },
       {
         path: 'home',
@@ -122,7 +127,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'users/:id',
-        element: <UserDetailPage />,
+        element: <UserDetailPage />
       },
       {
         path: 'products',
