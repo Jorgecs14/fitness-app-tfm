@@ -114,7 +114,7 @@ export const LandingPage = () => {
               component='img'
               src='/logo_white.png'
               alt='Logo'
-              onClick={() => navigate('/')}
+              onClick={() => window.open('https://lifeboost1.com/', '_blank')}
               sx={{
                 height: { xs: 25, sm: 30, md: 40 },
                 cursor: 'pointer',
