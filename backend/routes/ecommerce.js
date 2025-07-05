@@ -1,101 +1,100 @@
-const express = require("express");
-const router = express.Router();
-const { supabase } = require("../database/supabaseClient");
+/**
+ * Rutas para gestionar productos de e-commerce en la aplicación fitness-app-tfm
+ * Incluye CRUD completo para productos con nombre, descripción y precio
+ */
 
-router.get("/", async (req, res) => {
+const express = require('express')
+const router = express.Router()
+const { supabase } = require('../database/supabaseClient')
+
+router.get('/', async (req, res) => {
   try {
-    console.log("GET /api/products - Obteniendo todos los productos");
     const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .order("id");
-    if (error) throw error;
-    res.json(data);
+      .from('products')
+      .select('*')
+      .order('id')
+    if (error) throw error
+    res.json(data)
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Error al obtener productos" });
+    res.status(500).json({ error: 'Error al obtener productos' })
   }
-});
+})
 
-router.get("/:id", async (req, res) => {
+router.get('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params
     const { data, error } = await supabase
-      .from("products")
-      .select("*")
-      .eq("id", id)
-      .single();
-    if (error) throw error;
-    if (!data) return res.status(404).json({ error: "Producto no encontrado" });
-    res.json(data);
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single()
+    if (error) throw error
+    if (!data) return res.status(404).json({ error: 'Producto no encontrado' })
+    res.json(data)
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Error al buscar producto" });
+    res.status(500).json({ error: 'Error al buscar producto' })
   }
-});
+})
 
-router.post("/", async (req, res) => {
+router.post('/', async (req, res) => {
   try {
-    const { name, description, price } = req.body;
+    const { name, description, price } = req.body
 
     if (!name || !description || !price) {
-      return res.status(400).json({ error: "Faltan campos requeridos" });
+      return res.status(400).json({ error: 'Faltan campos requeridos' })
     }
 
     const { data, error } = await supabase
-      .from("products")
+      .from('products')
       .insert([{ name, description, price }])
       .select()
-      .single();
+      .single()
 
-    if (error) throw error;
-    res.status(201).json(data);
+    if (error) throw error
+    res.status(201).json(data)
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Error al crear producto" });
+    res.status(500).json({ error: 'Error al crear producto' })
   }
-});
+})
 
-router.put("/:id", async (req, res) => {
+router.put('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    const { name, description, price } = req.body;
+    const { id } = req.params
+    const { name, description, price } = req.body
 
     const { data, error } = await supabase
-      .from("products")
+      .from('products')
       .update({ name, description, price })
-      .eq("id", id)
+      .eq('id', id)
       .select()
-      .single();
+      .single()
 
-    if (!data) return res.status(404).json({ error: "Producto no encontrado" });
+    if (!data) return res.status(404).json({ error: 'Producto no encontrado' })
 
-    if (error) throw error;
-    res.json(data);
+    if (error) throw error
+    res.json(data)
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Error al actualizar producto" });
+    res.status(500).json({ error: 'Error al actualizar producto' })
   }
-});
+})
 
-router.delete("/:id", async (req, res) => {
+router.delete('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params
     const { data, error } = await supabase
-      .from("products")
+      .from('products')
       .delete()
-      .eq("id", id)
-      .select("name")
-      .single();
-    if (!data) return res.status(404).json({ error: "Producto no encontrado" });
-    if (error) throw error;
+      .eq('id', id)
+      .select('name')
+      .single()
+    if (!data) return res.status(404).json({ error: 'Producto no encontrado' })
+    if (error) throw error
     res.json({
-      message: `Producto ${data.name} eliminado correctamente`,
-    });
+      message: `Producto ${data.name} eliminado correctamente`
+    })
   } catch (error) {
-    console.error("Error:", error);
-    res.status(500).json({ error: "Error al eliminar producto" });
+    res.status(500).json({ error: 'Error al eliminar producto' })
   }
-});
+})
 
-module.exports = router;
+module.exports = router

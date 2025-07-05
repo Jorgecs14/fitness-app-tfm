@@ -1,47 +1,50 @@
-import CssBaseline from '@mui/material/CssBaseline';
-import { createTheme, ThemeProvider as MuiThemeProvider } from '@mui/material/styles';
-
-// ----------------------------------------------------------------------
+// Provider del tema Material-UI con configuración personalizada para la aplicación
+import CssBaseline from '@mui/material/CssBaseline'
+import {
+  createTheme,
+  ThemeProvider as MuiThemeProvider
+} from '@mui/material/styles'
 
 type ThemeProviderProps = {
-  children: React.ReactNode;
-};
+  children: React.ReactNode
+}
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const theme = createTheme({
     palette: {
       primary: {
-        main: '#1976d2',
+        main: '#1976d2'
       },
       secondary: {
-        main: '#dc004e',
-      },
+        main: '#dc004e'
+      }
     },
     typography: {
-      fontFamily: '"DM Sans Variable", "Roboto", "Helvetica", "Arial", sans-serif',
+      fontFamily:
+        '"DM Sans Variable", "Roboto", "Helvetica", "Arial", sans-serif'
     },
     components: {
       MuiButton: {
         styleOverrides: {
           root: {
-            textTransform: 'none',
-          },
-        },
+            textTransform: 'none'
+          }
+        }
       },
       MuiAppBar: {
         styleOverrides: {
           root: {
-            backgroundColor: '#ffffff8c',
-          },
-        },
-      },
-    },
-  });
+            backgroundColor: '#ffffff8c'
+          }
+        }
+      }
+    }
+  })
 
   return (
     <MuiThemeProvider theme={theme}>
       <CssBaseline />
       {children}
     </MuiThemeProvider>
-  );
+  )
 }

@@ -1,34 +1,11 @@
 // Página principal de presentación de la plataforma para entrenadores personales
-// Inspirada en https://lifeboost1.com/ pero con estilo minimalista y profesional
-//
-// Características principales:
-// - Hero section con logos y CTA destacado
-// - Sección de características con animaciones de hover
-// - CTA final para registro
-// - Footer con información de contacto y branding
-// - Animaciones de entrada sutiles
-
 import { AppBar, Toolbar, Card, CardContent } from '@mui/material'
 import { useNavigate } from 'react-router-dom'
 import { Box, Button, Container, Typography, Stack } from '@mui/material'
 import { Iconify } from '../utils/iconify'
 
-// COMPONENTE PRINCIPAL: LandingPage
-// Estructura general:
-// 1. Animaciones globales (keyframes)
-// 2. Header con navegación y branding
-// 3. Hero Section: título, subtítulo, logos y CTA
-// 4. Features Section: cards con características
-// 5. CTA Section: llamada a la acción final
-// 6. Footer: contacto y derechos
-
 export const LandingPage = () => {
   const navigate = useNavigate()
-
-  // FEATURES SECTION
-  // - Grid de las cards con las principales funcionalidades de la plataforma
-  // - Cada card tiene un icono, título y descripción
-  // - Animación de hover en las cards e iconos
 
   const features = [
     {
