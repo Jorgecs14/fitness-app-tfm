@@ -110,7 +110,7 @@ export function DashboardLayout({
                 }}
               >
                 <img
-                  src='/src/assets/logo.png'
+                  src='/logo.png'
                   alt='Logo'
                   className='logo-image topbar-logo'
                   style={{

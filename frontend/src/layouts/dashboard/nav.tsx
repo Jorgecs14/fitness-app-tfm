@@ -97,7 +97,7 @@ export function NavContent({ data, slots, onItemClick }: NavContentProps) {
       {/* Logo */}
       <Box sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 1 }}>
         <img
-          src='/src/assets/logo.png'
+          src='/logo.png'
           alt='Logo'
           className='logo-image sidebar-logo'
           style={{

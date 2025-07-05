@@ -112,24 +112,13 @@ export const LandingPage = () => {
           >
             <Box
               component='img'
-              src='/logo_LB.png'
-              alt='Logo LB'
-              onClick={() => window.open('https://lifeboost1.com/', '_blank')}
-              sx={{
-                height: { xs: 35, sm: 45, md: 50 },
-                width: { xs: 35, sm: 45, md: 50 },
-                objectFit: 'contain',
-                cursor: 'pointer'
-              }}
-            />
-            <Box
-              component='img'
               src='/logo_white.png'
-              alt='Logo principal'
+              alt='Logo'
               onClick={() => navigate('/')}
               sx={{
-                height: { xs: 30, sm: 35, md: 40 },
-                cursor: 'pointer'
+                height: { xs: 40, sm: 50, md: 60 },
+                cursor: 'pointer',
+                objectFit: 'contain'
               }}
             />
           </Box>
