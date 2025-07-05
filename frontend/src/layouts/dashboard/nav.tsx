@@ -1,3 +1,4 @@
+// Componentes de navegación desktop y móvil para el dashboard
 import type { Breakpoint } from '@mui/material/styles'
 
 import { useLocation, Link } from 'react-router-dom'
@@ -13,15 +14,13 @@ import { Scrollbar } from '../../utils/scrollbar'
 
 import type { NavItem } from '../nav-config-dashboard'
 
-// ----------------------------------------------------------------------
-
 export type NavContentProps = {
   data: NavItem[]
   slots?: {
     topArea?: React.ReactNode
     bottomArea?: React.ReactNode
   }
-  onItemClick?: () => void // Para cerrar el menú móvil
+  onItemClick?: () => void
 }
 
 export function NavDesktop({

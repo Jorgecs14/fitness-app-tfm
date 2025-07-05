@@ -1,3 +1,8 @@
+/**
+ * Cliente de Supabase para el frontend de la aplicación fitness-app-tfm
+ * Configura la conexión con la base de datos y autenticación
+ */
+
 /// <reference types="vite/client" />
 import { createClient } from '@supabase/supabase-js'
 

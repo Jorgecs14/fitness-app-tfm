@@ -1,3 +1,4 @@
+// Layout principal del dashboard con navegación lateral y header
 import type { Theme } from '@mui/material/styles'
 
 import { useState } from 'react'
@@ -15,8 +16,6 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 
 import { Iconify } from '../utils/iconify'
-
-// ----------------------------------------------------------------------
 
 const DRAWER_WIDTH = 280
 

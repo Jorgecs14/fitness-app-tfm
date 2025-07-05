@@ -1,1 +1,2 @@
-export { AuthLayout } from './layout';
+// Exportaciones del módulo auth layout
+export { AuthLayout } from './layout'

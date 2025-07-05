@@ -1,3 +1,8 @@
+/**
+ * Rutas para gestionar ejercicios en la aplicación fitness-app-tfm
+ * Incluye CRUD completo para ejercicios con nombre, descripción y tiempo de ejecución
+ */
+
 const express = require('express')
 const router = express.Router()
 const { supabase } = require('../database/supabaseClient')
@@ -32,25 +37,24 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { name, description, execution_time } = req.body;
-    console.log('📤 Body recibido:', { name, description, execution_time });
+    const { name, description, execution_time } = req.body
 
     if (!name || execution_time == null) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' });
+      return res.status(400).json({ error: 'Faltan campos requeridos' })
     }
 
     const { data, error } = await supabase
       .from('exercises')
       .insert([{ name, description, execution_time }])
       .select()
-      .single();
+      .single()
 
-    if (error) throw error;
-    res.status(201).json(data);
+    if (error) throw error
+    res.status(201).json(data)
   } catch (err) {
-    res.status(500).json({ error: 'Error al crear ejercicio' });
+    res.status(500).json({ error: 'Error al crear ejercicio' })
   }
-});
+})
 
 router.put('/:id', async (req, res) => {
   try {

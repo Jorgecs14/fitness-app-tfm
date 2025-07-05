@@ -1,4 +1,5 @@
-import { DietWithFoods } from '../types/DietWithFoods';
+// Utilidades para cálculos y formateo relacionados con dietas y calorías
+import { DietWithFoods } from '../types/DietWithFoods'
 
 /**
  * Calcula las calorías totales de una dieta basándose en los alimentos agregados
@@ -7,18 +8,18 @@ import { DietWithFoods } from '../types/DietWithFoods';
  */
 export const calculateDietCalories = (diet: DietWithFoods): number => {
   if (!diet.diet_foods || diet.diet_foods.length === 0) {
-    return 0;
+    return 0
   }
-  
+
   return diet.diet_foods.reduce((total, dietFood) => {
     if (dietFood.foods && dietFood.quantity) {
       // Calcular calorías: (calorías por 100g * cantidad en gramos) / 100
-      const foodCalories = (dietFood.foods.calories * dietFood.quantity) / 100;
-      return total + Math.round(foodCalories);
+      const foodCalories = (dietFood.foods.calories * dietFood.quantity) / 100
+      return total + Math.round(foodCalories)
     }
-    return total;
-  }, 0);
-};
+    return total
+  }, 0)
+}
 
 /**
  * Formatea las calorías para mostrarlas en la UI
@@ -26,8 +27,8 @@ export const calculateDietCalories = (diet: DietWithFoods): number => {
  * @returns String formateado con "cal"
  */
 export const formatCalories = (calories: number): string => {
-  return `${calories} cal`;
-};
+  return `${calories} cal`
+}
 
 /**
  * Calcula las calorías de un alimento específico según su cantidad
@@ -35,6 +36,9 @@ export const formatCalories = (calories: number): string => {
  * @param quantity - Cantidad en gramos
  * @returns Calorías calculadas
  */
-export const calculateFoodCalories = (caloriesPer100g: number, quantity: number): number => {
-  return Math.round((caloriesPer100g * quantity) / 100);
-};
+export const calculateFoodCalories = (
+  caloriesPer100g: number,
+  quantity: number
+): number => {
+  return Math.round((caloriesPer100g * quantity) / 100)
+}
