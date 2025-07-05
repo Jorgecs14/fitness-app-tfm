@@ -1,3 +1,4 @@
+// Layout de autenticación con diseño centrado para páginas de login y registro
 import { styled } from '@mui/material/styles'
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
@@ -5,8 +6,6 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 
 import { Iconify } from '../../utils/iconify'
-
-// ----------------------------------------------------------------------
 
 type AuthLayoutProps = {
   children: React.ReactNode

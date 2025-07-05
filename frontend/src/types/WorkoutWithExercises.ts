@@ -1,3 +1,4 @@
+// Definición de la interfaz WorkoutWithExercises que extiende Workout incluyendo información de ejercicios
 import { Workout } from './Workout'
 import { WorkoutExerciseDetail } from './WorkoutExercise'
 

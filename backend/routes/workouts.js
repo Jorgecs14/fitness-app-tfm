@@ -1,3 +1,8 @@
+/**
+ * Rutas para gestionar entrenamientos en la aplicación fitness-app-tfm
+ * Incluye CRUD de entrenamientos, gestión de ejercicios asociados y asignación a usuarios
+ */
+
 const express = require('express')
 const router = express.Router()
 const { supabase } = require('../database/supabaseClient')
@@ -19,7 +24,8 @@ router.get('/with-exercises', async (req, res) => {
   try {
     const { data: workouts, error: workoutsError } = await supabase
       .from('workouts')
-      .select(`
+      .select(
+        `
         *,
         workout_exercises (
           id,
@@ -32,13 +38,13 @@ router.get('/with-exercises', async (req, res) => {
             execution_time
           )
         )
-      `)
+      `
+      )
       .order('id')
 
     if (workoutsError) throw workoutsError
     res.json(workouts)
   } catch (err) {
-    console.error('Error al obtener entrenamientos con ejercicios:', err)
     res
       .status(500)
       .json({ error: 'Error al obtener entrenamientos con ejercicios' })
@@ -64,7 +70,6 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    console.log('📦 Body recibido en POST /workouts:', req.body)
     const { user_id, name, category, notes } = req.body
 
     if (!user_id || !name || !category) {
@@ -81,7 +86,6 @@ router.post('/', async (req, res) => {
 
     res.status(201).json(data)
   } catch (err) {
-    console.error('🔥 Error en POST /workouts:', err)
     res.status(500).json({ error: 'Error al crear entrenamiento' })
   }
 })
@@ -107,49 +111,40 @@ router.put('/:id', async (req, res) => {
 
 router.delete('/:id', async (req, res) => {
   try {
-    const { id } = req.params;
-    console.log(`🗑️ Backend: Eliminando entrenamiento ${id}`);
-    
-    // Primero eliminar todos los ejercicios asociados al entrenamiento
+    const { id } = req.params
+
     const { error: deleteExercisesError } = await supabase
       .from('workout_exercises')
       .delete()
-      .eq('workout_id', id);
-    
+      .eq('workout_id', id)
+
     if (deleteExercisesError) {
-      console.error('❌ Error al eliminar ejercicios del entrenamiento:', deleteExercisesError);
-      throw deleteExercisesError;
+      throw deleteExercisesError
     }
-    
-    console.log('✅ Ejercicios del entrenamiento eliminados');
-    
-    // Luego eliminar el entrenamiento
+
     const { data, error } = await supabase
       .from('workouts')
       .delete()
       .eq('id', id)
       .select('name')
-      .single();
+      .single()
 
     if (error) {
-      console.error('❌ Error al eliminar entrenamiento:', error);
-      throw error;
+      throw error
     }
-    
+
     if (!data) {
-      return res.status(404).json({ error: 'Entrenamiento no encontrado' });
+      return res.status(404).json({ error: 'Entrenamiento no encontrado' })
     }
-    
-    console.log(`✅ Entrenamiento "${data.name}" eliminado correctamente`);
+
     res.json({
       message: `Entrenamiento "${data.name}" eliminado correctamente`
-    });
+    })
   } catch (err) {
-    console.error('❌ Error al eliminar entrenamiento:', err);
-    res.status(500).json({ 
-      error: 'Error al eliminar entrenamiento', 
-      details: err.message 
-    });
+    res.status(500).json({
+      error: 'Error al eliminar entrenamiento',
+      details: err.message
+    })
   }
 })
 
@@ -188,7 +183,6 @@ router.get('/:id/full', async (req, res) => {
 
     res.json({ ...workout, exercises })
   } catch (err) {
-    console.error(err)
     res
       .status(500)
       .json({ error: 'Error al obtener el entrenamiento completo' })
@@ -197,7 +191,6 @@ router.get('/:id/full', async (req, res) => {
 
 router.get('/:id/details', async (req, res) => {
   const { id } = req.params
-
   try {
     const { data: workout, error: workoutError } = await supabase
       .from('workouts')
@@ -209,7 +202,8 @@ router.get('/:id/details', async (req, res) => {
 
     const { data: exercises, error: exercisesError } = await supabase
       .from('workout_exercises')
-      .select(`
+      .select(
+        `
         id,
         sets,
         reps,
@@ -219,7 +213,8 @@ router.get('/:id/details', async (req, res) => {
           description,
           execution_time
         )
-      `)
+      `
+      )
       .eq('workout_id', id)
 
     if (exercisesError) throw exercisesError
@@ -239,163 +234,86 @@ router.get('/:id/details', async (req, res) => {
       exercises: flattenedExercises
     })
   } catch (err) {
-    console.error('Error cargando detalles del entrenamiento:', err)
     res.status(500).json({ error: 'Error cargando detalles del entrenamiento' })
   }
 })
 
-
 router.get('/:id/user', async (req, res) => {
   try {
-    const { id } = req.params;
-    console.log(`📋 Backend: Obteniendo usuario para workout ${id}`);
-    
+    const { id } = req.params
+
     const { data, error } = await supabase
       .from('workouts')
       .select('user_id, users(id, name, surname, email)')
       .eq('id', id)
-      .single();
-      
+      .single()
+
     if (error) {
-      console.error('❌ Error en Supabase al obtener usuario:', error);
-      throw error;
+      throw error
     }
-    
+
     if (!data) {
-      return res.status(404).json({ error: 'Workout no encontrado' });
+      return res.status(404).json({ error: 'Workout no encontrado' })
     }
-    
 
     if (!data.user_id) {
-      console.log(`👤 Workout ${id} no tiene usuario asignado`);
-      return res.json(null);
+      return res.json(null)
     }
-    
-    console.log(`👤 Usuario del workout ${id}:`, data.users);
-    res.json(data.users);
-  } catch (error) {
-    console.error('❌ Error al obtener usuario del workout:', error);
-    res.status(500).json({ error: 'Error al obtener usuario del workout' });
-  }
-});
 
+    res.json(data.users)
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener usuario del workout' })
+  }
+})
 
 router.put('/:id/user/:userId', async (req, res) => {
   try {
-    const { id, userId } = req.params;
-    console.log(`🔄 Backend: Cambiando propietario del workout ${id} a usuario ${userId}`);
-    
+    const { id, userId } = req.params
+
     const { data, error } = await supabase
       .from('workouts')
       .update({ user_id: userId })
       .eq('id', id)
       .select()
-      .single();
-      
-    if (error) {
-      console.error('❌ Error en Supabase:', error);
-      throw error;
-    }
-    
-    if (!data) {
-      return res.status(404).json({ error: 'Workout no encontrado' });
-    }
-    
-    console.log('✅ Propietario cambiado correctamente:', data);
-    res.json({ message: 'Propietario cambiado correctamente', data });
-  } catch (error) {
-    console.error('❌ Error al cambiar propietario del workout:', error);
-    res.status(500).json({ error: 'Error al cambiar propietario del workout' });
-  }
-});
+      .single()
 
+    if (error) {
+      throw error
+    }
+
+    if (!data) {
+      return res.status(404).json({ error: 'Workout no encontrado' })
+    }
+
+    res.json({ message: 'Propietario cambiado correctamente', data })
+  } catch (error) {
+    res.status(500).json({ error: 'Error al cambiar propietario del workout' })
+  }
+})
 
 router.delete('/:id/user', async (req, res) => {
   try {
-    const { id } = req.params;
-    console.log(`🗑️ Backend: Quitando propietario del workout ${id}`);
-    
+    const { id } = req.params
+
     const { data, error } = await supabase
       .from('workouts')
       .update({ user_id: null })
       .eq('id', id)
       .select()
-      .single();
-      
+      .single()
+
     if (error) {
-      console.error('❌ Error en Supabase:', error);
-      throw error;
+      throw error
     }
-    
+
     if (!data) {
-      return res.status(404).json({ error: 'Workout no encontrado' });
+      return res.status(404).json({ error: 'Workout no encontrado' })
     }
-    
-    console.log('✅ Propietario quitado correctamente');
-    res.json({ message: 'Propietario quitado correctamente' });
+
+    res.json({ message: 'Propietario quitado correctamente' })
   } catch (error) {
-    console.error('❌ Error al quitar propietario del workout:', error);
-    res.status(500).json({ error: 'Error al quitar propietario del workout' });
+    res.status(500).json({ error: 'Error al quitar propietario del workout' })
   }
-});
-
-
-router.get('/:id/user', async (req, res) => {
-  try {
-    const { id } = req.params;
-    console.log(`👤 Backend: Obteniendo usuario propietario del workout ${id}`);
-    
-    const { data, error } = await supabase
-      .from('workouts')
-      .select('user_id, users(id, name, surname, email)')
-      .eq('id', id)
-      .single();
-      
-    if (error) {
-      console.error('❌ Error en Supabase al obtener usuario:', error);
-      throw error;
-    }
-    
-    if (!data || !data.user_id) {
-      return res.json(null); 
-    }
-    
-    console.log('👤 Usuario propietario obtenido:', data.users);
-    res.json(data.users);
-  } catch (error) {
-    console.error('❌ Error al obtener usuario del workout:', error);
-    res.status(500).json({ error: 'Error al obtener usuario del workout' });
-  }
-});
-
-
-router.put('/:id/user/:userId', async (req, res) => {
-  try {
-    const { id, userId } = req.params;
-    console.log(`🔄 Backend: Cambiando propietario del workout ${id} al usuario ${userId}`);
-    
-    const { data, error } = await supabase
-      .from('workouts')
-      .update({ user_id: userId })
-      .eq('id', id)
-      .select()
-      .single();
-      
-    if (error) {
-      console.error('❌ Error en Supabase:', error);
-      throw error;
-    }
-    
-    if (!data) {
-      return res.status(404).json({ error: 'Workout no encontrado' });
-    }
-    
-    console.log('✅ Propietario cambiado correctamente:', data);
-    res.json({ message: 'Propietario cambiado correctamente', data });
-  } catch (error) {
-    console.error('❌ Error al cambiar propietario del workout:', error);
-    res.status(500).json({ error: 'Error al cambiar propietario del workout' });
-  }
-});
+})
 
 module.exports = router

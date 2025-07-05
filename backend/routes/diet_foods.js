@@ -1,15 +1,17 @@
+/**
+ * Rutas para gestionar relaciones entre dietas y alimentos en la aplicación fitness-app-tfm
+ * Permite añadir, actualizar y eliminar alimentos de las dietas con sus cantidades correspondientes
+ */
+
 const express = require('express')
 const router = express.Router()
 const { supabase } = require('../database/supabaseClient')
 
-// Obtener todas las relaciones dieta-alimento
 router.get('/', async (req, res) => {
   try {
-    const { diet_id } = req.query;
-    
-    let query = supabase
-      .from('diet_foods')
-      .select(`
+    const { diet_id } = req.query
+
+    let query = supabase.from('diet_foods').select(`
         *,
         foods (
           id,
@@ -17,23 +19,22 @@ router.get('/', async (req, res) => {
           description,
           calories
         )
-      `);
-    
-    // Si se proporciona diet_id, filtrar por esa dieta
-    if (diet_id) {
-      query = query.eq('diet_id', diet_id);
-    }
-    
-    const { data, error } = await query;
-    if (error) throw error;
-    res.json(data);
-  } catch (err) {
-    console.error('Error:', err);
-    res.status(500).json({ error: 'Error al obtener relaciones dieta-alimento' });
-  }
-});
+      `)
 
-// Añadir alimento a dieta
+    if (diet_id) {
+      query = query.eq('diet_id', diet_id)
+    }
+
+    const { data, error } = await query
+    if (error) throw error
+    res.json(data)
+  } catch (err) {
+    res
+      .status(500)
+      .json({ error: 'Error al obtener relaciones dieta-alimento' })
+  }
+})
+
 router.post('/', async (req, res) => {
   try {
     const { diet_id, food_id, quantity } = req.body
@@ -43,7 +44,8 @@ router.post('/', async (req, res) => {
     const { data, error } = await supabase
       .from('diet_foods')
       .insert([{ diet_id, food_id, quantity }])
-      .select(`
+      .select(
+        `
         *,
         foods (
           id,
@@ -51,17 +53,16 @@ router.post('/', async (req, res) => {
           description,
           calories
         )
-      `)
+      `
+      )
       .single()
     if (error) throw error
     res.status(201).json(data)
   } catch (err) {
-    console.error('Error:', err);
     res.status(500).json({ error: 'Error al añadir alimento a dieta' })
   }
 })
 
-// Actualizar cantidad de alimento en dieta
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params
@@ -70,7 +71,8 @@ router.put('/:id', async (req, res) => {
       .from('diet_foods')
       .update({ quantity })
       .eq('id', id)
-      .select(`
+      .select(
+        `
         *,
         foods (
           id,
@@ -78,17 +80,16 @@ router.put('/:id', async (req, res) => {
           description,
           calories
         )
-      `)
+      `
+      )
       .single()
     if (error) throw error
     res.json(data)
   } catch (err) {
-    console.error('Error:', err);
     res.status(500).json({ error: 'Error al actualizar cantidad' })
   }
 })
 
-// Quitar alimento de dieta
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params
