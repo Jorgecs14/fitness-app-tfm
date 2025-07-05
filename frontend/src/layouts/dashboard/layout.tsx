@@ -8,7 +8,6 @@ import Box from '@mui/material/Box'
 import { useTheme } from '@mui/material/styles'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import ListItemIcon from '@mui/material/ListItemIcon'
@@ -112,7 +111,7 @@ export function DashboardLayout({
               >
                 <img
                   src='/src/assets/logo.png'
-                  alt='Fitness App Logo'
+                  alt='Logo'
                   className='logo-image topbar-logo'
                   style={{
                     maxHeight: '45px',
@@ -151,9 +150,15 @@ export function DashboardLayout({
                     width={32}
                     color='primary.main'
                   />
-                  <Typography variant='h5' color='primary' fontWeight='bold'>
-                    Fitness App
-                  </Typography>
+                  <Box
+                    component='img'
+                    src='/logo.png'
+                    alt='Logo'
+                    sx={{
+                      height: 32,
+                      objectFit: 'contain'
+                    }}
+                  />
                 </Box>
               </Box>
             </>
