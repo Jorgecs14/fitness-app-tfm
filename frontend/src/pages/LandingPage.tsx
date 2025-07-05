@@ -116,7 +116,7 @@ export const LandingPage = () => {
               alt='Logo'
               onClick={() => navigate('/')}
               sx={{
-                height: { xs: 40, sm: 50, md: 60 },
+                height: { xs: 25, sm: 30, md: 40 },
                 cursor: 'pointer',
                 objectFit: 'contain'
               }}
