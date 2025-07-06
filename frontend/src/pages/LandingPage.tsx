@@ -48,7 +48,7 @@ export const LandingPage = () => {
 
   return (
     <>
-      {/* GLOBAL ANIMATIONS */}
+      {/* Animaciones globales */}
       <Box
         sx={{
           '@keyframes fadeInUp': {
@@ -64,7 +64,7 @@ export const LandingPage = () => {
         }}
       />
 
-      {/* NAVIGATION (HEADER) */}
+      {/* Header */}
       <AppBar
         position='fixed'
         sx={{
@@ -122,7 +122,7 @@ export const LandingPage = () => {
         </Toolbar>
       </AppBar>
 
-      {/* HERO SECTION */}
+      {/* Seccion Hero */}
       <Box
         sx={{
           minHeight: '100vh',
@@ -134,7 +134,7 @@ export const LandingPage = () => {
           pt: { xs: 10, sm: 8 }
         }}
       >
-        {/* Background Pattern */}
+        {/* Background */}
         <Box
           sx={{
             position: 'absolute',
@@ -273,7 +273,6 @@ export const LandingPage = () => {
                   gap: 0
                 }}
               >
-                {/* Logo LB más grande */}
                 <img
                   src='/logo_LB.png'
                   alt='Logo LB'
@@ -286,7 +285,6 @@ export const LandingPage = () => {
                   }}
                 />
 
-                {/* Logo principal debajo */}
                 <img
                   src='/logo_white.png'
                   alt='Logo principal'
@@ -303,7 +301,7 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* FEATURES SECTION */}
+      {/* Seccion de Caracteristicas */}
       <Box
         sx={{
           py: 10,
@@ -405,7 +403,7 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* CTA SECTION */}
+      {/* Seccion de CTA */}
       <Box
         sx={{
           py: 10,
@@ -462,7 +460,7 @@ export const LandingPage = () => {
         </Container>
       </Box>
 
-      {/* FOOTER */}
+      {/* Footer */}
       <Box sx={{ py: 6, background: '#000', color: 'white' }}>
         <Container maxWidth='lg'>
           <Box
