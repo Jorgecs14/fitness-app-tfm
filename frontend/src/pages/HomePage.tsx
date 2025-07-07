@@ -64,7 +64,6 @@ export const HomePage = () => {
         productService.getProducts()
       ])
 
-      // Calcular estadísticas de usuarios por rol
       const roleStats = users.reduce((acc: { [key: string]: number }, user) => {
         acc[user.role] = (acc[user.role] || 0) + 1
         return acc
@@ -75,7 +74,6 @@ export const HomePage = () => {
         count: count as number
       }))
 
-      // Calcular datos mensuales reales (últimos 7 meses)
       const monthlyData = calculateMonthlyData(users, workouts)
 
       setStats({
@@ -105,7 +103,6 @@ export const HomePage = () => {
     const userCounts = []
     const workoutCounts = []
 
-    // Últimos 7 meses
     for (let i = 6; i >= 0; i--) {
       const date = new Date()
       date.setMonth(date.getMonth() - i)
@@ -115,7 +112,6 @@ export const HomePage = () => {
 
       months.push(date.toLocaleDateString('es-ES', { month: 'short' }))
 
-      // Contar usuarios creados en este mes
       const usersInMonth = users.filter((user) => {
         if (!user.created_at) return false
         const userDate = new Date(user.created_at)
@@ -125,7 +121,6 @@ export const HomePage = () => {
         return userMonthYear === monthYear
       }).length
 
-      // Contar entrenamientos creados en este mes
       const workoutsInMonth = workouts.filter((workout) => {
         if (!workout.created_at) return false
         const workoutDate = new Date(workout.created_at)
@@ -859,7 +854,7 @@ export const HomePage = () => {
               </Box>
             </Box>
           </Card>
-
+          
           {/* Resumen de Datos Reales */}
           <Card sx={{ p: 3 }}>
             <CardHeader

@@ -44,7 +44,6 @@ export const SignUpPage = () => {
   const handleSignUp = useCallback(async () => {
     setError('')
 
-    // Validaciones
     if (
       !formData.firstName ||
       !formData.lastName ||

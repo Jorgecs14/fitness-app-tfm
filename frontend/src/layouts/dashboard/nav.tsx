@@ -63,8 +63,6 @@ export function NavMobile({
   slots,
   onClose
 }: NavContentProps & { open: boolean; onClose: () => void }) {
-  // El menú se cerrará cuando el usuario haga click fuera (onClose del Drawer)
-  // o cuando navegue manualmente usando onItemClick
 
   return (
     <Drawer
@@ -76,7 +74,7 @@ export function NavMobile({
           px: 2.5,
           overflow: 'unset',
           width: 280,
-          zIndex: 1300 // Asegurar que esté por encima de otros elementos
+          zIndex: 1300
         }
       }}
     >
@@ -149,7 +147,6 @@ export function NavContent({ data, slots, onItemClick }: NavContentProps) {
       </Box>
 
       {slots?.topArea}
-
       {/* Navigation Items */}
       <Scrollbar>
         <Box

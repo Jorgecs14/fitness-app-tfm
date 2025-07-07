@@ -48,7 +48,7 @@ export const LandingPage = () => {
 
   return (
     <>
-      {/* Animaciones globales */}
+    {/* Animaciones globales */}
       <Box
         sx={{
           '@keyframes fadeInUp': {
@@ -64,7 +64,7 @@ export const LandingPage = () => {
         }}
       />
 
-      {/* Header */}
+      {/* Header */}  
       <AppBar
         position='fixed'
         sx={{
@@ -402,7 +402,6 @@ export const LandingPage = () => {
           </Box>
         </Container>
       </Box>
-
       {/* Seccion de CTA */}
       <Box
         sx={{
@@ -459,7 +458,7 @@ export const LandingPage = () => {
           </Button>
         </Container>
       </Box>
-
+      
       {/* Footer */}
       <Box sx={{ py: 6, background: '#000', color: 'white' }}>
         <Container maxWidth='lg'>

@@ -73,7 +73,6 @@ export const ProfilePage = () => {
     usersByRole: { admin: 0, user: 0 }
   })
 
-  // Form states
   const [profileForm, setProfileForm] = useState({
     name: '',
     surname: '',
@@ -237,7 +236,6 @@ export const ProfilePage = () => {
     return age
   }
 
-  // Datos para gráficos basados en datos reales
   const chartData = {
     categories: ['Usuarios', 'Dietas', 'Entrenamientos'],
     series: [
