@@ -292,7 +292,7 @@ export const FloatingChat: React.FC = () => {
               <IconButton
                 color="primary"
                 onClick={handleSendMessage}
-                disabled={isLoading || !inputMessage.trim()}  // Desactiva si está cargando o vacío
+                disabled={isLoading || !inputMessage.trim()}  
                 sx={{
                   bgcolor: 'primary.main',
                   color: 'white',

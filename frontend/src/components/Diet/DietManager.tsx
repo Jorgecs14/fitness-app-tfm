@@ -310,7 +310,6 @@ export const DietManager = () => {
           diet={selectedDiet}
           onClose={handleCloseFoodsManager}
           onSave={async () => {
-            // Puedes recargar las dietas aquí si lo necesitas
             setOpenFoodsManager(false)
             loadDiets()
           }}

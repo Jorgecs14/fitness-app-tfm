@@ -56,7 +56,6 @@ export const UserList = ({
 
   const navigate = useNavigate();
 
-  // Filter users based on search
   const filteredUsers = users.filter(
     (user) =>
       user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||

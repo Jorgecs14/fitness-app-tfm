@@ -44,7 +44,6 @@ export const ProductList = ({ products, loading, onEdit, onDelete, onExport, onC
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Filter products based on search
   const filteredProducts = products.filter(product =>
     product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.description?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -112,7 +111,7 @@ export const ProductList = ({ products, loading, onEdit, onDelete, onExport, onC
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setPage(0); // Reset page when searching
+              setPage(0); 
             }}
             InputProps={{
               startAdornment: (

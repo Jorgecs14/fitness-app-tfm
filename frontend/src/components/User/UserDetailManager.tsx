@@ -39,11 +39,9 @@ export const UserDetailManager = () => {
     try {
       setLoading(true)
 
-      // Load user data
       const userData = await userService.getUser(parseInt(id))
       setUser(userData)
 
-      // Load user's diets
       const allDiets = await dietService.getDiets()
       const dietsWithUsers = await Promise.all(
         allDiets.map(async (diet) => {
@@ -56,7 +54,6 @@ export const UserDetailManager = () => {
       )
       setUserDiets(dietsWithUsers.filter((d) => d.hasUser).map((d) => d.diet))
 
-      // Load user's workouts
       const allWorkouts = await workoutService.getWorkouts()
       const userWorkoutsList = allWorkouts.filter(
         (w) => w.user_id === parseInt(id)
