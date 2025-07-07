@@ -159,7 +159,6 @@ export const removeAllExercisesFromWorkout = async (
   }
 }
 
-// Obtener el usuario propietario de un workout
 export const getWorkoutUser = async (
   workoutId: number
 ): Promise<any | null> => {
@@ -181,7 +180,6 @@ export const getWorkoutUser = async (
   }
 }
 
-// Cambiar el propietario de un workout
 export const changeWorkoutOwner = async (
   workoutId: number,
   userId: number
@@ -207,7 +205,6 @@ export const changeWorkoutOwner = async (
   }
 }
 
-// Quitar el propietario de un workout
 export const removeWorkoutOwner = async (workoutId: number): Promise<void> => {
   try {
     console.log(`🗑️ Quitando propietario del workout ${workoutId}`)

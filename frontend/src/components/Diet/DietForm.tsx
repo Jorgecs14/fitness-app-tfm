@@ -28,8 +28,7 @@ export const DietForm = ({ open, dietToEdit, onClose, onSubmit }: DietFormProps)
   };
 
   const handleSubmit = () => {
-    const { user_id, ...dietData } = formData; // Elimina user_id si existe
-    // Las calorías se calcularán dinámicamente, pero enviamos 0 por defecto para la base de datos
+    const { user_id, ...dietData } = formData;
     onSubmit({ ...dietData, calories: 0 });
   };
 

@@ -56,7 +56,6 @@ export const DietFoodsManager = ({
       await dietFoodService.addFoodToDiet(diet.id, selectedFood.id, Number(quantity));
       setSelectedFood(null);
       setQuantity('');
-      // Recargar los datos para mostrar el alimento recién agregado
       loadDietFoods();
     } catch (error) {
       console.error('Error adding food to diet:', error);
@@ -73,13 +72,10 @@ export const DietFoodsManager = ({
         calories: Number(newFoodCalories)
       });
       
-      // Actualizar la lista de alimentos disponibles
       setAvailableFoods(prev => [...prev, newFood]);
       
-      // Seleccionar el nuevo alimento
       setSelectedFood(newFood);
       
-      // Limpiar el formulario
       setNewFoodName('');
       setNewFoodDescription('');
       setNewFoodCalories('');

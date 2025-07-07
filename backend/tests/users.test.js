@@ -1,7 +1,6 @@
 const request = require("supertest");
 const express = require("express");
 
-// Mock todo antes de importar
 jest.mock("../database/supabaseClient", () => ({
   supabase: {
     from: jest.fn(),
@@ -9,18 +8,15 @@ jest.mock("../database/supabaseClient", () => ({
   supabaseAdmin: {
     auth: {
       admin: {
-        createUser: jest.fn(), // Para crear usuarios en Supabase Auth
+        createUser: jest.fn(),
       },
     },
     from: jest.fn(),
   },
 }));
 
-// Importar después del mock
 const { supabase, supabaseAdmin } = require("../database/supabaseClient");
 const usersRouter = require("../routes/users");
-
-// Crear app de prueba
 const app = express();
 app.use(express.json());
 app.use("/api/users", usersRouter);
@@ -49,7 +45,6 @@ describe("Users API Routes", () => {
         },
       ];
 
-      // Mock de la cadena completa
       const mockOrder = jest.fn().mockResolvedValue({
         data: mockUsers,
         error: null,
@@ -73,7 +68,6 @@ describe("Users API Routes", () => {
     });
 
     test("debería retornar 500 en caso de error en la base de datos", async () => {
-      // Simular error en la base de datos
       const mockOrder = jest.fn().mockResolvedValue({
         data: null,
         error: new Error("Database connection failed"),
@@ -104,7 +98,6 @@ describe("Users API Routes", () => {
         role: "client",
       };
 
-      // Simular toda la cadena completa
       const mockSingle = jest.fn().mockResolvedValue({
         data: mockUser,
         error: null,
@@ -129,7 +122,6 @@ describe("Users API Routes", () => {
     });
 
     test("debería retornar 404 cuando el usuario no se encuentra", async () => {
-      // Mock not found
       const mockSingle = jest.fn().mockResolvedValue({
         data: null,
         error: null,
@@ -156,7 +148,6 @@ describe("Users API Routes", () => {
 
   describe("POST /api/users", () => {
     test("debería crear un nuevo usuario con datos válidos", async () => {
-      // Datos del nuevo usuario
       const newUser = {
         name: "Carlos",
         surname: "López",
@@ -165,12 +156,10 @@ describe("Users API Routes", () => {
         birth_date: "1990-01-01",
       };
 
-      // Respuesta simulada de Supabase Auth
       const mockAuthUser = {
         user: { id: "auth-789", email: "carlos@example.com" },
       };
 
-      // Usuario creado en la BD (incluye auth_user_id)
       const createdUser = {
         id: 3,
         auth_user_id: "auth-789",
@@ -178,16 +167,14 @@ describe("Users API Routes", () => {
         surname: "López",
         email: "carlos@example.com",
         birth_date: "1990-01-01",
-        role: "client", // Por defecto es 'client'
+        role: "client",
       };
 
-      // Mock 1: Crear usuario en Supabase Auth
       supabaseAdmin.auth.admin.createUser.mockResolvedValue({
         data: mockAuthUser,
         error: null,
       });
 
-      // Mock 2: Buscar el usuario creado en la BD
       const mockSingle = jest.fn().mockResolvedValue({
         data: createdUser,
         error: null,
@@ -205,10 +192,8 @@ describe("Users API Routes", () => {
         select: mockSelect,
       });
 
-      // Enviar petición POST
       const res = await request(app).post("/api/users").send(newUser);
 
-      // Verificar creación exitosa
       expect(res.statusCode).toBe(201);
       expect(res.body).toMatchObject({
         name: "Carlos",
@@ -219,7 +204,6 @@ describe("Users API Routes", () => {
     test("debería retornar 400 cuando faltan campos requeridos", async () => {
       const incompleteUser = {
         name: "Test User",
-        // Faltan email, password, birth_date
       };
 
       const res = await request(app).post("/api/users").send(incompleteUser);
@@ -240,7 +224,6 @@ describe("Users API Routes", () => {
         birth_date: "1985-05-15",
       };
 
-      // Simular fallo de autenticación de administrador
       supabaseAdmin.auth = {
         admin: {
           createUser: jest.fn().mockResolvedValue({
@@ -267,7 +250,6 @@ describe("Users API Routes", () => {
 
       const updatedUser = { id: 1, ...updateData, role: "client" };
 
-      // Simular toda la cadena completa
       const mockSingle = jest.fn().mockResolvedValue({
         data: updatedUser,
         error: null,
@@ -298,7 +280,6 @@ describe("Users API Routes", () => {
     test("debería manejar actualizaciones parciales", async () => {
       const partialUpdate = {
         name: "Test",
-        // PUT permite actualizaciones parciales en esta implementación
       };
 
       const updatedUser = {
@@ -309,7 +290,6 @@ describe("Users API Routes", () => {
         role: "client",
       };
 
-      // Simular toda la cadena completa
       const mockSingle = jest.fn().mockResolvedValue({
         data: updatedUser,
         error: null,
@@ -340,7 +320,6 @@ describe("Users API Routes", () => {
 
   describe("DELETE /api/users/:id", () => {
     test("debería eliminar un usuario exitosamente", async () => {
-      // Simular toda la cadena completa
       const mockSingle = jest.fn().mockResolvedValue({
         data: { email: "deleted@example.com" },
         error: null,
@@ -372,7 +351,6 @@ describe("Users API Routes", () => {
     });
 
     test("debería retornar 404 cuando el usuario no existe", async () => {
-      // Simular no encontrado
       const mockSingle = jest.fn().mockResolvedValue({
         data: null,
         error: null,

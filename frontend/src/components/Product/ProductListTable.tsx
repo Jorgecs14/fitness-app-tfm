@@ -37,7 +37,6 @@ export const ProductList = ({ products, loading, onEdit, onDelete, onExport, onC
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(null);
 
-  // Filter products based on search
   const filteredProducts = products.filter(product =>
     product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     product.description?.toLowerCase().includes(searchQuery.toLowerCase())
@@ -112,7 +111,7 @@ export const ProductList = ({ products, loading, onEdit, onDelete, onExport, onC
             value={searchQuery}
             onChange={(e) => {
               setSearchQuery(e.target.value);
-              setPage(0); // Reset page when searching
+              setPage(0); 
             }}
             InputProps={{
               startAdornment: (

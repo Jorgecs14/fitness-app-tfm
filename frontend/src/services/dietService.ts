@@ -49,7 +49,6 @@ export const createDiet = async (diet: Omit<Diet, 'id'>): Promise<Diet> => {
   }
 }
 
-// Actualizar dieta
 export const updateDiet = async (
   id: number,
   diet: Omit<Diet, 'id'>
@@ -68,7 +67,6 @@ export const updateDiet = async (
   }
 }
 
-// Eliminar dieta
 export const deleteDiet = async (id: number): Promise<void> => {
   try {
     await axiosInstance.delete(`/diets/${id}`)
@@ -81,7 +79,6 @@ export const deleteDiet = async (id: number): Promise<void> => {
   }
 }
 
-// Añadir alimentos a una dieta (relación dieta-alimentos)
 export const addFoodsToDiet = async (dietId: number, foods: DietFood[]) => {
   try {
     const payload = foods.map((food) => ({
@@ -102,7 +99,6 @@ export const addFoodsToDiet = async (dietId: number, foods: DietFood[]) => {
   }
 }
 
-// Eliminar todos los alimentos de una dieta
 export const removeAllFoodsFromDiet = async (dietId: number): Promise<void> => {
   try {
     await axiosInstance.delete(`/diet_foods/diet/${dietId}`)
@@ -117,7 +113,6 @@ export const removeAllFoodsFromDiet = async (dietId: number): Promise<void> => {
   }
 }
 
-// Obtener usuarios asignados a una dieta
 export const getDietUsers = async (dietId: number) => {
   try {
     const response = await axiosInstance.get(`/diets/${dietId}/users`)
@@ -133,7 +128,6 @@ export const getDietUsers = async (dietId: number) => {
   }
 }
 
-// Asignar usuario a dieta
 export const assignUserToDiet = async (dietId: number, userId: number) => {
   try {
     const response = await axiosInstance.post(`/diets/${dietId}/users`, {
@@ -151,7 +145,6 @@ export const assignUserToDiet = async (dietId: number, userId: number) => {
   }
 }
 
-// Quitar usuario de dieta
 export const removeUserFromDiet = async (dietId: number, userId: number) => {
   try {
     const response = await axiosInstance.delete(

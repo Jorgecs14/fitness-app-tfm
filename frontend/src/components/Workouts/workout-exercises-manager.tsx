@@ -67,7 +67,6 @@ export const WorkoutExercisesManager = ({
 
   useEffect(() => {
     if (open) {
-      // Convertir exercises existentes a SelectedExercise format
       const convertedExercises: SelectedExercise[] = exercises.map(ex => ({
         exercise: {
           id: ex.exercise_id,
@@ -128,9 +127,8 @@ export const WorkoutExercisesManager = ({
   };
 
   const handleSave = () => {
-    // Convertir SelectedExercise[] a WorkoutExerciseDetail[]
     const convertedExercises: WorkoutExerciseDetail[] = selectedExercises.map(ex => ({
-      link_id: 0, // Will be set by backend
+      link_id: 0, 
       exercise_id: ex.exercise.id,
       sets: ex.sets,
       reps: ex.reps,
