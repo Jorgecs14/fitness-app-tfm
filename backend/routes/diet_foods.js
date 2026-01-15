@@ -5,13 +5,13 @@
 
 const express = require('express')
 const router = express.Router()
-const { supabase } = require('../database/supabaseClient')
+const { supabase, supabaseAdmin } = require('../database/supabaseClient')
 
 router.get('/', async (req, res) => {
   try {
     const { diet_id } = req.query
 
-    let query = supabase.from('diet_foods').select(`
+    let query = supabaseAdmin.from('diet_foods').select(`
         *,
         foods (
           id,

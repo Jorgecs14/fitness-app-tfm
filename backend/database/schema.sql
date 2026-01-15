@@ -56,6 +56,8 @@ CREATE TABLE public.users (
   created_at timestamp without time zone DEFAULT now(),
   role character varying,
   auth_user_id uuid UNIQUE,
+  weight numeric(5,2),
+  height numeric(5,2),
   CONSTRAINT users_pkey PRIMARY KEY (id),
   CONSTRAINT fk_users_auth_user_id FOREIGN KEY (auth_user_id) REFERENCES auth.users(id)
 );
@@ -78,3 +80,78 @@ CREATE TABLE public.workouts (
   CONSTRAINT workouts_pkey PRIMARY KEY (id),
   CONSTRAINT workouts_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id)
 );
+
+-- Tabla para información médica del cliente (datos iniciales)
+CREATE TABLE public.client_medical_info (
+  id integer NOT NULL DEFAULT nextval('client_medical_info_id_seq'::regclass),
+  user_id integer NOT NULL,
+  allergies text,
+  food_intolerances text,
+  injuries_conditions text,
+  disliked_foods text,
+  lab_results text,
+  daily_nutrition_log text,
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT client_medical_info_pkey PRIMARY KEY (id),
+  CONSTRAINT client_medical_info_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+-- Tabla para fotos de progreso del cliente
+CREATE TABLE public.client_progress_photos (
+  id integer NOT NULL DEFAULT nextval('client_progress_photos_id_seq'::regclass),
+  user_id integer NOT NULL,
+  photo_type character varying NOT NULL CHECK (photo_type IN ('front_arms_cross', 'side_arms_front', 'back_arms_cross')),
+  photo_url text NOT NULL,
+  photo_date date NOT NULL,
+  created_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT client_progress_photos_pkey PRIMARY KEY (id),
+  CONSTRAINT client_progress_photos_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+-- Tabla para seguimiento semanal del cliente
+CREATE TABLE public.weekly_tracking (
+  id integer NOT NULL DEFAULT nextval('weekly_tracking_id_seq'::regclass),
+  user_id integer NOT NULL,
+  week_start_date date NOT NULL,
+  weight numeric(5,2),
+  weight_photo_url text,
+  chest_measurement numeric(5,2),
+  waist_measurement numeric(5,2),
+  hip_measurement numeric(5,2),
+  thigh_measurement numeric(5,2),
+  bicep_measurement numeric(5,2),
+  diet_difficulties text,
+  exercise_difficulties text,
+  bowel_movements_per_week integer,
+  daily_water_intake numeric(4,2),
+  sleep_quality character varying CHECK (sleep_quality IN ('good', 'bad', 'regular')),
+  training_days_completed integer,
+  diet_deviations text,
+  self_rating integer CHECK (self_rating >= 1 AND self_rating <= 10),
+  created_at timestamp without time zone DEFAULT now(),
+  updated_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT weekly_tracking_pkey PRIMARY KEY (id),
+  CONSTRAINT weekly_tracking_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+-- Tabla para seguimiento mensual del cliente
+CREATE TABLE public.monthly_tracking (
+  id integer NOT NULL DEFAULT nextval('monthly_tracking_id_seq'::regclass),
+  user_id integer NOT NULL,
+  month_date date NOT NULL,
+  progress_photos_completed boolean DEFAULT false,
+  notes text,
+  created_at timestamp without time zone DEFAULT now(),
+  CONSTRAINT monthly_tracking_pkey PRIMARY KEY (id),
+  CONSTRAINT monthly_tracking_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE
+);
+
+-- Índices para mejorar el rendimiento
+CREATE INDEX idx_client_medical_info_user_id ON public.client_medical_info(user_id);
+CREATE INDEX idx_client_progress_photos_user_id ON public.client_progress_photos(user_id);
+CREATE INDEX idx_client_progress_photos_date ON public.client_progress_photos(photo_date);
+CREATE INDEX idx_weekly_tracking_user_id ON public.weekly_tracking(user_id);
+CREATE INDEX idx_weekly_tracking_date ON public.weekly_tracking(week_start_date);
+CREATE INDEX idx_monthly_tracking_user_id ON public.monthly_tracking(user_id);
+CREATE INDEX idx_monthly_tracking_date ON public.monthly_tracking(month_date);

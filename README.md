@@ -1,5 +1,9 @@
 # 🏋️ Fitness App TFM - Sistema de Gestión Fitness Completo
 
+vale ya si funciona, vamos a corregir varias cosas, el proyecto se basa en una pagina que sriva a los entrenadores personales para gestionar a sus clientes, actualmente estamos trabaando en la vista del entrenador personal, lo que has hecho de crm, no nos vale, porque el crm es la pagina en si, entonces que necesitamos ahora mismo? te digo las funcionalidades que tiene que tener la pagina, gestion de usuarios(ya lo tenemos), gestion de entrenamientos (ya lo tenemos), gestion de dietas (ya lo tenemos), gestion de productos(ya lo tenemos), gestion de progresos, aun no implementado, cuando el entrenador haga click en progresos le tiene que salir la lista de usuarios que tiene asociados, con una fecha a la derecha, de cada usuario, esta fecha sera la ultima vez que este usuario ha subido sus progresos, cuando el entrenador haga click en el usuario, tiene que ver sus datos, incluidos los que acabas de implementar, es decir la vista detalle usuario, pero con los campos nuevos de intolerancias, imagenes de progreso, etc. la vista detallle usuario ya la tenemos solo la tienes que actualizar
+
+
+
 Aplicación web full-stack desarrollada como **Trabajo de Fin de Máster** para la gestión integral de entrenadores fitness. Permite administrar clientes, crear dietas personalizadas, diseñar rutinas de ejercicio y gestionar un catálogo de productos fitness.
 
 Desarrollado con **React 19**, **TypeScript**, **Node.js**, **Express**, **Supabase** y desplegado en **Vercel**.

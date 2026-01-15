@@ -28,6 +28,8 @@ export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps)
     password: '',
     birth_date: '',
     role: 'client',
+    weight: '',
+    height: '',
   });
   const [errors, setErrors] = useState<string[]>([]);
 
@@ -45,6 +47,8 @@ export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps)
         password: '',
         birth_date: formattedDate,
         role: userToEdit.role || 'client',
+        weight: userToEdit.weight?.toString() || '',
+        height: userToEdit.height?.toString() || '',
       });
     } else {
       setFormData({
@@ -87,6 +91,8 @@ export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps)
       password: formData.password,
       birth_date: formData.birth_date, 
       role: formData.role,
+      weight: formData.weight ? parseFloat(formData.weight) : undefined,
+      height: formData.height ? parseFloat(formData.height) : undefined,
     };
 
     console.log('Frontend: Enviando datos de usuario:', submitData);
@@ -186,6 +192,27 @@ export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps)
               <MenuItem value="client">Cliente</MenuItem>
               <MenuItem value="admin">Administrador</MenuItem>
             </TextField>
+
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+              <TextField
+                fullWidth
+                label="Peso (kg)"
+                type="number"
+                value={formData.weight}
+                onChange={handleChange('weight')}
+                inputProps={{ step: 0.1, min: 0 }}
+                helperText="Opcional - Peso actual del cliente"
+              />
+              <TextField
+                fullWidth
+                label="Altura (cm)"
+                type="number"
+                value={formData.height}
+                onChange={handleChange('height')}
+                inputProps={{ step: 0.1, min: 0 }}
+                helperText="Opcional - Altura del cliente"
+              />
+            </Stack>
           </Stack>
         </DialogContent>
 

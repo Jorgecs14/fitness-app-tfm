@@ -5,11 +5,11 @@
 
 const express = require('express')
 const router = express.Router()
-const { supabase } = require('../database/supabaseClient')
+const { supabase, supabaseAdmin } = require('../database/supabaseClient')
 
 router.get('/', async (req, res) => {
   try {
-    const { data, error } = await supabase.from('foods').select('*').order('id')
+    const { data, error } = await supabaseAdmin.from('foods').select('*').order('id')
     if (error) throw error
     res.json(data)
   } catch (err) {
@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
       })
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('foods')
       .insert([{ name, description, calories }])
       .select()
@@ -55,7 +55,7 @@ router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params
     const { name, description, calories } = req.body
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('foods')
       .update({ name, description, calories })
       .eq('id', id)
@@ -71,7 +71,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('foods')
       .delete()
       .eq('id', id)

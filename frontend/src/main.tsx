@@ -27,6 +27,8 @@ import { SignInPage } from './pages/SignInPage'
 import { SignUpPage } from './pages/SignUpPage'
 import { LandingPage } from './pages/LandingPage'
 import { UserDetailPage } from './pages/UserDetailPage'
+import ClientMedicalInfoPage from './pages/ClientMedicalInfoPage'
+import ProgressPage from './pages/ProgressPage'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
@@ -122,12 +124,20 @@ const router = createBrowserRouter([
         element: <HomePage />
       },
       {
+        path: 'progress',
+        element: <ProgressPage />
+      },
+      {
         path: 'users',
         element: <UsersPage />
       },
       {
         path: 'users/:id',
         element: <UserDetailPage />
+      },
+      {
+        path: 'users/:userId/medical-info',
+        element: <ClientMedicalInfoPage />
       },
       {
         path: 'products',

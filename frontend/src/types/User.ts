@@ -8,4 +8,6 @@ export interface User {
   birth_date: string
   created_at: string
   role: string
+  weight?: number
+  height?: number
 }

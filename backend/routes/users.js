@@ -18,13 +18,14 @@ router.get('/profile', authenticateToken, async (req, res) => {
 
 router.get('/', async (req, res) => {
   try {
-    const { data, error } = await supabase.from('users').select('*').order('id')
+    const { data, error } = await supabaseAdmin.from('users').select('*').order('id')
 
     if (error) throw error
 
     res.json(data)
   } catch (error) {
-    res.status(500).json({ error: 'Error al obtener usuarios' })
+    console.error('Error al obtener usuarios:', error)
+    res.status(500).json({ error: 'Error al obtener usuarios', details: error.message })
   }
 })
 
@@ -32,7 +33,7 @@ router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('id', id)
@@ -48,7 +49,8 @@ router.get('/:id', async (req, res) => {
 
     res.json(data)
   } catch (error) {
-    res.status(500).json({ error: 'Error al buscar usuario' })
+    console.error('Error al buscar usuario:', error)
+    res.status(500).json({ error: 'Error al buscar usuario', details: error.message })
   }
 })
 
@@ -95,14 +97,14 @@ router.post('/', async (req, res) => {
 
     await new Promise((resolve) => setTimeout(resolve, 500))
 
-    const { data: userData, error: userError } = await supabase
+    const { data: userData, error: userError } = await supabaseAdmin
       .from('users')
       .select('*')
       .eq('auth_user_id', authData.user.id)
       .single()
 
     if (userError || !userData) {
-      const { data: manualUserData, error: manualError } = await supabase
+      const { data: manualUserData, error: manualError } = await supabaseAdmin
         .from('users')
         .insert([
           {
@@ -139,7 +141,7 @@ router.put('/:id', async (req, res) => {
     const { id } = req.params
     const { email, name, surname, birth_date, role } = req.body
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('users')
       .update({ email, name, surname, birth_date, role })
       .eq('id', id)
@@ -151,7 +153,8 @@ router.put('/:id', async (req, res) => {
 
     res.json(data)
   } catch (error) {
-    res.status(500).json({ error: 'Error al actualizar usuario' })
+    console.error('Error al actualizar usuario:', error)
+    res.status(500).json({ error: 'Error al actualizar usuario', details: error.message })
   }
 })
 
@@ -159,7 +162,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('users')
       .delete()
       .eq('id', id)
@@ -171,7 +174,8 @@ router.delete('/:id', async (req, res) => {
 
     res.json({ message: `Usuario ${data.email} eliminado correctamente` })
   } catch (error) {
-    res.status(500).json({ error: 'Error al eliminar usuario' })
+    console.error('Error al eliminar usuario:', error)
+    res.status(500).json({ error: 'Error al eliminar usuario', details: error.message })
   }
 })
 

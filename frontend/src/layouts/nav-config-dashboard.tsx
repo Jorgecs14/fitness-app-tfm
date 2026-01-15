@@ -22,6 +22,11 @@ export const navData: NavItem[] = [
     )
   },
   {
+    title: 'Progresos',
+    path: '/dashboard/progress',
+    icon: <Iconify icon='solar:chart-square-bold-duotone' width={24} />
+  },
+  {
     title: 'Dietas',
     path: '/dashboard/diets',
     icon: <Iconify icon='solar:chef-hat-bold-duotone' width={24} />
