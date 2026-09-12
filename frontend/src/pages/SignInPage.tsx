@@ -43,7 +43,9 @@ export const SignInPage = () => {
         setError('Error al obtener token de autenticación')
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al iniciar sesión')
+      const errData = err.response?.data?.error || err.response?.data?.details || err.message
+      const errorMsg = typeof errData === 'string' ? errData : errData?.message || 'Error al iniciar sesión'
+      setError(errorMsg)
     }
   }, [email, password, navigate])
 

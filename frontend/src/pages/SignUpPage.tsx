@@ -96,7 +96,9 @@ export const SignUpPage = () => {
         setError('Error al registrar usuario')
       }
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Error al crear la cuenta')
+      const errData = err.response?.data?.error || err.response?.data?.details || err.message
+      const errorMsg = typeof errData === 'string' ? errData : errData?.message || 'Error al crear la cuenta'
+      setError(errorMsg)
     }
   }, [formData, navigate])
 
