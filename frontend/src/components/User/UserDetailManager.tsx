@@ -34,9 +34,20 @@ import { Iconify } from '../../utils/iconify';
 
 import { BodyHeatmap } from '../Analytics/BodyHeatmap';
 import { ExerciseProgressChart } from '../Analytics/ExerciseProgressChart';
-import { calculateMuscleRecovery } from '../../lib/recovery';
+import { calculateMuscleRecovery, MUSCLE_GROUPS } from '../../lib/recovery';
 import { getUserLoggedSessions, LoggedSessionData } from '../../services/loggedSessionService';
 import BeforeAfterSlider from '../Progress/BeforeAfterSlider';
+
+// Helper de formateo de fecha ultra-seguro contra invalid dates o nulls
+const formatDateSafe = (dateVal?: string | null): string => {
+  if (!dateVal) return '—';
+  try {
+    const d = new Date(dateVal);
+    return isNaN(d.getTime()) ? '—' : d.toLocaleDateString('es-ES');
+  } catch {
+    return '—';
+  }
+};
 
 export const UserDetailManager = () => {
   const { id } = useParams<{ id: string }>();
@@ -49,6 +60,7 @@ export const UserDetailManager = () => {
   const [weeklyTracking, setWeeklyTracking] = useState<WeeklyTracking[]>([]);
   const [loggedSessions, setLoggedSessions] = useState<LoggedSessionData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState(0);
 
   useEffect(() => {
@@ -60,47 +72,71 @@ export const UserDetailManager = () => {
 
     try {
       setLoading(true);
+      setErrorMessage(null);
       const userId = parseInt(id, 10);
+      if (isNaN(userId)) {
+        setErrorMessage('El ID de usuario proporcionado no es válido.');
+        setUser(null);
+        return;
+      }
 
       const userData = await userService.getUser(userId);
       setUser(userData);
 
-      // Cargar dietas
+      // 1. Cargar dietas asignadas (Priorizar consulta directa de usuario, fallback a búsqueda general)
       try {
-        const allDiets = await dietService.getDiets();
-        const dietsWithUsers = await Promise.all(
-          allDiets.map(async (diet) => {
-            const users = await dietService.getDietUsers(diet.id).catch(() => []);
-            return {
-              diet,
-              hasUser: users.some((u: any) => u.id === userId)
-            };
-          })
-        );
-        setUserDiets(dietsWithUsers.filter((d) => d.hasUser).map((d) => d.diet));
+        const userDietDirect = await dietService.getUserDiet(userId).catch(() => null);
+        if (userDietDirect && userDietDirect.id) {
+          setUserDiets([userDietDirect]);
+        } else {
+          const allDietsRaw = await dietService.getDiets().catch(() => []);
+          const allDiets = Array.isArray(allDietsRaw) ? allDietsRaw : [];
+          if (allDiets.length > 0) {
+            const matchedDiets: Diet[] = [];
+            for (const diet of allDiets) {
+              try {
+                const users = await dietService.getDietUsers(diet.id).catch(() => []);
+                if (Array.isArray(users) && users.some((u: any) => u.id === userId)) {
+                  matchedDiets.push(diet);
+                }
+              } catch {
+                // Continuar sin interrumpir el resto de dietas
+              }
+            }
+            setUserDiets(matchedDiets);
+          } else {
+            setUserDiets([]);
+          }
+        }
       } catch (e) {
-        console.warn('Error loading diets', e);
+        console.warn('Error loading diets for user:', e);
+        setUserDiets([]);
       }
 
-      // Cargar entrenamientos
+      // 2. Cargar entrenamientos asignados
       try {
-        const allWorkouts = await workoutService.getWorkouts();
-        const userWorkoutsList = allWorkouts.filter((w) => w.user_id === userId);
+        const allWorkoutsRaw = await workoutService.getWorkouts().catch(() => []);
+        const allWorkouts = Array.isArray(allWorkoutsRaw) ? allWorkoutsRaw : [];
+        const userWorkoutsList = allWorkouts.filter(
+          (w) => w.user_id === userId || (w as any).userId === userId
+        );
         setUserWorkouts(userWorkoutsList);
       } catch (e) {
-        console.warn('Error loading workouts', e);
+        console.warn('Error loading workouts for user:', e);
+        setUserWorkouts([]);
       }
 
-      // Cargar sesiones de entreno ejecutadas
+      // 3. Cargar sesiones de entreno ejecutadas
       try {
-        const sessions = await getUserLoggedSessions(userId);
-        setLoggedSessions(sessions || []);
+        const sessionsRaw = await getUserLoggedSessions(userId).catch(() => []);
+        setLoggedSessions(Array.isArray(sessionsRaw) ? sessionsRaw : []);
       } catch (e) {
-        console.log('No logged sessions found', e);
+        console.log('No logged sessions found:', e);
+        setLoggedSessions([]);
       }
 
-      // Cargar datos CRM (médico, fotos, pesajes)
-      if (userData.role === 'client' || userData.role === 'cliente') {
+      // 4. Cargar datos CRM (médico, fotos, pesajes)
+      if (userData && (userData.role === 'client' || userData.role === 'cliente')) {
         const [medData, photosData, trackData] = await Promise.all([
           clientMedicalInfoService.getByUserId(userId).catch(() => null),
           clientProgressPhotoService.getByUserId(userId).catch(() => []),
@@ -108,56 +144,70 @@ export const UserDetailManager = () => {
         ]);
 
         setMedicalInfo(medData);
-        setProgressPhotos(photosData || []);
+        setProgressPhotos(Array.isArray(photosData) ? photosData : []);
+        const validTrackData = Array.isArray(trackData) ? trackData : [];
         setWeeklyTracking(
-          (trackData || []).sort(
+          [...validTrackData].sort(
             (a, b) => new Date(b.week_start_date).getTime() - new Date(a.week_start_date).getTime()
           )
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading user data:', error);
+      setErrorMessage(error?.message || 'Error al cargar los datos del usuario.');
+      setUser(null);
     } finally {
       setLoading(false);
     }
   };
 
   // Sets ejecutados para heatmap muscular y gráfico de 1RM
-  const { allLoggedSetsForRecovery, exerciseHistoryForChart } = useMemo(() => {
-    const recoverySets: any[] = [];
+  const { muscleLoad, activeExercises, exerciseHistoryForChart } = useMemo(() => {
+    const loads: Record<string, number> = {};
+    const exercisesMap: Record<string, { name: string; target_muscle?: string; sets: number }> = {};
     const chartHistory: Array<{ date: string; weight: number; reps: number; exerciseName: string }> = [];
 
-    loggedSessions.forEach((session) => {
+    const safeSessions = Array.isArray(loggedSessions) ? loggedSessions : [];
+
+    safeSessions.forEach((session) => {
       const sessionDate = session.completed_at || session.started_at || new Date().toISOString();
       const sets = session.logged_sets || session.sets || [];
 
-      sets.forEach((set) => {
-        const exName = set.exercises?.name || 'Ejercicio';
-        recoverySets.push({
-          target_muscle: set.exercises?.target_muscle,
-          main_muscle_group: set.exercises?.body_part,
-          weight: set.weight,
-          reps: set.reps,
-          created_at: sessionDate,
-        });
+      if (Array.isArray(sets)) {
+        sets.forEach((set) => {
+          const exName = set.exercises?.name || 'Ejercicio';
+          const rawMuscle = (set.exercises?.target_muscle || set.exercises?.body_part || 'chest').toLowerCase();
+          const stdMuscle = MUSCLE_GROUPS[rawMuscle] || rawMuscle;
 
-        if (set.completed && set.weight > 0 && set.reps > 0) {
-          chartHistory.push({
-            date: sessionDate,
-            weight: set.weight,
-            reps: set.reps,
-            exerciseName: exName,
-          });
-        }
-      });
+          loads[stdMuscle] = (loads[stdMuscle] || 0) + 1;
+
+          if (!exercisesMap[exName]) {
+            exercisesMap[exName] = {
+              name: exName,
+              target_muscle: stdMuscle,
+              sets: 0,
+            };
+          }
+          exercisesMap[exName].sets += 1;
+
+          if (set.completed && (set.weight ?? 0) > 0 && (set.reps ?? 0) > 0) {
+            chartHistory.push({
+              date: sessionDate,
+              weight: Number(set.weight) || 0,
+              reps: Number(set.reps) || 0,
+              exerciseName: exName,
+            });
+          }
+        });
+      }
     });
 
-    return { allLoggedSetsForRecovery: recoverySets, exerciseHistoryForChart: chartHistory };
+    return {
+      muscleLoad: loads,
+      activeExercises: Object.values(exercisesMap),
+      exerciseHistoryForChart: chartHistory,
+    };
   }, [loggedSessions]);
-
-  const muscleStatusMap = useMemo(() => {
-    return calculateMuscleRecovery(allLoggedSetsForRecovery);
-  }, [allLoggedSetsForRecovery]);
 
   const latestTracking = weeklyTracking[0];
 
@@ -172,7 +222,36 @@ export const UserDetailManager = () => {
   if (!user) {
     return (
       <Container maxWidth="xl" sx={{ py: 6 }}>
-        <Alert severity="error">Usuario no encontrado</Alert>
+        <Box sx={{ mb: 3 }}>
+          <Button
+            startIcon={<Iconify icon="solar:arrow-left-bold" />}
+            onClick={() => navigate('/dashboard/users')}
+            sx={{
+              borderRadius: '20px',
+              color: 'text.secondary',
+              textTransform: 'none',
+              fontWeight: 700,
+              '&:hover': { color: '#fff' },
+            }}
+          >
+            Volver al Directorio
+          </Button>
+        </Box>
+        <Alert severity="error" sx={{ borderRadius: 3, mb: 2 }}>
+          {errorMessage || 'Usuario no encontrado o no disponible.'}
+        </Alert>
+        <Button
+          variant="contained"
+          onClick={() => loadUserData()}
+          sx={{
+            borderRadius: '20px',
+            background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+            fontWeight: 700,
+            textTransform: 'none',
+          }}
+        >
+          Reintentar Carga
+        </Button>
       </Container>
     );
   }
@@ -223,17 +302,23 @@ export const UserDetailManager = () => {
                 boxShadow: '0 0 25px rgba(6, 182, 212, 0.6)',
               }}
             >
-              {user.name.charAt(0).toUpperCase()}
-              {user.surname?.charAt(0).toUpperCase()}
+              {(user.name ? user.name.charAt(0) : 'U').toUpperCase()}
+              {(user.surname ? user.surname.charAt(0) : '').toUpperCase()}
             </Avatar>
 
             <Box>
               <Stack direction="row" spacing={1.5} alignItems="center" mb={0.5}>
                 <Typography variant="h3" fontWeight="900" sx={{ letterSpacing: '-0.02em' }}>
-                  {user.name} {user.surname}
+                  {user.name || 'Usuario'} {user.surname || ''}
                 </Typography>
                 <Chip
-                  label={user.role === 'client' ? 'Alumno' : user.role}
+                  label={
+                    user.role === 'client' || user.role === 'cliente'
+                      ? 'Alumno'
+                      : user.role === 'trainer'
+                      ? 'Entrenador'
+                      : user.role || 'Usuario'
+                  }
                   size="small"
                   sx={{
                     background: 'rgba(6, 182, 212, 0.25)',
@@ -247,17 +332,17 @@ export const UserDetailManager = () => {
               <Stack direction="row" spacing={2.5} flexWrap="wrap" sx={{ color: 'text.secondary', mt: 0.5 }}>
                 <Box display="flex" alignItems="center" gap={0.8}>
                   <Iconify icon="solar:letter-bold" width={16} sx={{ color: '#22d3ee' }} />
-                  <Typography variant="body2">{user.email}</Typography>
+                  <Typography variant="body2">{user.email || 'Sin correo'}</Typography>
                 </Box>
                 {user.birth_date && (
                   <Box display="flex" alignItems="center" gap={0.8}>
                     <Iconify icon="solar:calendar-bold" width={16} sx={{ color: '#10b981' }} />
-                    <Typography variant="body2">Nacimiento: {new Date(user.birth_date).toLocaleDateString('es-ES')}</Typography>
+                    <Typography variant="body2">Nacimiento: {formatDateSafe(user.birth_date)}</Typography>
                   </Box>
                 )}
                 <Box display="flex" alignItems="center" gap={0.8}>
                   <Iconify icon="solar:clock-circle-bold" width={16} sx={{ color: '#f59e0b' }} />
-                  <Typography variant="body2">Alta: {new Date(user.created_at).toLocaleDateString('es-ES')}</Typography>
+                  <Typography variant="body2">Alta: {formatDateSafe(user.created_at)}</Typography>
                 </Box>
               </Stack>
             </Box>
@@ -322,7 +407,7 @@ export const UserDetailManager = () => {
           <Grid size={{ xs: 6, sm: 3 }}>
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Último Peso</Typography>
             <Typography variant="h5" fontWeight="900" sx={{ color: '#fff', mt: 0.3 }}>
-              {latestTracking?.weight ? `${latestTracking.weight} kg` : 'Sin pesaje'}
+              {latestTracking?.weight != null ? `${latestTracking.weight} kg` : 'Sin pesaje'}
             </Typography>
           </Grid>
         </Grid>
@@ -369,7 +454,7 @@ export const UserDetailManager = () => {
             <Typography variant="body2" sx={{ color: 'text.secondary', mb: 2 }}>
               Cálculo en vivo de la carga acumulada y recuperación por grupo muscular basado en las series registradas por el alumno.
             </Typography>
-            <BodyHeatmap muscleStatus={muscleStatusMap} />
+            <BodyHeatmap muscleLoad={muscleLoad} activeExercises={activeExercises} />
           </Box>
 
           <Box>
@@ -386,13 +471,15 @@ export const UserDetailManager = () => {
               }}
             >
               <Typography variant="h6" fontWeight="800" gutterBottom>
-                Último Registro Semanal ({new Date(latestTracking.week_start_date).toLocaleDateString('es-ES')})
+                Último Registro Semanal ({formatDateSafe(latestTracking.week_start_date)})
               </Typography>
               <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
               <Grid container spacing={3}>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>Peso Báscula</Typography>
-                  <Typography variant="h5" fontWeight="800" sx={{ color: '#22d3ee', mt: 0.5 }}>{latestTracking.weight} kg</Typography>
+                  <Typography variant="h5" fontWeight="800" sx={{ color: '#22d3ee', mt: 0.5 }}>
+                    {latestTracking.weight != null ? `${latestTracking.weight} kg` : '—'}
+                  </Typography>
                 </Grid>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>Cintura</Typography>
@@ -593,7 +680,7 @@ export const UserDetailManager = () => {
                       }}
                     >
                       <Typography variant="subtitle2" fontWeight="800" gutterBottom>
-                        Semana del {new Date(w.week_start_date).toLocaleDateString('es-ES')}
+                        Semana del {formatDateSafe(w.week_start_date)}
                       </Typography>
                       <Divider sx={{ my: 1.5, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
                       <Stack spacing={0.8}>

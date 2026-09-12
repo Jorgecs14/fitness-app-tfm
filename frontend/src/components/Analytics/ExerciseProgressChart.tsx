@@ -36,10 +36,10 @@ const POPULAR_EXERCISES = [
   'Remo con Barra 90°',
 ];
 
-export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ history }) => {
+export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ history = [] }) => {
   // Extract unique exercise names from history
   const recordedExercises = useMemo(() => {
-    return [...new Set(history.map((item) => item.exerciseName))];
+    return [...new Set((history || []).map((item) => item.exerciseName))];
   }, [history]);
 
   // Combined list of selectable exercises (recorded + popular benchmarks)
