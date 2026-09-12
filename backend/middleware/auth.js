@@ -32,44 +32,20 @@ const authenticateToken = async (req, res, next) => {
       })
     }
 
-    const { data: dbUser, error: dbError } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('auth_user_id', user.id)
-      .maybeSingle()
-
-    if (dbError) {
-      return res.status(500).json({
-        error: 'Error interno del servidor',
-        message: 'No se pudo obtener la información del usuario'
-      })
-    }
-
-    if (!dbUser) {
-      const { data: newDbUser, error: createError } = await supabaseAdmin
+    let dbUser = user
+    if (user.id) {
+      const { data: foundUser } = await supabaseAdmin
         .from('users')
-        .insert({
-          auth_user_id: user.id,
-          name: user.user_metadata?.first_name || '',
-          surname: user.user_metadata?.last_name || '',
-          email: user.email,
-          role: 'client',
-          created_at: new Date().toISOString()
-        })
-        .select()
-        .single()
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle()
 
-      if (createError) {
-        return res.status(500).json({
-          error: 'Error interno del servidor',
-          message: 'No se pudo crear el usuario en la base de datos'
-        })
+      if (foundUser) {
+        dbUser = foundUser
       }
-
-      req.user = newDbUser
-    } else {
-      req.user = dbUser
     }
+
+    req.user = dbUser
     req.authUser = user
     req.token = token
 
