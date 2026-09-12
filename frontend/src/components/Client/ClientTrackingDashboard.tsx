@@ -9,7 +9,11 @@ import {
   Button,
   Grid,
   Alert,
-  Chip
+  Chip,
+  Avatar,
+  Stack,
+  Divider,
+  CircularProgress
 } from '@mui/material';
 import { Iconify } from '../../utils/iconify';
 import { User } from '../../types/User';
@@ -43,7 +47,7 @@ function TabPanel(props: TabPanelProps) {
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ pt: 3 }}>
           {children}
         </Box>
       )}
@@ -55,7 +59,12 @@ interface ClientTrackingDashboardProps {
   user: User;
 }
 
-const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user }) => {
+const normalizeDate = (d: string | undefined | null): string => {
+  if (!d) return '';
+  return d.split('T')[0];
+};
+
+export const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user }) => {
   const [tabValue, setTabValue] = useState(0);
   const [weeklyTrackings, setWeeklyTrackings] = useState<WeeklyTracking[]>([]);
   const [monthlyTrackings, setMonthlyTrackings] = useState<MonthlyTracking[]>([]);
@@ -71,36 +80,62 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
   const [selectedPhotoDate, setSelectedPhotoDate] = useState('');
 
   useEffect(() => {
-    loadData();
-  }, [user.id]);
+    if (user && user.id) {
+      loadData();
+    }
+  }, [user?.id]);
 
   const loadData = async () => {
+    if (!user || !user.id) return;
+
     try {
       setLoading(true);
       setError(null);
 
-      // Cargar datos en paralelo
+      // Cargar datos en paralelo con control de fallback individual para que un 404 o error no rompa todo el dashboard
       const [weeklyData, monthlyData, medicalData, photosData] = await Promise.all([
-        weeklyTrackingService.getByUserId(user.id),
-        monthlyTrackingService.getByUserId(user.id),
-        clientMedicalInfoService.getByUserId(user.id),
-        clientProgressPhotoService.getByUserId(user.id).catch(() => []),
+        weeklyTrackingService.getByUserId(user.id).catch((err) => {
+          console.warn('No hay registros de seguimiento semanal o error:', err);
+          return [] as WeeklyTracking[];
+        }),
+        monthlyTrackingService.getByUserId(user.id).catch((err) => {
+          console.warn('No hay registros mensuales o error:', err);
+          return [] as MonthlyTracking[];
+        }),
+        clientMedicalInfoService.getByUserId(user.id).catch((err) => {
+          console.warn('No hay información médica registrada o error:', err);
+          return null;
+        }),
+        clientProgressPhotoService.getByUserId(user.id).catch((err) => {
+          console.warn('No hay fotos de progreso o error:', err);
+          return [] as ClientProgressPhoto[];
+        }),
       ]);
 
-      setWeeklyTrackings(weeklyData);
-      setMonthlyTrackings(monthlyData);
+      // Ordenar seguimientos semanales por fecha descendente
+      const sortedWeekly = (weeklyData || []).sort(
+        (a, b) => new Date(b.week_start_date).getTime() - new Date(a.week_start_date).getTime()
+      );
+
+      // Ordenar mensuales por fecha descendente
+      const sortedMonthly = (monthlyData || []).sort(
+        (a, b) => new Date(b.month_date).getTime() - new Date(a.month_date).getTime()
+      );
+
+      setWeeklyTrackings(sortedWeekly);
+      setMonthlyTrackings(sortedMonthly);
       setMedicalInfo(medicalData);
       setClientPhotos(photosData || []);
 
     } catch (error: any) {
       console.error('Error al cargar datos del cliente:', error);
-      setError('Error al cargar los datos del cliente');
+      setError('Error inesperado al cargar los datos del cliente');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
@@ -109,7 +144,10 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
     const day = d.getDay();
     const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Ajustar para que lunes sea el primer día
     const monday = new Date(d.setDate(diff));
-    return monday.toISOString().split('T')[0];
+    const year = monday.getFullYear();
+    const month = String(monday.getMonth() + 1).padStart(2, '0');
+    const dayStr = String(monday.getDate()).padStart(2, '0');
+    return `${year}-${month}-${dayStr}`;
   };
 
   const getCurrentWeekStart = (): string => {
@@ -135,11 +173,13 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
   };
 
   const hasWeeklyData = (weekDate: string): boolean => {
-    return weeklyTrackings.some(w => w.week_start_date === weekDate);
+    return weeklyTrackings.some(w => normalizeDate(w.week_start_date) === weekDate);
   };
 
   const hasMonthlyPhotos = (monthDate: string): boolean => {
-    return monthlyTrackings.some(m => m.month_date === monthDate && m.progress_photos_completed);
+    return monthlyTrackings.some(
+      m => normalizeDate(m.month_date).substring(0, 7) === monthDate.substring(0, 7) && m.progress_photos_completed
+    );
   };
 
   const getLastNWeeks = (n: number): string[] => {
@@ -167,168 +207,347 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
     return months;
   };
 
+  if (!user) return null;
+
   return (
-    <Box>
-      <Typography variant="h4" gutterBottom>
-        Seguimiento de Cliente: {user.name} {user.surname}
-      </Typography>
+    <Box sx={{ width: '100%', pb: 4 }}>
+      {/* Hero Header Liquid Glass */}
+      <Box
+        className="liquid-glass-card"
+        sx={{
+          p: { xs: 2.5, md: 3.5 },
+          borderRadius: 4,
+          mb: 3,
+          background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%)',
+          border: '1px solid rgba(6, 182, 212, 0.3)',
+          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.35)',
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
+          <Box display="flex" alignItems="center" gap={2}>
+            <Avatar
+              sx={{
+                width: 56,
+                height: 56,
+                background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+                fontWeight: 800,
+                fontSize: '1.3rem',
+                boxShadow: '0 0 20px rgba(6, 182, 212, 0.4)',
+                border: '2px solid rgba(255, 255, 255, 0.3)',
+              }}
+            >
+              {user.name.charAt(0).toUpperCase()}
+              {user.surname.charAt(0).toUpperCase()}
+            </Avatar>
+            <Box>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Typography variant="h4" fontWeight="900" sx={{ letterSpacing: '-0.02em' }}>
+                  {user.name} {user.surname}
+                </Typography>
+                <Chip
+                  label={user.role === 'client' ? 'Cliente' : user.role}
+                  size="small"
+                  sx={{
+                    background: 'rgba(6, 182, 212, 0.2)',
+                    color: '#22d3ee',
+                    fontWeight: 700,
+                    border: '1px solid rgba(6, 182, 212, 0.4)',
+                  }}
+                />
+              </Stack>
+              <Typography variant="body2" sx={{ color: 'text.secondary', mt: 0.2 }}>
+                {user.email} • ID #{user.id}
+              </Typography>
+            </Box>
+          </Box>
+
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={loadData}
+            disabled={loading}
+            startIcon={loading ? <CircularProgress size={16} /> : <Iconify icon="solar:refresh-bold" />}
+            sx={{
+              borderRadius: '20px',
+              borderColor: 'rgba(255, 255, 255, 0.2)',
+              color: '#fff',
+              fontWeight: 700,
+              textTransform: 'none',
+              px: 2,
+            }}
+          >
+            {loading ? 'Cargando...' : 'Actualizar'}
+          </Button>
+        </Box>
+      </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>
           {error}
         </Alert>
       )}
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
-        <Tabs value={tabValue} onChange={handleTabChange}>
+      {/* Tabs Navigation */}
+      <Box sx={{ borderBottom: 1, borderColor: 'rgba(255, 255, 255, 0.1)', mb: 3 }}>
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          sx={{
+            '& .MuiTab-root': {
+              textTransform: 'none',
+              fontWeight: 700,
+              fontSize: '0.92rem',
+              color: 'text.secondary',
+              '&.Mui-selected': {
+                color: '#22d3ee',
+              },
+            },
+            '& .MuiTabs-indicator': {
+              backgroundColor: '#22d3ee',
+              height: 3,
+              borderRadius: '3px 3px 0 0',
+            },
+          }}
+        >
           <Tab 
             icon={<Iconify icon="solar:user-bold-duotone" width={20} />} 
+            iconPosition="start"
             label="Información Médica" 
             id="client-tab-0"
             aria-controls="client-tabpanel-0"
           />
           <Tab 
             icon={<Iconify icon="solar:chart-2-bold-duotone" width={20} />} 
+            iconPosition="start"
             label="Seguimiento Semanal" 
             id="client-tab-1"
             aria-controls="client-tabpanel-1"
           />
           <Tab 
             icon={<Iconify icon="solar:camera-bold-duotone" width={20} />} 
+            iconPosition="start"
             label="Fotos de Progreso" 
             id="client-tab-2"
             aria-controls="client-tabpanel-2"
           />
           <Tab 
             icon={<Iconify icon="solar:document-bold-duotone" width={20} />} 
-            label="Resumen" 
+            iconPosition="start"
+            label="Resumen Métrico" 
             id="client-tab-3"
             aria-controls="client-tabpanel-3"
           />
         </Tabs>
       </Box>
 
-      {/* Información Médica */}
+      {/* Tab 0: Información Médica */}
       <TabPanel value={tabValue} index={0}>
-        <Card>
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Información Médica Inicial
-            </Typography>
-            {medicalInfo ? (
-              <Grid container spacing={2}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Alergias:</Typography>
-                  <Typography variant="body2">{medicalInfo.allergies || 'No especificadas'}</Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Intolerancias Alimentarias:</Typography>
-                  <Typography variant="body2">{medicalInfo.food_intolerances || 'No especificadas'}</Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Lesiones o Molestias:</Typography>
-                  <Typography variant="body2">{medicalInfo.injuries_conditions || 'No especificadas'}</Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="subtitle2">Alimentos que no le gustan:</Typography>
-                  <Typography variant="body2">{medicalInfo.disliked_foods || 'No especificados'}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2">Analítica:</Typography>
-                  <Typography variant="body2">{medicalInfo.lab_results || 'No disponible'}</Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2">Alimentación típica diaria:</Typography>
-                  <Typography variant="body2">{medicalInfo.daily_nutrition_log || 'No especificada'}</Typography>
-                </Grid>
+        <Box
+          className="liquid-glass-card"
+          sx={{
+            p: { xs: 2.5, sm: 3.5 },
+            borderRadius: 4,
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          <Typography variant="h6" fontWeight="800" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Iconify icon="solar:medical-kit-bold" width={22} sx={{ color: '#22d3ee' }} />
+            Ficha Médica y Anamnesis Inicial
+          </Typography>
+          <Divider sx={{ mb: 3, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
+
+          {medicalInfo ? (
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>Alergias Conocidas</Typography>
+                  <Typography variant="body1" fontWeight="600" sx={{ mt: 0.5 }}>{medicalInfo.allergies || 'Ninguna especificada'}</Typography>
+                </Box>
               </Grid>
-            ) : (
-              <Alert severity="info">
-                No se ha registrado información médica inicial para este cliente.
-              </Alert>
-            )}
-          </CardContent>
-        </Card>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>Intolerancias Alimentarias</Typography>
+                  <Typography variant="body1" fontWeight="600" sx={{ mt: 0.5 }}>{medicalInfo.food_intolerances || 'Ninguna especificada'}</Typography>
+                </Box>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>Lesiones o Molestias Articulares</Typography>
+                  <Typography variant="body1" fontWeight="600" sx={{ mt: 0.5 }}>{medicalInfo.injuries_conditions || 'Sin lesiones previas'}</Typography>
+                </Box>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>Alimentos que no le gustan</Typography>
+                  <Typography variant="body1" fontWeight="600" sx={{ mt: 0.5 }}>{medicalInfo.disliked_foods || 'No especificados'}</Typography>
+                </Box>
+              </Grid>
+
+              <Grid size={{ xs: 12 }}>
+                <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>Analítica Sanguínea / Resultados Clínicos</Typography>
+                  <Typography variant="body1" fontWeight="500" sx={{ mt: 0.5 }}>{medicalInfo.lab_results || 'No disponible o pendiente'}</Typography>
+                </Box>
+              </Grid>
+
+              <Grid size={{ xs: 12 }}>
+                <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                  <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>Registro de Alimentación Típica</Typography>
+                  <Typography variant="body1" fontWeight="500" sx={{ mt: 0.5 }}>{medicalInfo.daily_nutrition_log || 'No especificada'}</Typography>
+                </Box>
+              </Grid>
+            </Grid>
+          ) : (
+            <Alert severity="info" sx={{ borderRadius: 3 }}>
+              No se ha registrado información médica inicial para este cliente aún.
+            </Alert>
+          )}
+        </Box>
       </TabPanel>
 
-      {/* Seguimiento Semanal */}
+      {/* Tab 1: Seguimiento Semanal */}
       <TabPanel value={tabValue} index={1}>
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Box>
+            <Typography variant="h6" fontWeight="800">
+              Historial de Semanas (Últimas 8 Semanas)
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Haz clic en cada semana para revisar el pesaje, medidas o completar el reporte.
+            </Typography>
+          </Box>
+
           <Button
             variant="contained"
             onClick={() => handleOpenWeeklyForm()}
-            sx={{ mb: 2 }}
+            startIcon={<Iconify icon="solar:add-circle-bold" />}
+            sx={{
+              borderRadius: '20px',
+              background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+              fontWeight: 700,
+            }}
           >
             Nuevo Seguimiento Semanal
           </Button>
         </Box>
 
-        <Grid container spacing={2}>
-          {getLastNWeeks(8).map((weekDate) => (
-            <Grid item xs={12} sm={6} md={3} key={weekDate}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Semana del {new Date(weekDate).toLocaleDateString('es-ES')}
-                  </Typography>
-                  <Box sx={{ mb: 2 }}>
-                    {hasWeeklyData(weekDate) ? (
-                      <Chip label="Completado" color="success" size="small" />
+        <Grid container spacing={2.5}>
+          {getLastNWeeks(8).map((weekDate) => {
+            const isCompleted = hasWeeklyData(weekDate);
+            const dateFormatted = new Date(weekDate).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+
+            return (
+              <Grid size={{ xs: 12, sm: 6, md: 3 }} key={weekDate}>
+                <Box
+                  className="liquid-glass-card"
+                  sx={{
+                    p: 2.5,
+                    borderRadius: 3.5,
+                    border: isCompleted ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      borderColor: isCompleted ? '#10b981' : '#f59e0b',
+                    },
+                  }}
+                >
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                    <Typography variant="subtitle2" fontWeight="800">
+                      Semana {dateFormatted}
+                    </Typography>
+                    {isCompleted ? (
+                      <Chip label="Completado" color="success" size="small" sx={{ fontWeight: 700, fontSize: '0.7rem' }} />
                     ) : (
-                      <Chip label="Pendiente" color="warning" size="small" />
+                      <Chip label="Pendiente" color="warning" size="small" sx={{ fontWeight: 700, fontSize: '0.7rem' }} />
                     )}
                   </Box>
+
                   <Button
-                    variant="outlined"
+                    variant={isCompleted ? 'outlined' : 'contained'}
                     size="small"
                     fullWidth
                     onClick={() => handleOpenWeeklyForm(weekDate)}
+                    sx={{
+                      borderRadius: '16px',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      mt: 1,
+                      ...(isCompleted ? {
+                        borderColor: 'rgba(255, 255, 255, 0.2)',
+                        color: '#fff',
+                      } : {
+                        background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                      }),
+                    }}
                   >
-                    {hasWeeklyData(weekDate) ? 'Ver/Editar' : 'Completar'}
+                    {isCompleted ? 'Ver / Editar Reporte' : 'Completar Semana'}
                   </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+                </Box>
+              </Grid>
+            );
+          })}
         </Grid>
       </TabPanel>
 
-      {/* Fotos de Progreso */}
+      {/* Tab 2: Fotos de Progreso */}
       <TabPanel value={tabValue} index={2}>
         {/* Interactive Before & After Visual Slider */}
         <Box sx={{ mb: 4 }}>
           <BeforeAfterSlider photos={clientPhotos} onUploadClick={() => handleOpenProgressPhotos()} />
         </Box>
 
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h6" fontWeight="800">
-            Historial de Álbumes Mensuales
-          </Typography>
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+          <Box>
+            <Typography variant="h6" fontWeight="800">
+              Historial de Sesiones Fotográficas
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+              Álbumes mensuales de poses corporales (Frente, Perfil, Espalda).
+            </Typography>
+          </Box>
+
           <Button
             variant="contained"
             onClick={() => handleOpenProgressPhotos()}
             startIcon={<Iconify icon="solar:camera-add-bold" />}
+            sx={{
+              borderRadius: '20px',
+              background: 'linear-gradient(135deg, #06b6d4, #10b981)',
+              fontWeight: 700,
+            }}
           >
             Gestionar Fotos de Hoy
           </Button>
         </Box>
 
-        <Grid container spacing={2}>
-          {getLastNMonths(6).map((monthDate) => (
-            <Grid item xs={12} sm={6} md={4} key={monthDate}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    {new Date(monthDate).toLocaleDateString('es-ES', { 
-                      year: 'numeric', 
-                      month: 'long' 
-                    })}
+        <Grid container spacing={2.5}>
+          {getLastNMonths(6).map((monthDate) => {
+            const isCompleted = hasMonthlyPhotos(monthDate);
+            const monthLabel = new Date(monthDate).toLocaleDateString('es-ES', { year: 'numeric', month: 'long' });
+
+            return (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={monthDate}>
+                <Box
+                  className="liquid-glass-card"
+                  sx={{
+                    p: 2.5,
+                    borderRadius: 3.5,
+                    border: isCompleted ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(255, 255, 255, 0.08)',
+                    boxShadow: '0 10px 25px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  <Typography variant="subtitle1" fontWeight="800" gutterBottom sx={{ textTransform: 'capitalize' }}>
+                    {monthLabel}
                   </Typography>
                   <Box sx={{ mb: 2 }}>
-                    {hasMonthlyPhotos(monthDate) ? (
-                      <Chip label="Fotos Completadas" color="success" size="small" />
+                    {isCompleted ? (
+                      <Chip label="Fotos Completadas" color="success" size="small" sx={{ fontWeight: 700 }} />
                     ) : (
-                      <Chip label="Fotos Pendientes" color="warning" size="small" />
+                      <Chip label="Fotos Pendientes" color="warning" size="small" sx={{ fontWeight: 700 }} />
                     )}
                   </Box>
                   <Button
@@ -336,86 +555,121 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
                     size="small"
                     fullWidth
                     onClick={() => handleOpenProgressPhotos(monthDate)}
+                    sx={{
+                      borderRadius: '16px',
+                      textTransform: 'none',
+                      fontWeight: 700,
+                      borderColor: 'rgba(255, 255, 255, 0.2)',
+                      color: '#fff',
+                    }}
                   >
-                    Ver Fotos
+                    Ver Álbum
                   </Button>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
+                </Box>
+              </Grid>
+            );
+          })}
         </Grid>
       </TabPanel>
 
-      {/* Resumen */}
+      {/* Tab 3: Resumen Métrico */}
       <TabPanel value={tabValue} index={3}>
         <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  <Iconify icon="eva:activity-fill" sx={{ mr: 1, verticalAlign: 'middle' }} />
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Box
+              className="liquid-glass-card"
+              sx={{
+                p: 3,
+                borderRadius: 4,
+                border: '1px solid rgba(6, 182, 212, 0.3)',
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1.5} mb={1}>
+                <Iconify icon="solar:chart-2-bold" width={24} sx={{ color: '#06b6d4' }} />
+                <Typography variant="h6" fontWeight="800">
                   Seguimientos Semanales
                 </Typography>
-                <Typography variant="h3" color="primary">
-                  {weeklyTrackings.length}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Seguimientos completados
-                </Typography>
-              </CardContent>
-            </Card>
+              </Box>
+              <Typography variant="h3" fontWeight="900" sx={{ color: '#06b6d4', my: 1 }}>
+                {weeklyTrackings.length}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Reportes biométricos registrados hasta la fecha
+              </Typography>
+            </Box>
           </Grid>
           
-          <Grid item xs={12} md={6}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  <Iconify icon="solar:camera-bold" sx={{ mr: 1, verticalAlign: 'middle' }} />
-                  Sesiones de Fotos
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Box
+              className="liquid-glass-card"
+              sx={{
+                p: 3,
+                borderRadius: 4,
+                border: '1px solid rgba(16, 185, 129, 0.3)',
+              }}
+            >
+              <Box display="flex" alignItems="center" gap={1.5} mb={1}>
+                <Iconify icon="solar:camera-bold" width={24} sx={{ color: '#10b981' }} />
+                <Typography variant="h6" fontWeight="800">
+                  Sesiones Fotográficas
                 </Typography>
-                <Typography variant="h3" color="primary">
-                  {monthlyTrackings.filter(m => m.progress_photos_completed).length}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Sesiones de fotos completadas
-                </Typography>
-              </CardContent>
-            </Card>
+              </Box>
+              <Typography variant="h3" fontWeight="900" sx={{ color: '#10b981', my: 1 }}>
+                {monthlyTrackings.filter(m => m.progress_photos_completed).length}
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                Álbumes con las 3 poses completadas
+              </Typography>
+            </Box>
           </Grid>
 
           {/* Último seguimiento semanal */}
           {weeklyTrackings.length > 0 && (
-            <Grid item xs={12}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Último Seguimiento Semanal
-                  </Typography>
-                  {(() => {
-                    const lastTracking = weeklyTrackings[0];
-                    return (
-                      <Grid container spacing={2}>
-                        <Grid item xs={6} md={3}>
-                          <Typography variant="subtitle2">Peso:</Typography>
-                          <Typography variant="body1">{lastTracking.weight || 'N/A'} kg</Typography>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <Typography variant="subtitle2">Días de entrenamiento:</Typography>
-                          <Typography variant="body1">{lastTracking.training_days_completed || 'N/A'}</Typography>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <Typography variant="subtitle2">Calidad del sueño:</Typography>
-                          <Typography variant="body1">{lastTracking.sleep_quality || 'N/A'}</Typography>
-                        </Grid>
-                        <Grid item xs={6} md={3}>
-                          <Typography variant="subtitle2">Autoevaluación:</Typography>
-                          <Typography variant="body1">{lastTracking.self_rating || 'N/A'}/10</Typography>
-                        </Grid>
+            <Grid size={{ xs: 12 }}>
+              <Box
+                className="liquid-glass-card"
+                sx={{
+                  p: 3,
+                  borderRadius: 4,
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                }}
+              >
+                <Typography variant="h6" fontWeight="800" gutterBottom>
+                  Último Reporte Registrado ({new Date(weeklyTrackings[0].week_start_date).toLocaleDateString('es-ES')})
+                </Typography>
+                <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
+                {(() => {
+                  const lastTracking = weeklyTrackings[0];
+                  return (
+                    <Grid container spacing={2.5}>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Peso Báscula</Typography>
+                        <Typography variant="h5" fontWeight="800" sx={{ color: '#22d3ee', mt: 0.5 }}>
+                          {lastTracking.weight ? `${lastTracking.weight} kg` : '—'}
+                        </Typography>
                       </Grid>
-                    );
-                  })()}
-                </CardContent>
-              </Card>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Días Entrenados</Typography>
+                        <Typography variant="h5" fontWeight="800" sx={{ color: '#10b981', mt: 0.5 }}>
+                          {lastTracking.training_days_completed ?? '—'} / 7
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Calidad del Sueño</Typography>
+                        <Typography variant="h6" fontWeight="700" sx={{ textTransform: 'capitalize', mt: 0.5 }}>
+                          {lastTracking.sleep_quality === 'good' ? '🌙 Bueno' : lastTracking.sleep_quality === 'regular' ? '⛅ Regular' : '⚡ Malo'}
+                        </Typography>
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Autoevaluación</Typography>
+                        <Typography variant="h5" fontWeight="800" sx={{ color: '#f59e0b', mt: 0.5 }}>
+                          {lastTracking.self_rating ? `${lastTracking.self_rating} / 10` : '—'}
+                        </Typography>
+                      </Grid>
+                    </Grid>
+                  );
+                })()}
+              </Box>
             </Grid>
           )}
         </Grid>
