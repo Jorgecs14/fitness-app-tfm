@@ -5,7 +5,7 @@
 
 const express = require('express')
 const router = express.Router()
-const { supabase, supabaseAdmin } = require('../database/supabaseClient')
+const { supabase, supabaseAdmin, pool } = require('../database/supabaseClient')
 
 router.get('/', async (req, res) => {
   try {
@@ -22,32 +22,38 @@ router.get('/', async (req, res) => {
 
 router.get('/with-exercises', async (req, res) => {
   try {
-    const { data: workouts, error: workoutsError } = await supabase
-      .from('workouts')
-      .select(
-        `
-        *,
-        workout_exercises (
-          id,
-          sets,
-          reps,
-          exercises (
-            id,
-            name,
-            description,
-            execution_time
-          )
-        )
-      `
-      )
-      .order('id')
+    const { rows: workouts } = await pool.query('SELECT * FROM workouts ORDER BY id ASC')
+    const { rows: workoutExercises } = await pool.query(`
+      SELECT we.id, we.workout_id, we.sets, we.reps, we.exercise_id,
+             e.name, e.description, e.execution_time
+      FROM workout_exercises we
+      LEFT JOIN exercises e ON we.exercise_id = e.id
+    `)
 
-    if (workoutsError) throw workoutsError
-    res.json(workouts)
+    const result = workouts.map((w) => {
+      const weList = workoutExercises
+        .filter((we) => we.workout_id === w.id)
+        .map((we) => ({
+          id: we.id,
+          sets: we.sets,
+          reps: we.reps,
+          exercises: {
+            id: we.exercise_id,
+            name: we.name,
+            description: we.description,
+            execution_time: we.execution_time
+          }
+        }))
+      return {
+        ...w,
+        workout_exercises: weList
+      }
+    })
+
+    res.json(result)
   } catch (err) {
-    res
-      .status(500)
-      .json({ error: 'Error al obtener entrenamientos con ejercicios' })
+    console.error('Error en GET /workouts/with-exercises:', err)
+    res.status(500).json({ error: 'Error al obtener entrenamientos con ejercicios' })
   }
 })
 
@@ -152,88 +158,52 @@ router.get('/:id/full', async (req, res) => {
   try {
     const { id } = req.params
 
-    const { data: workout, error: workoutError } = await supabase
-      .from('workouts')
-      .select('*')
-      .eq('id', id)
-      .single()
+    const { rows: workouts } = await pool.query('SELECT * FROM workouts WHERE id = $1', [id])
+    const workout = workouts[0]
 
-    if (workoutError) throw workoutError
-    if (!workout)
+    if (!workout) {
       return res.status(404).json({ error: 'Entrenamiento no encontrado' })
+    }
 
-    const { data: workoutExercises, error: weError } = await supabase
-      .from('workout_exercises')
-      .select(
-        'id, sets, reps, exercises(id, name, description, execution_time)'
-      )
-      .eq('workout_id', id)
+    const { rows: workoutExercises } = await pool.query(
+      `SELECT we.id as link_id, we.sets, we.reps, e.id, e.name, e.description, e.execution_time
+       FROM workout_exercises we
+       LEFT JOIN exercises e ON we.exercise_id = e.id
+       WHERE we.workout_id = $1`,
+      [id]
+    )
 
-    if (weError) throw weError
-
-    const exercises = workoutExercises.map((item) => ({
-      link_id: item.id,
-      sets: item.sets,
-      reps: item.reps,
-      id: item.exercises.id,
-      name: item.exercises.name,
-      description: item.exercises.description,
-      execution_time: item.exercises.execution_time
-    }))
-
-    res.json({ ...workout, exercises })
+    res.json({ ...workout, exercises: workoutExercises })
   } catch (err) {
-    res
-      .status(500)
-      .json({ error: 'Error al obtener el entrenamiento completo' })
+    console.error('Error en GET /workouts/:id/full:', err)
+    res.status(500).json({ error: 'Error al obtener el entrenamiento completo' })
   }
 })
 
 router.get('/:id/details', async (req, res) => {
   const { id } = req.params
   try {
-    const { data: workout, error: workoutError } = await supabase
-      .from('workouts')
-      .select('*')
-      .eq('id', id)
-      .single()
+    const { rows: workouts } = await pool.query('SELECT * FROM workouts WHERE id = $1', [id])
+    const workout = workouts[0]
 
-    if (workoutError) throw workoutError
+    if (!workout) {
+      return res.status(404).json({ error: 'Entrenamiento no encontrado' })
+    }
 
-    const { data: exercises, error: exercisesError } = await supabase
-      .from('workout_exercises')
-      .select(
-        `
-        id,
-        sets,
-        reps,
-        exercise_id,
-        exercises:exercise_id (
-          name,
-          description,
-          execution_time
-        )
-      `
-      )
-      .eq('workout_id', id)
-
-    if (exercisesError) throw exercisesError
-
-    const flattenedExercises = exercises.map((ex) => ({
-      link_id: ex.id,
-      exercise_id: ex.exercise_id,
-      sets: ex.sets,
-      reps: ex.reps,
-      name: ex.exercises.name,
-      description: ex.exercises.description,
-      execution_time: ex.exercises.execution_time
-    }))
+    const { rows: exercises } = await pool.query(
+      `SELECT we.id as link_id, we.exercise_id, we.sets, we.reps, e.name, e.description, e.execution_time
+       FROM workout_exercises we
+       LEFT JOIN exercises e ON we.exercise_id = e.id
+       WHERE we.workout_id = $1`,
+      [id]
+    )
 
     res.json({
       ...workout,
-      exercises: flattenedExercises
+      exercises
     })
   } catch (err) {
+    console.error('Error en GET /workouts/:id/details:', err)
     res.status(500).json({ error: 'Error cargando detalles del entrenamiento' })
   }
 })
@@ -242,26 +212,32 @@ router.get('/:id/user', async (req, res) => {
   try {
     const { id } = req.params
 
-    const { data, error } = await supabase
-      .from('workouts')
-      .select('user_id, users(id, name, surname, email)')
-      .eq('id', id)
-      .single()
+    const { rows } = await pool.query(
+      `SELECT w.user_id, u.id, u.name, u.surname, u.email
+       FROM workouts w
+       LEFT JOIN users u ON w.user_id = u.id
+       WHERE w.id = $1`,
+      [id]
+    )
 
-    if (error) {
-      throw error
-    }
-
-    if (!data) {
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'Workout no encontrado' })
     }
 
-    if (!data.user_id) {
+    if (!rows[0].user_id || !rows[0].id) {
       return res.json(null)
     }
 
-    res.json(data.users)
+    const user = {
+      id: rows[0].id,
+      name: rows[0].name,
+      surname: rows[0].surname,
+      email: rows[0].email
+    }
+
+    res.json(user)
   } catch (error) {
+    console.error('Error en GET /workouts/:id/user:', error)
     res.status(500).json({ error: 'Error al obtener usuario del workout' })
   }
 })

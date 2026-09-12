@@ -5,7 +5,7 @@
 
 const express = require('express')
 const router = express.Router()
-const { supabase, supabaseAdmin } = require('../database/supabaseClient')
+const { supabase, supabaseAdmin, pool } = require('../database/supabaseClient')
 
 router.get('/', async (req, res) => {
   try {
@@ -19,49 +19,40 @@ router.get('/', async (req, res) => {
 
 router.get('/with-foods', async (req, res) => {
   try {
-    const { data: diets, error: dietsError } = await supabase
-      .from('diets')
-      .select('*')
-      .order('id')
+    const { rows: diets } = await pool.query('SELECT * FROM diets ORDER BY id ASC')
+    const { rows: dietFoods } = await pool.query(`
+      SELECT df.id, df.diet_id, df.quantity, df.food_id,
+             f.name, f.description, f.calories
+      FROM diet_foods df
+      LEFT JOIN foods f ON df.food_id = f.id
+    `)
 
-    if (dietsError) {
-      throw dietsError
-    }
-
-    const { data: dietsWithFoods, error: joinError } = await supabase
-      .from('diets')
-      .select(
-        `
-        *,
-        diet_foods (
-          id,
-          quantity,
-          food_id,
-          foods (
-            id,
-            name,
-            description,
-            calories
-          )
-        )
-      `
-      )
-      .order('id')
-
-    if (joinError) {
-      const dietsOnly = diets.map((diet) => ({
+    const dietsWithFoods = diets.map((diet) => {
+      const foods = dietFoods
+        .filter((df) => df.diet_id === diet.id)
+        .map((df) => ({
+          id: df.id,
+          quantity: df.quantity,
+          food_id: df.food_id,
+          foods: {
+            id: df.food_id,
+            name: df.name,
+            description: df.description,
+            calories: df.calories
+          }
+        }))
+      return {
         ...diet,
-        diet_foods: []
-      }))
-      return res.json(dietsOnly)
-    }
+        diet_foods: foods
+      }
+    })
 
     res.json(dietsWithFoods)
   } catch (err) {
+    console.error('Error en GET /diets/with-foods:', err)
     res.status(500).json({
       error: 'Error al obtener dietas con alimentos',
-      details: err.message,
-      stack: err.stack
+      details: err.message
     })
   }
 })
@@ -160,19 +151,17 @@ router.get('/:id/users', async (req, res) => {
   try {
     const { id } = req.params
 
-    const { data, error } = await supabase
-      .from('user_diets')
-      .select('user_id, users(id, name, surname, email)')
-      .eq('diet_id', id)
-
-    if (error) {
-      throw error
-    }
-
-    const users = data.map((item) => item.users)
+    const { rows: users } = await pool.query(
+      `SELECT u.id, u.name, u.surname, u.email
+       FROM user_diets ud
+       JOIN users u ON ud.user_id = u.id
+       WHERE ud.diet_id = $1`,
+      [id]
+    )
 
     res.json(users)
   } catch (error) {
+    console.error('Error en GET /diets/:id/users:', error)
     res.status(500).json({ error: 'Error al obtener usuarios de la dieta' })
   }
 })
@@ -235,43 +224,44 @@ router.get('/:id/details', async (req, res) => {
   try {
     const { id } = req.params
 
-    const { data, error } = await supabase
-      .from('diets')
-      .select(
-        `
-        *,
-        diet_foods (
-          id,
-          quantity,
-          food_id,
-          foods (
-            id,
-            name,
-            description,
-            calories
-          )
-        )
-      `
-      )
-      .eq('id', id)
-      .single()
+    const { rows: diets } = await pool.query('SELECT * FROM diets WHERE id = $1', [id])
+    const diet = diets[0]
 
-    if (error) {
-      throw error
-    }
-
-    if (!data) {
+    if (!diet) {
       return res.status(404).json({ error: 'Dieta no encontrada' })
     }
 
-    res.json(data)
+    const { rows: dietFoods } = await pool.query(
+      `SELECT df.id, df.quantity, df.food_id,
+              f.name, f.description, f.calories
+       FROM diet_foods df
+       LEFT JOIN foods f ON df.food_id = f.id
+       WHERE df.diet_id = $1`,
+      [id]
+    )
+
+    const formattedFoods = dietFoods.map((df) => ({
+      id: df.id,
+      quantity: df.quantity,
+      food_id: df.food_id,
+      foods: {
+        id: df.food_id,
+        name: df.name,
+        description: df.description,
+        calories: df.calories
+      }
+    }))
+
+    res.json({
+      ...diet,
+      diet_foods: formattedFoods
+    })
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        error: 'Error al obtener detalles de la dieta',
-        details: error.message
-      })
+    console.error('Error en GET /diets/:id/details:', error)
+    res.status(500).json({
+      error: 'Error al obtener detalles de la dieta',
+      details: error.message
+    })
   }
 })
 
