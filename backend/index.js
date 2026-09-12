@@ -36,6 +36,14 @@ const corsOptions = {
 app.use(cors(corsOptions))
 app.use(express.json())
 
+// Normalizador para rutas /api viniendo de rewrites de Vercel
+app.use((req, res, next) => {
+  if (req.url.startsWith('/api')) {
+    req.url = req.url.replace(/^\/api/, '') || '/'
+  }
+  next()
+})
+
 app.use('/users', usersRouter)
 app.use('/diets', authenticateToken, dietsRouter)
 app.use('/workouts', authenticateToken, workoutsRouter)
