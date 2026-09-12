@@ -1,0 +1,187 @@
+/* ==========================================================================
+   iOS 26 - Liquid Glass Theme & Anatomical BodyMap Heatmap Styles
+   ========================================================================== */
+
+:root {
+  --glass-bg: rgba(255, 255, 255, 0.68);
+  --glass-bg-hover: rgba(255, 255, 255, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-border-subtle: rgba(226, 232, 240, 0.8);
+  --glass-shadow: 0 16px 40px -8px rgba(15, 23, 42, 0.07), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+  --glass-shadow-hover: 0 24px 48px -12px rgba(15, 23, 42, 0.12), 0 0 0 1.5px rgba(255, 255, 255, 0.9) inset;
+  --glass-blur: blur(24px) saturate(190%);
+  --liquid-cyan: #0284c7;
+  --liquid-emerald: #10b981;
+  --liquid-amber: #f59e0b;
+  --liquid-coral: #f43f5e;
+  --bm-inert: rgba(203, 213, 225, 0.45);
+  --bm-base: rgba(226, 232, 240, 0.7);
+}
+
+/* Glass Card */
+.liquid-glass-card {
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 24px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+  pointer-events: none;
+}
+
+.liquid-glass-card:hover {
+  background: var(--glass-bg-hover);
+  box-shadow: var(--glass-shadow-hover);
+  transform: translateY(-2px);
+}
+
+/* Glass Pill Buttons */
+.liquid-pill {
+  border-radius: 9999px;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  font-weight: 600;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  transition: all 0.25s ease;
+}
+
+/* Hero Glass Banner */
+.liquid-hero-banner {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.75) 0%, rgba(241, 245, 249, 0.6) 100%);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 28px;
+  box-shadow: 0 20px 48px -12px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  position: relative;
+  overflow: hidden;
+}
+
+.liquid-hero-banner::after {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -20%;
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, rgba(16, 185, 129, 0.08) 50%, transparent 70%);
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(40px);
+}
+
+/* ==========================================================================
+   Anatomical BodyMap Heatmap SVG Styles
+   ========================================================================== */
+
+.bodymap-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  width: 100%;
+  padding: 12px 0;
+  user-select: none;
+}
+
+.bm-svg-view {
+  flex: 1;
+  max-width: 260px;
+  height: auto;
+  max-height: 360px;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.05));
+  transition: transform 0.3s ease;
+}
+
+.bm-svg-view path {
+  stroke: rgba(255, 255, 255, 0.95);
+  stroke-width: 1.8;
+  stroke-linejoin: round;
+}
+
+/* Silueta inerte (cabeza, manos, pies, cuello) */
+.bm-sil {
+  fill: var(--bm-inert);
+  pointer-events: none;
+}
+
+/* Músculos activos */
+.bm-muscle {
+  cursor: pointer;
+  fill: var(--bm-base);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  outline: none;
+}
+
+.bm-muscle:hover {
+  filter: brightness(1.15) drop-shadow(0 0 6px rgba(56, 189, 248, 0.5));
+}
+
+/* Niveles de calor estilo Liquid Glass */
+.bm-muscle.l0 {
+  fill: var(--bm-base);
+}
+
+.bm-muscle.l1 {
+  fill: #38bdf8; /* Cyan suave */
+  filter: drop-shadow(0 0 3px rgba(56, 189, 248, 0.3));
+}
+
+.bm-muscle.l2 {
+  fill: #10b981; /* Verde esmeralda */
+  filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.4));
+}
+
+.bm-muscle.l3 {
+  fill: #f59e0b; /* Ámbar oro líquido */
+  filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.55));
+}
+
+.bm-muscle.l4 {
+  fill: #f43f5e; /* Coral neón alta intensidad */
+  filter: drop-shadow(0 0 8px rgba(244, 63, 94, 0.7));
+}
+
+/* Músculo seleccionado activamente */
+.bm-muscle.selected {
+  stroke: #0f172a !important;
+  stroke-width: 4.5 !important;
+  filter: drop-shadow(0 0 10px rgba(15, 23, 42, 0.4)) brightness(1.2);
+  z-index: 20;
+}
+
+/* Leyenda de Calor */
+.bm-legend-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.bm-heat-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}

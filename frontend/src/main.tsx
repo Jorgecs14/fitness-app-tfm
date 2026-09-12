@@ -7,6 +7,7 @@ import React, { useEffect, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import './styles/global.css'
 import './styles/components.css'
+import './styles/liquid-glass.css'
 import App from './App'
 import { supabase } from './lib/supabase'
 import {

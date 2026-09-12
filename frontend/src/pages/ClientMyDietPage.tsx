@@ -86,10 +86,11 @@ export const ClientMyDietPage: React.FC = () => {
         <Stack direction="row" spacing={1.5} flexWrap="wrap" gap={1}>
           <Button
             variant="outlined"
+            className="liquid-pill"
             color="primary"
             startIcon={<Iconify icon="solar:calculator-minimalistic-bold-duotone" width={20} />}
             onClick={() => setCalculatorOpen(true)}
-            sx={{ borderRadius: 2.5, py: 1.2, px: 2 }}
+            sx={{ px: 2.2, py: 1 }}
           >
             Calculadora Calórica
           </Button>
@@ -97,13 +98,14 @@ export const ClientMyDietPage: React.FC = () => {
           {diet && (
             <Button
               variant="contained"
+              className="liquid-pill"
               color="primary"
               startIcon={<Iconify icon="eva:edit-2-fill" width={20} />}
               onClick={() => {
                 setEditingDietTarget(diet)
                 setDietBuilderOpen(true)
               }}
-              sx={{ borderRadius: 2.5, py: 1.2, px: 2 }}
+              sx={{ px: 2.2, py: 1 }}
             >
               Editar Mi Dieta
             </Button>
@@ -112,10 +114,11 @@ export const ClientMyDietPage: React.FC = () => {
           {diet && (
             <Button
               variant="outlined"
+              className="liquid-pill"
               color="secondary"
               startIcon={<Iconify icon="solar:plate-bold" width={20} />}
               onClick={() => setFoodsManagerOpen(true)}
-              sx={{ borderRadius: 2.5, py: 1.2, px: 2 }}
+              sx={{ px: 2.2, py: 1 }}
             >
               Gestionar Alimentos
             </Button>
@@ -123,13 +126,14 @@ export const ClientMyDietPage: React.FC = () => {
 
           <Button
             variant="outlined"
+            className="liquid-pill"
             color="success"
             startIcon={<Iconify icon="solar:pen-new-square-bold" width={20} />}
             onClick={() => {
               setEditingDietTarget(null)
               setDietBuilderOpen(true)
             }}
-            sx={{ borderRadius: 2.5, py: 1.2, px: 2 }}
+            sx={{ px: 2.2, py: 1 }}
           >
             Nueva Dieta
           </Button>
@@ -137,13 +141,13 @@ export const ClientMyDietPage: React.FC = () => {
           {diet && (
             <Button
               variant="contained"
+              className="liquid-pill"
               color="primary"
               startIcon={<Iconify icon="solar:document-bold-duotone" width={20} />}
               onClick={() => setPdfModalOpen(true)}
               sx={{
-                borderRadius: 2.5,
-                py: 1.2,
                 px: 2.5,
+                py: 1,
                 background: 'linear-gradient(135deg, #00a76f 0%, #007849 100%)',
                 boxShadow: '0 4px 14px rgba(0, 167, 111, 0.35)'
               }}
@@ -155,7 +159,7 @@ export const ClientMyDietPage: React.FC = () => {
       </Stack>
 
       {!diet ? (
-        <Paper sx={{ p: 4, borderRadius: 3, textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+        <Box className="liquid-glass-card" sx={{ p: 4, textAlign: 'center' }}>
           <Iconify icon="solar:chef-hat-heart-bold" width={64} height={64} sx={{ color: 'primary.main', mb: 2 }} />
           <Typography variant="h5" fontWeight="bold" gutterBottom>
             Aún no tienes una dieta configurada
@@ -165,6 +169,7 @@ export const ClientMyDietPage: React.FC = () => {
           </Typography>
           <Button
             variant="contained"
+            className="liquid-pill"
             color="primary"
             size="large"
             startIcon={<Iconify icon="solar:add-circle-bold" />}
@@ -172,15 +177,15 @@ export const ClientMyDietPage: React.FC = () => {
               setEditingDietTarget(null)
               setDietBuilderOpen(true)
             }}
-            sx={{ fontWeight: 'bold', borderRadius: 2.5 }}
+            sx={{ fontWeight: 'bold', px: 3, py: 1.2 }}
           >
             Crear Mi Plan Nutricional Ahora
           </Button>
-        </Paper>
+        </Box>
       ) : (
         <Stack spacing={3}>
           {/* Ficha Resumen Dieta */}
-          <Paper sx={{ p: 3, borderRadius: 3, boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+          <Box className="liquid-glass-card" sx={{ p: 3.5 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
               <Box>
                 <Typography variant="h5" fontWeight="bold" color="primary.main">
@@ -220,7 +225,7 @@ export const ClientMyDietPage: React.FC = () => {
                 </Button>
               </Stack>
             </Stack>
-          </Paper>
+          </Box>
 
           {/* Componente de Retos Alimenticios Interactivos */}
           {currentUser && (
