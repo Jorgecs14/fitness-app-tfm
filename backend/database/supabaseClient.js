@@ -40,7 +40,14 @@ class QueryBuilder {
 
   insert(data) {
     this.operation = 'INSERT'
-    this.insertData = Array.isArray(data) ? data[0] : data
+    this.insertData = data
+    return this
+  }
+
+  upsert(data, options = {}) {
+    this.operation = 'UPSERT'
+    this.insertData = data
+    this.upsertOptions = options
     return this
   }
 
@@ -109,14 +116,34 @@ class QueryBuilder {
         if (this.orderClause) {
           queryText += ` ${this.orderClause}`
         }
-      } else if (this.operation === 'INSERT') {
-        const keys = Object.keys(this.insertData)
-        const cols = keys.map((k) => `"${k}"`).join(', ')
-        const placeholders = keys.map((k, idx) => {
-          this.values.push(this.insertData[k])
-          return `$${idx + 1}`
-        })
-        queryText = `INSERT INTO "${this.table}" (${cols}) VALUES (${placeholders.join(', ')}) RETURNING *`
+      } else if (this.operation === 'INSERT' || this.operation === 'UPSERT') {
+        const items = Array.isArray(this.insertData) ? this.insertData : [this.insertData]
+        if (items.length > 0) {
+          const keys = Object.keys(items[0])
+          const cols = keys.map((k) => `"${k}"`).join(', ')
+          const valueRows = []
+          items.forEach((item) => {
+            const rowPlaceholders = keys.map((k) => {
+              this.values.push(item[k])
+              return `$${this.values.length}`
+            })
+            valueRows.push(`(${rowPlaceholders.join(', ')})`)
+          })
+
+          if (this.operation === 'UPSERT') {
+            const conflictTarget = this.upsertOptions?.onConflict || 'slug'
+            const updateSet = keys
+              .filter((k) => k !== conflictTarget && k !== 'id')
+              .map((k) => `"${k}" = EXCLUDED."${k}"`)
+              .join(', ')
+            const onConflictClause = updateSet
+              ? `ON CONFLICT ("${conflictTarget}") DO UPDATE SET ${updateSet}`
+              : `ON CONFLICT ("${conflictTarget}") DO NOTHING`
+            queryText = `INSERT INTO "${this.table}" (${cols}) VALUES ${valueRows.join(', ')} ${onConflictClause} RETURNING *`
+          } else {
+            queryText = `INSERT INTO "${this.table}" (${cols}) VALUES ${valueRows.join(', ')} RETURNING *`
+          }
+        }
       } else if (this.operation === 'UPDATE') {
         const keys = Object.keys(this.updateData)
         const setClauses = keys.map((k) => {

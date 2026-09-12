@@ -7,7 +7,9 @@ const path = require('path');
 const { supabase } = require('./supabaseClient');
 
 // Ruta hacia el archivo exercises-data.js de openGym
-const openGymDataPath = path.resolve(__dirname, '../../../openGym/frontend/src/lib/exercises-data.js');
+const localDataPath = path.resolve(__dirname, './exercises-data.js');
+const fallbackDataPath = path.resolve(__dirname, '../../../openGym/frontend/src/lib/exercises-data.js');
+const openGymDataPath = fs.existsSync(localDataPath) ? localDataPath : fallbackDataPath;
 
 async function seedExercises() {
   console.log('🚀 Iniciando importación de ejercicios desde openGym...');
@@ -30,13 +32,20 @@ async function seedExercises() {
   const rawExercises = JSON.parse(jsonMatch[1]);
   console.log(`📦 Se encontraron ${rawExercises.length} ejercicios en openGym.`);
 
-  const formattedExercises = rawExercises.map((item) => {
+  const seenSlugs = new Set();
+  const formattedExercises = [];
+
+  for (const item of rawExercises) {
     const name = item.n || 'Ejercicio sin nombre';
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+    if (!slug || seenSlugs.has(slug)) continue;
+    seenSlugs.add(slug);
+
     const instructions = Array.isArray(item.st) ? item.st : [];
     const description = instructions.length > 0 ? instructions.join('\n') : (item.tg ? `Ejercicio para ${item.tg}` : '');
 
-    return {
+    formattedExercises.push({
       name: name.charAt(0).toUpperCase() + name.slice(1),
       description,
       execution_time: 60,
@@ -49,8 +58,8 @@ async function seedExercises() {
       instructions,
       image_url: item.img ? `https://raw.githubusercontent.com/DuarteSantos8/openGym/main/media/exercises/${item.img}` : null,
       gif_url: item.gif ? `https://raw.githubusercontent.com/DuarteSantos8/openGym/main/media/exercises/${item.gif}` : null,
-    };
-  });
+    });
+  }
 
   // Insertar en batches de 100 ejercicios
   const batchSize = 100;

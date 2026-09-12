@@ -15,12 +15,14 @@ import { DietWithFoods } from '../types/DietWithFoods'
 import { User } from '../types/User'
 import { DietMealChecklist } from '../components/Diet/DietMealChecklist'
 import { DietVisualPdfModal } from '../components/Diet/DietVisualPdfModal'
+import { CalorieCalculatorModal } from '../components/Diet/CalorieCalculatorModal'
 
 export const ClientMyDietPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [diet, setDiet] = useState<DietWithFoods | null>(null)
   const [loading, setLoading] = useState(true)
   const [pdfModalOpen, setPdfModalOpen] = useState(false)
+  const [calculatorOpen, setCalculatorOpen] = useState(false)
 
   useEffect(() => {
     loadDiet()
@@ -75,23 +77,35 @@ export const ClientMyDietPage: React.FC = () => {
           </Typography>
         </Box>
 
-        {diet && (
+        <Stack direction="row" spacing={1.5} flexWrap="wrap" gap={1}>
           <Button
-            variant="contained"
+            variant="outlined"
             color="primary"
-            startIcon={<Iconify icon="solar:document-bold-duotone" width={20} />}
-            onClick={() => setPdfModalOpen(true)}
-            sx={{
-              borderRadius: 2.5,
-              py: 1.2,
-              px: 2.5,
-              background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-              boxShadow: '0 4px 14px rgba(2, 132, 199, 0.35)'
-            }}
+            startIcon={<Iconify icon="solar:calculator-minimalistic-bold-duotone" width={20} />}
+            onClick={() => setCalculatorOpen(true)}
+            sx={{ borderRadius: 2.5, py: 1.2, px: 2 }}
           >
-            Exportar PDF Visual
+            Calculadora Calórica
           </Button>
-        )}
+
+          {diet && (
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Iconify icon="solar:document-bold-duotone" width={20} />}
+              onClick={() => setPdfModalOpen(true)}
+              sx={{
+                borderRadius: 2.5,
+                py: 1.2,
+                px: 2.5,
+                background: 'linear-gradient(135deg, #00a76f 0%, #007849 100%)',
+                boxShadow: '0 4px 14px rgba(0, 167, 111, 0.35)'
+              }}
+            >
+              Exportar PDF
+            </Button>
+          )}
+        </Stack>
       </Stack>
 
       {!diet ? (
@@ -137,6 +151,12 @@ export const ClientMyDietPage: React.FC = () => {
             diet={diet}
             clientUser={currentUser}
             trainerUser={currentUser?.trainer || null}
+          />
+
+          {/* Modal Calculadora Calórica */}
+          <CalorieCalculatorModal
+            open={calculatorOpen}
+            onClose={() => setCalculatorOpen(false)}
           />
         </Stack>
       )}
