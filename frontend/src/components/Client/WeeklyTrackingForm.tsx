@@ -19,7 +19,7 @@ import {
   Divider,
   Input
 } from '@mui/material';
-import { PhotoCamera, Scale } from '@mui/icons-material';
+import { Iconify } from '../../utils/iconify';
 import { WeeklyTracking, CreateWeeklyTrackingData, UpdateWeeklyTrackingData, SLEEP_QUALITY_OPTIONS } from '../../types/WeeklyTracking';
 import { weeklyTrackingService } from '../../services/weeklyTrackingService';
 

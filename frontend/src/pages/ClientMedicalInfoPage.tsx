@@ -178,7 +178,7 @@ export default function ClientMedicalInfoPage() {
           </Box>
 
           <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Alergias"
@@ -191,7 +191,7 @@ export default function ClientMedicalInfoPage() {
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Intolerancias Alimentarias"
@@ -204,7 +204,7 @@ export default function ClientMedicalInfoPage() {
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Lesiones o Condiciones Médicas"
@@ -217,7 +217,7 @@ export default function ClientMedicalInfoPage() {
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Alimentos que No Le Gustan"
@@ -230,11 +230,11 @@ export default function ClientMedicalInfoPage() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Divider sx={{ my: 2 }} />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Resultados de Laboratorio"
@@ -247,7 +247,7 @@ export default function ClientMedicalInfoPage() {
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Registro Nutricional Diario"

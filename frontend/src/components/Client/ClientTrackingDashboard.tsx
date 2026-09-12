@@ -11,13 +11,7 @@ import {
   Alert,
   Chip
 } from '@mui/material';
-import {
-  Person,
-  MonitorWeight,
-  CameraAlt,
-  Assignment,
-  CalendarMonth
-} from '@mui/icons-material';
+import { Iconify } from '../../utils/iconify';
 import { User } from '../../types/User';
 import { WeeklyTracking } from '../../types/WeeklyTracking';
 import { MonthlyTracking } from '../../types/MonthlyTracking';
@@ -182,25 +176,25 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 3 }}>
         <Tabs value={tabValue} onChange={handleTabChange}>
           <Tab 
-            icon={<Person />} 
+            icon={<Iconify icon="solar:user-bold-duotone" width={20} />} 
             label="Información Médica" 
             id="client-tab-0"
             aria-controls="client-tabpanel-0"
           />
           <Tab 
-            icon={<MonitorWeight />} 
+            icon={<Iconify icon="solar:chart-2-bold-duotone" width={20} />} 
             label="Seguimiento Semanal" 
             id="client-tab-1"
             aria-controls="client-tabpanel-1"
           />
           <Tab 
-            icon={<CameraAlt />} 
+            icon={<Iconify icon="solar:camera-bold-duotone" width={20} />} 
             label="Fotos de Progreso" 
             id="client-tab-2"
             aria-controls="client-tabpanel-2"
           />
           <Tab 
-            icon={<Assignment />} 
+            icon={<Iconify icon="solar:document-bold-duotone" width={20} />} 
             label="Resumen" 
             id="client-tab-3"
             aria-controls="client-tabpanel-3"

@@ -1,18 +1,53 @@
 /**
  * Servicio para gestionar ejercicios en la aplicación fitness-app-tfm
- * Proporciona métodos para CRUD de ejercicios
+ * Proporciona métodos para CRUD de ejercicios con búsqueda y filtrado
  */
 
 import { Exercise } from '../types/Exercise'
 import axiosInstance from '../lib/axios'
 
-export const getExercises = async (): Promise<Exercise[]> => {
+export interface ExerciseQueryParams {
+  q?: string;
+  search?: string;
+  body_part?: string;
+  target_muscle?: string;
+  equipment?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedExercisesResponse {
+  data: Exercise[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface ExerciseCategoriesResponse {
+  bodyParts: string[];
+  targetMuscles: string[];
+  equipments: string[];
+}
+
+export const getExercises = async (params?: ExerciseQueryParams): Promise<Exercise[] | PaginatedExercisesResponse> => {
   try {
-    const response = await axiosInstance.get('/exercises')
+    const response = await axiosInstance.get('/exercises', { params })
     return response.data
   } catch (error: any) {
     throw new Error(
       error.response?.data?.message || 'Error al obtener ejercicios'
+    )
+  }
+}
+
+export const getExerciseCategories = async (): Promise<ExerciseCategoriesResponse> => {
+  try {
+    const response = await axiosInstance.get('/exercises/categories')
+    return response.data
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message || 'Error al obtener categorías de ejercicios'
     )
   }
 }
@@ -30,7 +65,7 @@ export const createExercise = async (
 
 export const updateExercise = async (
   id: number,
-  exercise: Omit<Exercise, 'id'>
+  exercise: Partial<Omit<Exercise, 'id'>>
 ): Promise<Exercise> => {
   try {
     const response = await axiosInstance.put(`/exercises/${id}`, exercise)
@@ -51,3 +86,4 @@ export const deleteExercise = async (id: number): Promise<void> => {
     )
   }
 }
+

@@ -62,6 +62,33 @@ export const deleteUser = async (id: number): Promise<void> => {
   }
 }
 
+export const getTrainers = async (): Promise<User[]> => {
+  try {
+    const response = await axiosInstance.get('/users/trainers')
+    return response.data
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Error al obtener entrenadores')
+  }
+}
+
+export const getTrainerClients = async (trainerId: number): Promise<User[]> => {
+  try {
+    const response = await axiosInstance.get(`/users/trainer/${trainerId}/clients`)
+    return response.data
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Error al obtener clientes del entrenador')
+  }
+}
+
+export const assignTrainer = async (clientId: number, trainerId: number | null): Promise<User> => {
+  try {
+    const response = await axiosInstance.put(`/users/${clientId}/trainer`, { trainer_id: trainerId })
+    return response.data
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Error al asignar entrenador')
+  }
+}
+
 export const getCurrentUser = async (): Promise<User> => {
   try {
     const {
@@ -86,3 +113,4 @@ export const getCurrentUser = async (): Promise<User> => {
     )
   }
 }
+

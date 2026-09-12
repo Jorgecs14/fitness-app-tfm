@@ -1,6 +1,20 @@
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, List, ListItem, ListItemText } from '@mui/material';
+import { useState } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Box,
+  Stack,
+  Chip
+} from '@mui/material';
+import { Iconify } from '../../utils/iconify';
 import { DietWithFoods } from '../../types/DietWithFoods';
-import { calculateDietCalories, formatCalories, calculateFoodCalories } from '../../utils/dietUtils';
+import { calculateDietCalories, formatCalories } from '../../utils/dietUtils';
+import { DietMealChecklist } from './DietMealChecklist';
+import { DietVisualPdfModal } from './DietVisualPdfModal';
 
 interface DietDetailProps {
   open: boolean;
@@ -9,42 +23,67 @@ interface DietDetailProps {
 }
 
 export const DietDetail = ({ open, diet, onClose }: DietDetailProps) => {
+  const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const totalCalories = calculateDietCalories(diet);
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Detalle de Dieta</DialogTitle>
-      <DialogContent>
-        <Typography variant="h6">{diet.name}</Typography>
-        <Typography variant="subtitle2">Descripción: {diet.description}</Typography>
-        <Typography variant="subtitle2">
-          Calorías totales: {formatCalories(totalCalories)}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ mt: 2 }}>Alimentos:</Typography>
-        <List>
-          {diet.diet_foods && diet.diet_foods.length > 0 ? (
-            diet.diet_foods.map(dietFood => (
-              <ListItem key={dietFood.id}>
-                <ListItemText 
-                  primary={dietFood.foods?.name || 'Alimento desconocido'}
-                  secondary={`${dietFood.quantity}g - ${formatCalories(
-                    dietFood.foods 
-                      ? calculateFoodCalories(dietFood.foods.calories, dietFood.quantity)
-                      : 0
-                  )}`}
-                />
-              </ListItem>
-            ))
-          ) : (
-            <ListItem>
-              <ListItemText primary="No hay alimentos en esta dieta" />
-            </ListItem>
-          )}
-        </List>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cerrar</Button>
-      </DialogActions>
-    </Dialog>
+    <>
+      <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Iconify icon="solar:chef-hat-bold-duotone" width={28} style={{ color: '#0284c7' }} />
+            <Typography variant="h6" fontWeight="bold">
+              Detalle & Retos de Dieta: {diet.name}
+            </Typography>
+          </Stack>
+
+          <Button
+            variant="contained"
+            color="primary"
+            startIcon={<Iconify icon="solar:document-bold-duotone" width={20} />}
+            onClick={() => setPdfModalOpen(true)}
+            sx={{ borderRadius: 2 }}
+          >
+            Generar PDF Visual
+          </Button>
+        </DialogTitle>
+
+        <DialogContent dividers sx={{ bgcolor: '#f8fafc' }}>
+          <Box sx={{ mb: 3, p: 2.5, bgcolor: '#ffffff', borderRadius: 2.5, border: '1px solid #e2e8f0' }}>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1}>
+              <Box>
+                <Typography variant="h6" fontWeight="bold" color="primary.main">
+                  {diet.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {diet.description || 'Sin observaciones.'}
+                </Typography>
+              </Box>
+
+              <Chip
+                icon={<Iconify icon="solar:fire-bold" width={18} />}
+                label={`Calorías: ${formatCalories(totalCalories)}`}
+                color="error"
+                sx={{ fontWeight: 'bold' }}
+              />
+            </Stack>
+          </Box>
+
+          <DietMealChecklist diet={diet} userId={1} readOnly={false} />
+        </DialogContent>
+
+        <DialogActions sx={{ p: 2 }}>
+          <Button onClick={onClose} variant="outlined">
+            Cerrar
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <DietVisualPdfModal
+        open={pdfModalOpen}
+        onClose={() => setPdfModalOpen(false)}
+        diet={diet}
+      />
+    </>
   );
-};
+};

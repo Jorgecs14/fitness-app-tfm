@@ -15,7 +15,7 @@ import {
   Input,
   Chip
 } from '@mui/material';
-import { PhotoCamera, Delete } from '@mui/icons-material';
+import { Iconify } from '../../utils/iconify';
 import { ClientProgressPhoto, CreateClientProgressPhotoData, PHOTO_TYPES } from '../../types/ClientProgressPhoto';
 import { clientProgressPhotoService } from '../../services/clientProgressPhotoService';
 
@@ -170,7 +170,7 @@ const ProgressPhotosManager: React.FC<ProgressPhotosManagerProps> = ({
                             <Button
                               size="small"
                               color="error"
-                              startIcon={<Delete />}
+                              startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
                               onClick={() => handleDeletePhoto(existingPhoto.id)}
                             >
                               Eliminar
@@ -213,7 +213,7 @@ const ProgressPhotosManager: React.FC<ProgressPhotosManagerProps> = ({
                               variant="outlined"
                               component="span"
                               fullWidth
-                              startIcon={<PhotoCamera />}
+                              startIcon={<Iconify icon="solar:camera-bold" />}
                               disabled={isUploading}
                             >
                               {isUploading ? 'Subiendo...' : 'Subir Foto'}
@@ -243,7 +243,7 @@ const ProgressPhotosManager: React.FC<ProgressPhotosManagerProps> = ({
                               component="span"
                               size="small"
                               fullWidth
-                              startIcon={<PhotoCamera />}
+                              startIcon={<Iconify icon="solar:camera-bold" />}
                               disabled={isUploading}
                             >
                               {isUploading ? 'Reemplazando...' : 'Reemplazar Foto'}

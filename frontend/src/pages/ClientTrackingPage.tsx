@@ -13,13 +13,9 @@ import {
   Chip,
   Alert
 } from '@mui/material';
-import {
-  Search,
-  Person,
-  FitnessCenter
-} from '@mui/icons-material';
+import { Iconify } from '../utils/iconify';
 import { User } from '../types/User';
-import { userService } from '../services/userService';
+import * as userService from '../services/userService';
 import ClientTrackingDashboard from '../components/Client/ClientTrackingDashboard';
 
 const ClientTrackingPage: React.FC = () => {
@@ -38,9 +34,9 @@ const ClientTrackingPage: React.FC = () => {
       setLoading(true);
       setError(null);
       
-      const allUsers = await userService.getAll();
+      const allUsers = await userService.getUsers();
       // Filtrar solo los usuarios con rol 'client'
-      const clientUsers = allUsers.filter(user => user.role === 'client');
+      const clientUsers = allUsers.filter(user => user.role === 'client' || user.role === 'cliente');
       setClients(clientUsers);
       
     } catch (error: any) {
@@ -94,8 +90,8 @@ const ClientTrackingPage: React.FC = () => {
   return (
     <Container maxWidth="xl">
       <Box sx={{ py: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          <FitnessCenter sx={{ mr: 2, verticalAlign: 'middle' }} />
+        <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Iconify icon="solar:dumbbell-bold-duotone" width={32} />
           Seguimiento de Clientes
         </Typography>
 
@@ -119,7 +115,7 @@ const ClientTrackingPage: React.FC = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Search />
+                  <Iconify icon="eva:search-fill" width={20} />
                 </InputAdornment>
               ),
             }}
@@ -137,7 +133,7 @@ const ClientTrackingPage: React.FC = () => {
         ) : (
           <Grid container spacing={3}>
             {filteredClients.map((client) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={client.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={client.id}>
                 <Card 
                   sx={{ 
                     height: '100%',
@@ -167,7 +163,7 @@ const ClientTrackingPage: React.FC = () => {
 
                     <Box sx={{ mb: 2 }}>
                       <Chip
-                        icon={<Person />}
+                        icon={<Iconify icon="solar:user-bold" width={16} />}
                         label="Cliente"
                         size="small"
                         color="primary"
@@ -194,14 +190,14 @@ const ClientTrackingPage: React.FC = () => {
                       <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
                         <Grid container spacing={1}>
                           {client.weight && (
-                            <Grid item xs={6}>
+                            <Grid size={{ xs: 6 }}>
                               <Typography variant="body2" color="text.secondary">
                                 Peso: {client.weight} kg
                               </Typography>
                             </Grid>
                           )}
                           {client.height && (
-                            <Grid item xs={6}>
+                            <Grid size={{ xs: 6 }}>
                               <Typography variant="body2" color="text.secondary">
                                 Altura: {client.height} cm
                               </Typography>

@@ -1,5 +1,4 @@
-// Página principal del dashboard con estadísticas y resumen de la aplicación fitness
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 
 import Box from '@mui/material/Box'
@@ -35,6 +34,7 @@ interface DashboardStats {
 }
 
 export const HomePage = () => {
+  const navigate = useNavigate()
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     totalDiets: 0,
@@ -51,8 +51,21 @@ export const HomePage = () => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadDashboardStats()
+    checkUserRoleAndLoadStats()
   }, [])
+
+  const checkUserRoleAndLoadStats = async () => {
+    try {
+      const currentUser = await userService.getCurrentUser()
+      if (currentUser && (currentUser.role === 'client' || currentUser.role === 'cliente')) {
+        navigate('/dashboard/client-home', { replace: true })
+        return
+      }
+    } catch (e) {
+      // Continue loading trainer stats if not a client or profile endpoint fails
+    }
+    loadDashboardStats()
+  }
 
   const loadDashboardStats = async () => {
     try {

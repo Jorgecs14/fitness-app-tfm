@@ -1,4 +1,3 @@
-// Componente principal de gestión de usuarios con funcionalidades CRUD y exportación
 import { useState, useEffect } from 'react'
 import { Box } from '@mui/material'
 import { User } from '../../types/User'
@@ -7,12 +6,15 @@ import { useToast } from '../../utils/notifications'
 import { useExport } from '../../utils/hooks/useExport'
 import { UserList } from './UserList'
 import { UserForm } from './UserForm'
+import { AssignTrainerModal } from './AssignTrainerModal'
 
 export const UserManager = () => {
   const [users, setUsers] = useState<User[]>([])
   const [editingUser, setEditingUser] = useState<User | null>(null)
   const [formOpen, setFormOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [assignModalOpen, setAssignModalOpen] = useState(false)
+  const [assigningClient, setAssigningClient] = useState<User | null>(null)
 
   const { showToast, ToastContainer } = useToast()
   const { exportToPDF, exportToExcel, exportToCSV } = useExport()
@@ -75,6 +77,11 @@ export const UserManager = () => {
   const handleEdit = (user: User) => {
     setEditingUser(user)
     setFormOpen(true)
+  }
+
+  const handleAssignTrainer = (user: User) => {
+    setAssigningClient(user)
+    setAssignModalOpen(true)
   }
 
   const handleDelete = async (id: number) => {
@@ -153,6 +160,7 @@ export const UserManager = () => {
         onDelete={handleDelete}
         onExport={handleExport}
         onCreateNew={handleCreateNew}
+        onAssignTrainer={handleAssignTrainer}
       />
 
       <UserForm
@@ -161,6 +169,17 @@ export const UserManager = () => {
         onSubmit={handleSubmitUser}
         userToEdit={editingUser}
       />
+
+      <AssignTrainerModal
+        open={assignModalOpen}
+        onClose={() => setAssignModalOpen(false)}
+        client={assigningClient}
+        onUpdated={() => {
+          showToast('Entrenador asignado correctamente', 'success')
+          loadUsers()
+        }}
+      />
     </Box>
   )
 }
+

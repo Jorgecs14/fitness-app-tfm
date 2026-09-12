@@ -18,6 +18,8 @@ interface WorkoutCardProps {
   onViewDetails: (workout: WorkoutWithExercises) => void;
   onManageExercises?: (workout: WorkoutWithExercises) => void;
   onManageUser?: (workout: WorkoutWithExercises) => void;
+  onStartLiveWorkout?: (workout: WorkoutWithExercises) => void;
+  onShareQr?: (workout: WorkoutWithExercises) => void;
 }
 
 export const WorkoutCard = ({
@@ -27,7 +29,9 @@ export const WorkoutCard = ({
   onDelete,
   onViewDetails,
   onManageExercises,
-  onManageUser
+  onManageUser,
+  onStartLiveWorkout,
+  onShareQr
 }: WorkoutCardProps) => {
   const getCategoryColor = (category: string) => {
     switch (category.toLowerCase()) {
@@ -70,7 +74,7 @@ export const WorkoutCard = ({
               Asignado a: {userName}
             </Typography>
           )}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
             <Chip
               label={workout.category}
               color={getCategoryColor(workout.category)}
@@ -103,17 +107,49 @@ export const WorkoutCard = ({
         )}
       </CardContent>
 
-      <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
-        <IconButton
-          size="small"
-          onClick={() => onViewDetails(workout)}
-          sx={{
-            color: 'info.main',
-            '&:hover': { bgcolor: 'info.lighter' },
-          }}
-        >
-          <Iconify icon="eva:eye-outline" sx={{ width: 18, height: 18 }} />
-        </IconButton>
+      <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+        <Box sx={{ display: 'flex', gap: 0.5 }}>
+          {onStartLiveWorkout && (
+            <IconButton
+              size="small"
+              onClick={() => onStartLiveWorkout(workout)}
+              sx={{
+                color: 'success.main',
+                bgcolor: 'success.lighter',
+                '&:hover': { bgcolor: 'success.light', color: 'white' },
+              }}
+              title="Iniciar Entrenamiento en Vivo"
+            >
+              <Iconify icon="eva:play-circle-fill" sx={{ width: 22, height: 22 }} />
+            </IconButton>
+          )}
+
+          <IconButton
+            size="small"
+            onClick={() => onViewDetails(workout)}
+            sx={{
+              color: 'info.main',
+              '&:hover': { bgcolor: 'info.lighter' },
+            }}
+            title="Ver detalles"
+          >
+            <Iconify icon="eva:eye-outline" sx={{ width: 18, height: 18 }} />
+          </IconButton>
+
+          {onShareQr && (
+            <IconButton
+              size="small"
+              onClick={() => onShareQr(workout)}
+              sx={{
+                color: 'warning.main',
+                '&:hover': { bgcolor: 'warning.lighter' },
+              }}
+              title="Compartir por QR"
+            >
+              <Iconify icon="eva:qr-code-fill" sx={{ width: 18, height: 18 }} />
+            </IconButton>
+          )}
+        </Box>
         
         <Box>
           {onManageExercises && (
@@ -125,6 +161,7 @@ export const WorkoutCard = ({
                 '&:hover': { bgcolor: 'secondary.lighter' },
                 mr: 0.5,
               }}
+              title="Gestionar Ejercicios"
             >
               <Iconify icon="solar:dumbbell-bold" sx={{ width: 18, height: 18 }} />
             </IconButton>
@@ -153,6 +190,7 @@ export const WorkoutCard = ({
               '&:hover': { bgcolor: 'primary.lighter' },
               mr: 0.5,
             }}
+            title="Editar entrenamiento"
           >
             <Iconify icon="eva:edit-2-outline" sx={{ width: 18, height: 18 }} />
           </IconButton>
@@ -164,6 +202,7 @@ export const WorkoutCard = ({
               color: 'error.main',
               '&:hover': { bgcolor: 'error.lighter' },
             }}
+            title="Eliminar entrenamiento"
           >
             <Iconify icon="eva:trash-2-outline" sx={{ width: 18, height: 18 }} />
           </IconButton>
@@ -172,3 +211,4 @@ export const WorkoutCard = ({
     </Card>
   );
 };
+

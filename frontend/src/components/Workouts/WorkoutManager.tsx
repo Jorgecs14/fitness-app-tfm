@@ -25,6 +25,9 @@ import { WorkoutDetail } from './WorkoutDetail'
 import { WorkoutExercisesManager } from './workout-exercises-manager'
 import { WorkoutUserDialog } from './WorkoutUserDialog'
 
+import { LiveWorkoutDialog } from './LiveWorkoutDialog'
+import { QrShareModal } from './QrShareModal'
+
 export const WorkoutManager = () => {
   const [workouts, setWorkouts] = useState<WorkoutWithExercises[]>([])
   const [filteredWorkouts, setFilteredWorkouts] = useState<
@@ -39,6 +42,10 @@ export const WorkoutManager = () => {
     useState<WorkoutWithExercises | null>(null)
   const [userManagerWorkout, setUserManagerWorkout] =
     useState<WorkoutWithExercises | null>(null)
+  const [liveWorkout, setLiveWorkout] = useState<WorkoutWithExercises | null>(null)
+  const [liveWorkoutOpen, setLiveWorkoutOpen] = useState(false)
+  const [qrWorkout, setQrWorkout] = useState<WorkoutWithExercises | null>(null)
+  const [qrOpen, setQrOpen] = useState(false)
   const [formOpen, setFormOpen] = useState(false)
   const [detailOpen, setDetailOpen] = useState(false)
   const [exerciseManagerOpen, setExerciseManagerOpen] = useState(false)
@@ -138,6 +145,16 @@ export const WorkoutManager = () => {
   const handleManageUser = (workout: WorkoutWithExercises) => {
     setUserManagerWorkout(workout)
     setUserManagerOpen(true)
+  }
+
+  const handleStartLiveWorkout = (workout: WorkoutWithExercises) => {
+    setLiveWorkout(workout)
+    setLiveWorkoutOpen(true)
+  }
+
+  const handleShareQr = (workout: WorkoutWithExercises) => {
+    setQrWorkout(workout)
+    setQrOpen(true)
   }
 
   const handleSubmit = async (workoutData: any) => {
@@ -314,6 +331,8 @@ export const WorkoutManager = () => {
         onViewDetails={handleViewDetails}
         onManageExercises={handleManageExercises}
         onManageUser={handleManageUser}
+        onStartLiveWorkout={handleStartLiveWorkout}
+        onShareQr={handleShareQr}
         loading={loading}
       />
 
@@ -363,6 +382,24 @@ export const WorkoutManager = () => {
         onUpdate={loadWorkouts}
       />
 
+      {liveWorkout && (
+        <LiveWorkoutDialog
+          open={liveWorkoutOpen}
+          workout={liveWorkout}
+          userId={liveWorkout.user_id || 1}
+          onClose={() => setLiveWorkoutOpen(false)}
+          onSessionSuccess={() => {
+            showToast('¡Sesión guardada en el historial con éxito!', 'success')
+          }}
+        />
+      )}
+
+      <QrShareModal
+        open={qrOpen}
+        workout={qrWorkout}
+        onClose={() => setQrOpen(false)}
+      />
+
       <Menu
         anchorEl={exportMenuAnchor}
         open={Boolean(exportMenuAnchor)}
@@ -384,3 +421,4 @@ export const WorkoutManager = () => {
     </Box>
   )
 }
+

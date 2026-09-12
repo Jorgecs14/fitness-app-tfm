@@ -1,6 +1,6 @@
 /**
  * Rutas para gestionar usuarios en la aplicación fitness-app-tfm
- * Incluye CRUD completo, gestión de perfiles y creación de usuarios con autenticación Supabase
+ * Incluye CRUD completo, gestión de perfiles y asociación Entrenador-Cliente
  */
 
 const express = require('express')
@@ -10,9 +10,59 @@ const { authenticateToken } = require('../middleware/auth')
 
 router.get('/profile', authenticateToken, async (req, res) => {
   try {
-    res.json(req.user)
+    const user = req.user
+    if (!user) return res.status(401).json({ error: 'Usuario no autenticado' })
+
+    let trainerInfo = null
+    if (user.trainer_id) {
+      const { data: trainerData } = await supabaseAdmin
+        .from('users')
+        .select('id, name, surname, email, role')
+        .eq('id', user.trainer_id)
+        .single()
+
+      if (trainerData) trainerInfo = trainerData
+    }
+
+    res.json({
+      ...user,
+      trainer: trainerInfo
+    })
   } catch (error) {
     res.status(500).json({ error: 'Error al obtener perfil del usuario' })
+  }
+})
+
+// GET /api/users/trainers - Obtener todos los usuarios con rol de entrenador o admin
+router.get('/trainers', async (req, res) => {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .in('role', ['admin', 'trainer', 'entrenador'])
+      .order('name')
+
+    if (error) throw error
+    res.json(data)
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener lista de entrenadores' })
+  }
+})
+
+// GET /api/users/trainer/:trainerId/clients - Obtener todos los clientes asignados a un entrenador
+router.get('/trainer/:trainerId/clients', async (req, res) => {
+  try {
+    const { trainerId } = req.params
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('trainer_id', trainerId)
+      .order('name')
+
+    if (error) throw error
+    res.json(data)
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener clientes del entrenador' })
   }
 })
 
@@ -47,16 +97,47 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' })
     }
 
-    res.json(data)
+    // Si tiene entrenador asignado, adjuntar info
+    let trainerInfo = null
+    if (data.trainer_id) {
+      const { data: trainerData } = await supabaseAdmin
+        .from('users')
+        .select('id, name, surname, email')
+        .eq('id', data.trainer_id)
+        .single()
+      if (trainerData) trainerInfo = trainerData
+    }
+
+    res.json({ ...data, trainer: trainerInfo })
   } catch (error) {
     console.error('Error al buscar usuario:', error)
     res.status(500).json({ error: 'Error al buscar usuario', details: error.message })
   }
 })
 
+// PUT /api/users/:id/trainer - Asignar o cambiar el entrenador de un cliente
+router.put('/:id/trainer', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { trainer_id } = req.body
+
+    const { data, error } = await supabaseAdmin
+      .from('users')
+      .update({ trainer_id: trainer_id || null })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    res.json({ message: 'Entrenador asignado correctamente', data })
+  } catch (error) {
+    res.status(500).json({ error: 'Error al asignar entrenador', details: error.message })
+  }
+})
+
 router.post('/', async (req, res) => {
   try {
-    const { email, password, name, surname, birth_date, role } = req.body
+    const { email, password, name, surname, birth_date, role, trainer_id, weight, height } = req.body
 
     if (!email || !password || !name || !surname || !birth_date) {
       return res
@@ -114,6 +195,9 @@ router.post('/', async (req, res) => {
             surname,
             birth_date: birth_date,
             role: role || 'client',
+            trainer_id: trainer_id || null,
+            weight: weight || null,
+            height: height || null,
             created_at: new Date().toISOString()
           }
         ])
@@ -139,11 +223,14 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const { email, name, surname, birth_date, role } = req.body
+    const { email, name, surname, birth_date, role, trainer_id, weight, height } = req.body
+
+    const updateFields = { email, name, surname, birth_date, role, trainer_id, weight, height }
+    Object.keys(updateFields).forEach(key => updateFields[key] === undefined && delete updateFields[key])
 
     const { data, error } = await supabaseAdmin
       .from('users')
-      .update({ email, name, surname, birth_date, role })
+      .update(updateFields)
       .eq('id', id)
       .select()
       .single()
@@ -180,3 +267,4 @@ router.delete('/:id', async (req, res) => {
 })
 
 module.exports = router
+

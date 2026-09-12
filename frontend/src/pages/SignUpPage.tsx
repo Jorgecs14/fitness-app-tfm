@@ -13,6 +13,7 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Alert from '@mui/material/Alert'
 import Checkbox from '@mui/material/Checkbox'
 import FormControlLabel from '@mui/material/FormControlLabel'
+import MenuItem from '@mui/material/MenuItem'
 
 import { Iconify } from '../utils/iconify'
 
@@ -26,6 +27,7 @@ export const SignUpPage = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    role: 'client',
     acceptTerms: false
   })
   const [error, setError] = useState('')
@@ -77,7 +79,10 @@ export const SignUpPage = () => {
         options: {
           data: {
             first_name: formData.firstName,
-            last_name: formData.lastName
+            last_name: formData.lastName,
+            name: formData.firstName,
+            surname: formData.lastName,
+            role: formData.role
           }
         }
       })
@@ -85,10 +90,10 @@ export const SignUpPage = () => {
       if (error) {
         setError(error.message)
       } else if (data.user) {
-        setSuccess('Cuenta creada exitosamente. Por favor, verifica tu email.')
+        setSuccess('Cuenta creada exitosamente. Por favor, inicia sesión con tus credenciales.')
         setTimeout(() => {
           navigate('/sign-in')
-        }, 3000)
+        }, 2000)
       }
     } catch (err) {
       setError('Error al crear la cuenta')
@@ -153,6 +158,20 @@ export const SignUpPage = () => {
           onChange={handleInputChange('email')}
           sx={{ mb: 3 }}
         />
+
+        <TextField
+          select
+          fullWidth
+          name='role'
+          label='Tipo de Cuenta'
+          value={formData.role}
+          onChange={handleInputChange('role')}
+          helperText='Selecciona si te registras como cliente o como entrenador'
+          sx={{ mb: 3 }}
+        >
+          <MenuItem value='client'>👤 Cliente / Usuario Normal</MenuItem>
+          <MenuItem value='trainer'>🏋️‍♂️ Entrenador Personal</MenuItem>
+        </TextField>
 
         <TextField
           fullWidth

@@ -27,6 +27,11 @@ import { clientProgressPhotoService } from '../../services/clientProgressPhotoSe
 import { weeklyTrackingService } from '../../services/weeklyTrackingService'
 import { Iconify } from '../../utils/iconify'
 
+import { BodyHeatmap } from '../Analytics/BodyHeatmap'
+import { ExerciseProgressChart } from '../Analytics/ExerciseProgressChart'
+import { calculateMuscleRecovery } from '../../lib/recovery'
+import { getUserLoggedSessions, LoggedSessionData } from '../../services/loggedSessionService'
+
 export const UserDetailManager = () => {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
@@ -36,6 +41,7 @@ export const UserDetailManager = () => {
   const [medicalInfo, setMedicalInfo] = useState<ClientMedicalInfo | null>(null)
   const [progressPhotos, setProgressPhotos] = useState<ClientProgressPhoto[]>([])
   const [weeklyTracking, setWeeklyTracking] = useState<WeeklyTracking[]>([])
+  const [loggedSessions, setLoggedSessions] = useState<LoggedSessionData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -71,6 +77,14 @@ export const UserDetailManager = () => {
       )
       setUserWorkouts(userWorkoutsList)
 
+      // Cargar historial de sesiones ejecutadas
+      try {
+        const sessions = await getUserLoggedSessions(parseInt(id))
+        setLoggedSessions(sessions)
+      } catch (e) {
+        console.log('No logged sessions found', e)
+      }
+
       // Cargar datos CRM solo si es un cliente
       if (userData.role === 'client') {
         try {
@@ -103,6 +117,37 @@ export const UserDetailManager = () => {
       setLoading(false)
     }
   }
+
+  // Aplanar todas las series registradas para el mapa muscular y los gráficos de fuerza
+  const allLoggedSetsForRecovery: any[] = []
+  const exerciseHistoryForChart: Array<{ date: string; weight: number; reps: number; exerciseName: string }> = []
+
+  loggedSessions.forEach((session) => {
+    const sessionDate = session.completed_at || session.started_at || new Date().toISOString()
+    const sets = session.logged_sets || session.sets || []
+
+    sets.forEach((set) => {
+      const exName = set.exercises?.name || 'Ejercicio'
+      allLoggedSetsForRecovery.push({
+        target_muscle: set.exercises?.target_muscle,
+        main_muscle_group: set.exercises?.body_part,
+        weight: set.weight,
+        reps: set.reps,
+        created_at: sessionDate,
+      })
+
+      if (set.completed && set.weight > 0 && set.reps > 0) {
+        exerciseHistoryForChart.push({
+          date: sessionDate,
+          weight: set.weight,
+          reps: set.reps,
+          exerciseName: exName,
+        })
+      }
+    })
+  })
+
+  const muscleStatusMap = calculateMuscleRecovery(allLoggedSetsForRecovery)
 
   if (loading) {
     return (
@@ -234,6 +279,32 @@ export const UserDetailManager = () => {
           </Card>
         </Box>
 
+        <Box sx={{ flex: 1 }}>
+          <Card>
+            <CardContent>
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <Box>
+                  <Typography color='text.secondary' variant='body2'>
+                    Sesiones Ejecutadas
+                  </Typography>
+                  <Typography variant='h3'>{loggedSessions.length}</Typography>
+                </Box>
+                <Iconify
+                  icon='solar:dumbbell-large-bold'
+                  width={48}
+                  sx={{ color: 'info.main' }}
+                />
+              </Box>
+            </CardContent>
+          </Card>
+        </Box>
+
         {user?.role === 'client' && (
           <>
             <Box sx={{ flex: 1 }}>
@@ -289,6 +360,16 @@ export const UserDetailManager = () => {
             </Box>
           </>
         )}
+      </Box>
+
+      {/* Sección del Mapa Corporal y Fatiga Muscular */}
+      <Box sx={{ mb: 3 }}>
+        <BodyHeatmap muscleStatus={muscleStatusMap} />
+      </Box>
+
+      {/* Sección de Evolución de Fuerza y 1RM */}
+      <Box sx={{ mb: 3 }}>
+        <ExerciseProgressChart history={exerciseHistoryForChart} />
       </Box>
 
       {/* Medical Information Section - Solo para clientes */}

@@ -29,6 +29,11 @@ import { LandingPage } from './pages/LandingPage'
 import { UserDetailPage } from './pages/UserDetailPage'
 import ClientMedicalInfoPage from './pages/ClientMedicalInfoPage'
 import ProgressPage from './pages/ProgressPage'
+import ClientHomePage from './pages/ClientHomePage'
+import ClientMyDietPage from './pages/ClientMyDietPage'
+import ClientProgressSubmitPage from './pages/ClientProgressSubmitPage'
+import ClientTrackingPage from './pages/ClientTrackingPage'
+import CrmPage from './pages/CrmPage'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true)
@@ -122,6 +127,26 @@ const router = createBrowserRouter([
       {
         path: 'home',
         element: <HomePage />
+      },
+      {
+        path: 'client-home',
+        element: <ClientHomePage />
+      },
+      {
+        path: 'client-diet',
+        element: <ClientMyDietPage />
+      },
+      {
+        path: 'submit-progress',
+        element: <ClientProgressSubmitPage />
+      },
+      {
+        path: 'client-tracking',
+        element: <ClientTrackingPage />
+      },
+      {
+        path: 'crm',
+        element: <CrmPage />
       },
       {
         path: 'progress',

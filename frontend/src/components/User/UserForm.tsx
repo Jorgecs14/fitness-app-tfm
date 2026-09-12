@@ -58,6 +58,8 @@ export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps)
         password: '',
         birth_date: '',
         role: 'client',
+        weight: '',
+        height: '',
       });
     }
     setErrors([]);
@@ -183,14 +185,15 @@ export const UserForm = ({ open, onClose, onSubmit, userToEdit }: UserFormProps)
             <TextField
               select
               fullWidth
-              label="Rol"
+              label="Rol / Tipo de Cuenta"
               value={formData.role}
               onChange={handleChange('role')}
               error={errors.some(e => e.includes('rol'))}
               required
             >
-              <MenuItem value="client">Cliente</MenuItem>
-              <MenuItem value="admin">Administrador</MenuItem>
+              <MenuItem value="client">👤 Cliente / Usuario Normal</MenuItem>
+              <MenuItem value="trainer">🏋️‍♂️ Entrenador Personal</MenuItem>
+              <MenuItem value="admin">⚙️ Administrador</MenuItem>
             </TextField>
 
             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>

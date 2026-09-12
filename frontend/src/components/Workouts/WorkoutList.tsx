@@ -29,6 +29,8 @@ interface WorkoutListProps {
   onViewDetails: (workout: WorkoutWithExercises) => void;
   onManageExercises: (workout: WorkoutWithExercises) => void;
   onManageUser: (workout: WorkoutWithExercises) => void;
+  onStartLiveWorkout?: (workout: WorkoutWithExercises) => void;
+  onShareQr?: (workout: WorkoutWithExercises) => void;
   loading?: boolean;
 }
 
@@ -40,6 +42,8 @@ export const WorkoutList = ({
   onViewDetails, 
   onManageExercises, 
   onManageUser,
+  onStartLiveWorkout,
+  onShareQr,
   loading 
 }: WorkoutListProps) => {
   const [page, setPage] = useState(0);
@@ -97,6 +101,8 @@ export const WorkoutList = ({
                 onViewDetails={onViewDetails}
                 onManageExercises={onManageExercises}
                 onManageUser={onManageUser}
+                onStartLiveWorkout={onStartLiveWorkout}
+                onShareQr={onShareQr}
               />
             </Grid>
           ))}
@@ -165,10 +171,31 @@ export const WorkoutList = ({
                   />
                 </TableCell>
                 <TableCell align="right">
+                  {onStartLiveWorkout && (
+                    <IconButton
+                      size="small"
+                      color="success"
+                      onClick={() => onStartLiveWorkout(workout)}
+                      title="Iniciar Entrenamiento en Vivo"
+                    >
+                      <Iconify icon="eva:play-circle-fill" width={20} />
+                    </IconButton>
+                  )}
+                  {onShareQr && (
+                    <IconButton
+                      size="small"
+                      color="warning"
+                      onClick={() => onShareQr(workout)}
+                      title="Compartir por QR"
+                    >
+                      <Iconify icon="eva:qr-code-fill" width={18} />
+                    </IconButton>
+                  )}
                   <IconButton
                     size="small"
                     color="info"
                     onClick={() => onViewDetails(workout)}
+                    title="Ver detalles"
                   >
                     <Iconify icon="solar:eye-bold" width={16} />
                   </IconButton>
@@ -176,6 +203,7 @@ export const WorkoutList = ({
                     size="small"
                     color="secondary"
                     onClick={() => onManageExercises(workout)}
+                    title="Gestionar ejercicios"
                   >
                     <Iconify icon="solar:dumbbell-bold" width={16} />
                   </IconButton>
@@ -191,6 +219,7 @@ export const WorkoutList = ({
                     size="small"
                     color="primary"
                     onClick={() => onEdit(workout)}
+                    title="Editar entrenamiento"
                   >
                     <Iconify icon="solar:pen-bold" width={16} />
                   </IconButton>
@@ -198,6 +227,7 @@ export const WorkoutList = ({
                     size="small" 
                     color="error"
                     onClick={() => onDelete(workout.id)}
+                    title="Eliminar entrenamiento"
                   >
                     <Iconify icon="solar:trash-bin-trash-bold" width={16} />
                   </IconButton>
@@ -219,3 +249,4 @@ export const WorkoutList = ({
     </Card>
   );
 };
+

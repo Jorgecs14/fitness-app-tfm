@@ -161,3 +161,13 @@ export const removeUserFromDiet = async (dietId: number, userId: number) => {
     )
   }
 }
+
+export const getDietFoods = async (dietId: number) => {
+  try {
+    const response = await axiosInstance.get(`/diet_foods/diet/${dietId}`)
+    return response.data
+  } catch (error: any) {
+    return []
+  }
+}
+

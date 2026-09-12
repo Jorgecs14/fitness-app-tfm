@@ -34,6 +34,7 @@ interface UserListProps {
   onDelete: (id: number) => void;
   onExport: (format: "pdf" | "excel" | "csv") => void;
   onCreateNew: () => void;
+  onAssignTrainer?: (user: User) => void;
 }
 
 export const UserList = ({
@@ -43,6 +44,7 @@ export const UserList = ({
   onDelete,
   onExport,
   onCreateNew,
+  onAssignTrainer,
 }: UserListProps) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [page, setPage] = useState(0);
@@ -318,6 +320,16 @@ export const UserList = ({
                           spacing={0.5}
                           justifyContent="flex-end"
                         >
+                          {onAssignTrainer && user.role === 'client' && (
+                            <IconButton
+                              size="small"
+                              color="warning"
+                              onClick={() => onAssignTrainer(user)}
+                              title="Asignar Entrenador Personal"
+                            >
+                              <Iconify icon="solar:user-hand-up-bold" />
+                            </IconButton>
+                          )}
                           <IconButton
                             size="small"
                             color="info"
@@ -330,6 +342,7 @@ export const UserList = ({
                             size="small"
                             color="primary"
                             onClick={() => onEdit(user)}
+                            title="Editar"
                           >
                             <Iconify icon="solar:pen-bold" />
                           </IconButton>
@@ -338,6 +351,7 @@ export const UserList = ({
                             color="error"
                             onClick={() => onDelete(user.id)}
                             sx={{ display: { xs: "none", sm: "inline-flex" } }}
+                            title="Eliminar"
                           >
                             <Iconify icon="solar:trash-bin-trash-bold" />
                           </IconButton>
@@ -349,6 +363,7 @@ export const UserList = ({
               </TableBody>
             </Table>
           </TableContainer>
+
 
           <TablePagination
             page={page}

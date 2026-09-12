@@ -1,9 +1,10 @@
 // Layout principal del dashboard con navegación, header y gestión de notificaciones
 import type { Breakpoint } from '@mui/material/styles'
-
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import { getCurrentUser } from '../../services/userService'
+import { User } from '../../types/User'
 
 import Box from '@mui/material/Box'
 import { useTheme } from '@mui/material/styles'
@@ -24,7 +25,7 @@ import { HeaderSection } from '../core/header-section'
 import { MainSection } from '../core/main-section'
 
 import { NavDesktop, NavMobile } from './nav'
-import { navData } from '../nav-config-dashboard'
+import { getNavDataByRole } from '../nav-config-dashboard'
 import { dashboardLayoutVars } from './css-vars'
 
 import type { LayoutSectionProps } from '../core/layout-section'
@@ -53,10 +54,24 @@ export function DashboardLayout({
   const navigate = useNavigate()
   const { unreadCount } = useNotifications()
   const [navOpen, setNavOpen] = useState(false)
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [notificationsAnchorEl, setNotificationsAnchorEl] =
     useState<null | HTMLElement>(null)
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
+
+  useEffect(() => {
+    loadUser()
+  }, [])
+
+  const loadUser = async () => {
+    try {
+      const u = await getCurrentUser()
+      setCurrentUser(u)
+    } catch (e) {
+      console.log('Error loading current user in layout:', e)
+    }
+  }
 
   const handleUserMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -79,6 +94,8 @@ export function DashboardLayout({
     navigate('/sign-in')
     handleUserMenuClose()
   }
+
+  const currentNavData = getNavDataByRole(currentUser?.role)
 
   const layoutSectionSlots = {
     headerSection: (
@@ -108,59 +125,30 @@ export function DashboardLayout({
                   display: 'flex',
                   alignItems: 'center',
                   gap: { xs: 0.5, sm: 1 },
-                  ml: { xs: 1, sm: 0 }
+                  cursor: 'pointer'
                 }}
+                onClick={() => navigate(currentUser?.role === 'client' ? '/dashboard/client-home' : '/dashboard/home')}
               >
-                <img
-                  src='/logo.png'
+                <Box
+                  component='img'
+                  src='/logo2.png'
                   alt='Logo'
-                  className='logo-image topbar-logo'
-                  style={{
-                    maxHeight: '45px',
-                    maxWidth: '200px',
-                    minHeight: '35px',
-                    minWidth: '140px',
-                    height: 'auto',
-                    width: 'auto',
-                    objectFit: 'contain',
-                    filter:
-                      theme.palette.mode === 'dark'
-                        ? 'brightness(0) invert(1)'
-                        : 'brightness(0)'
-                  }}
-                  onError={(e) => {
-                    // Fallback to text + icon if image fails to load
-                    const target = e.target as HTMLImageElement
-                    target.style.display = 'none'
-                    const fallback = target.nextElementSibling as HTMLElement
-                    if (fallback) {
-                      fallback.style.display = 'flex'
-                      fallback.classList.add('fallback')
-                    }
+                  sx={{
+                    width: { xs: 28, sm: 32 },
+                    height: { xs: 28, sm: 32 },
+                    objectFit: 'contain'
                   }}
                 />
                 <Box
+                  component='span'
                   sx={{
-                    display: 'none',
-                    alignItems: 'center',
-                    gap: 1,
-                    '&.fallback': { display: 'flex !important' }
+                    fontWeight: 700,
+                    fontSize: { xs: '1rem', sm: '1.25rem' },
+                    color: 'text.primary',
+                    letterSpacing: -0.5
                   }}
                 >
-                  <Iconify
-                    icon='solar:dumbbell-bold-duotone'
-                    width={32}
-                    color='primary.main'
-                  />
-                  <Box
-                    component='img'
-                    src='/logo.png'
-                    alt='Logo'
-                    sx={{
-                      height: 32,
-                      objectFit: 'contain'
-                    }}
-                  />
+                  FITNESS APP
                 </Box>
               </Box>
             </>
@@ -173,28 +161,30 @@ export function DashboardLayout({
                 gap: { xs: 0.5, sm: 1 }
               }}
             >
-              <Badge badgeContent={unreadCount} color='error'>
-                <IconButton
-                  onClick={handleNotificationsOpen}
-                  sx={{
-                    width: { xs: 40, sm: 48 },
-                    height: { xs: 40, sm: 48 },
-                    '&:hover': {
-                      backgroundColor: 'rgba(0, 0, 0, 0.04)'
-                    }
-                  }}
-                >
+              <IconButton
+                onClick={handleNotificationsOpen}
+                sx={{
+                  width: { xs: 40, sm: 48 },
+                  height: { xs: 40, sm: 48 },
+                  color: 'text.primary',
+                  '&:hover': {
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                  }
+                }}
+              >
+                <Badge badgeContent={unreadCount} color='error'>
                   <Iconify
                     icon='solar:bell-bold-duotone'
                     width={isMobile ? 24 : 28}
                   />
-                </IconButton>
-              </Badge>
+                </Badge>
+              </IconButton>
               <IconButton
                 onClick={handleUserMenuOpen}
                 sx={{
                   width: { xs: 40, sm: 48 },
                   height: { xs: 40, sm: 48 },
+                  color: 'text.primary',
                   '&:hover': {
                     backgroundColor: 'rgba(0, 0, 0, 0.04)'
                   }
@@ -244,9 +234,9 @@ export function DashboardLayout({
     ),
     sidebarSection: (
       <>
-        <NavDesktop data={navData} layoutQuery={layoutQuery} />
+        <NavDesktop data={currentNavData} layoutQuery={layoutQuery} />
         <NavMobile
-          data={navData}
+          data={currentNavData}
           open={navOpen}
           onClose={() => setNavOpen(false)}
         />
