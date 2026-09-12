@@ -348,6 +348,15 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
   const totalCount = setsState.length || 1;
   const progressPercent = Math.round((completedCount / totalCount) * 100);
 
+  // Métricas avanzadas de sesión para el resumen cinematográfico
+  const totalVolumeLifted = setsState
+    .filter((s) => s.completed)
+    .reduce((sum, s) => sum + s.weight * s.reps, 0);
+
+  const maxWeightLifted = setsState
+    .filter((s) => s.completed)
+    .reduce((max, s) => Math.max(max, s.weight), 0);
+
   return (
     <>
       <Dialog open={open} onClose={onClose} fullScreen>
@@ -355,13 +364,14 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
         <Box
           sx={{
             p: 2,
-            bgcolor: '#161c24',
+            bgcolor: '#0f172a',
             color: 'white',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
             zIndex: 10,
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
           }}
         >
           <Stack direction="row" alignItems="center" spacing={2}>
@@ -380,7 +390,7 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
                   sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: 'white', fontWeight: 'bold' }}
                 />
                 <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                  Progreso: {completedCount}/{totalCount} series ({progressPercent}%)
+                  Progreso: {completedCount}/{totalCount} series ({progressPercent}%) • Volumen: {totalVolumeLifted.toLocaleString()} kg
                 </Typography>
               </Stack>
             </Box>
@@ -402,7 +412,7 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
               color="success"
               size="medium"
               onClick={() => setFinishModalOpen(true)}
-              sx={{ fontWeight: 'bold', px: 2.5 }}
+              sx={{ fontWeight: 'bold', px: 2.5, borderRadius: '9999px' }}
               startIcon={<Iconify icon="eva:checkmark-circle-2-fill" />}
             >
               Finalizar Sesión
@@ -411,38 +421,60 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
         </Box>
 
         {/* Barra de progreso global del entrenamiento */}
-        <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 6, bgcolor: '#212b36' }} color="success" />
+        <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 6, bgcolor: '#1e293b' }} color="success" />
 
-        {/* Barra Flotante de Temporizador de Descanso */}
+        {/* Widget Flotante de Temporizador de Descanso (iOS 26 Liquid Glass) */}
         {isResting && (
-          <Alert
-            severity="info"
-            icon={false}
-            sx={{
-              borderRadius: 0,
-              bgcolor: '#00a76f',
-              color: 'white',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              boxShadow: '0 4px 12px rgba(0, 167, 111, 0.4)',
-            }}
-          >
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%', flexWrap: 'wrap', gap: 1 }}>
-              <Typography variant="subtitle1" fontWeight="bold">
-                ⏳ Descanso Restante: {formatTime(restTimer)}
+          <Box className={`liquid-floating-timer ${restTimer <= 10 ? 'warning' : ''}`}>
+            {/* Anillo de Progreso Circular SVG */}
+            <Box sx={{ position: 'relative', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="44" height="44" viewBox="0 0 44 44">
+                <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="3.5" />
+                <circle
+                  cx="22"
+                  cy="22"
+                  r="18"
+                  fill="none"
+                  stroke={restTimer <= 10 ? '#f43f5e' : '#10b981'}
+                  strokeWidth="3.5"
+                  strokeDasharray={113.1}
+                  strokeDashoffset={113.1 - (113.1 * Math.min(60, restTimer)) / 60}
+                  strokeLinecap="round"
+                  transform="rotate(-90 22 22)"
+                  style={{ transition: 'stroke-dashoffset 1s linear' }}
+                />
+              </svg>
+              <Typography sx={{ position: 'absolute', fontSize: '0.75rem', fontWeight: 800, color: '#fff' }}>
+                {restTimer}s
               </Typography>
-              <Button size="small" variant="outlined" color="inherit" onClick={() => setRestTimer((prev) => prev + 15)}>
+            </Box>
+
+            <Box>
+              <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>
+                Descanso Activo
+              </Typography>
+              <Typography sx={{ fontSize: '0.75rem', color: restTimer <= 10 ? '#fca5a5' : '#a7f3d0' }}>
+                {restTimer <= 10 ? '¡A por la siguiente serie!' : 'Recupera pulsaciones'}
+              </Typography>
+            </Box>
+
+            <Stack direction="row" spacing={0.75}>
+              <button type="button" className="liquid-quick-chip" onClick={() => setRestTimer((prev) => prev + 15)}>
                 +15s
-              </Button>
-              <Button size="small" variant="outlined" color="inherit" onClick={() => setRestTimer((prev) => prev + 30)}>
+              </button>
+              <button type="button" className="liquid-quick-chip" onClick={() => setRestTimer((prev) => prev + 30)}>
                 +30s
-              </Button>
-              <Button size="small" variant="contained" sx={{ bgcolor: 'white', color: '#007867', fontWeight: 'bold' }} onClick={() => setIsResting(false)}>
-                Saltar Descanso
-              </Button>
+              </button>
+              <button
+                type="button"
+                className="liquid-quick-chip"
+                style={{ background: 'rgba(239, 68, 68, 0.35)', borderColor: 'rgba(239, 68, 68, 0.6)' }}
+                onClick={() => setIsResting(false)}
+              >
+                Saltar
+              </button>
             </Stack>
-          </Alert>
+          </Box>
         )}
 
         {/* Contenedor Principal */}
@@ -631,28 +663,38 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
 
                           {/* Inputs de Peso y Repeticiones con ajuste rápido */}
                           <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" gap={1}>
-                            {/* Input de Peso */}
-                            <Stack direction="row" spacing={0.5} alignItems="center">
-                              <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'weight', -2.5)}>
-                                <Iconify icon="solar:minus-circle-bold" />
-                              </IconButton>
-                              <TextField
-                                size="small"
-                                label="Kg"
-                                type="number"
-                                value={setItem.weight}
-                                onChange={(e) => handleUpdateField(globalIndex, 'weight', Number(e.target.value))}
-                                sx={{ width: 85 }}
-                              />
-                              <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'weight', 2.5)}>
-                                <Iconify icon="solar:add-circle-bold" />
-                              </IconButton>
-                              <Tooltip title="Calculadora de Discos en Barra">
-                                <IconButton size="small" color="primary" onClick={() => handleOpenBarCalc(setItem.weight)}>
-                                  <Iconify icon="mdi:weight-lifter" />
+                            {/* Input de Peso y chips de ajuste rápido */}
+                            <Box>
+                              <Stack direction="row" spacing={0.5} alignItems="center">
+                                <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'weight', -2.5)}>
+                                  <Iconify icon="solar:minus-circle-bold" />
                                 </IconButton>
-                              </Tooltip>
-                            </Stack>
+                                <TextField
+                                  size="small"
+                                  label="Kg"
+                                  type="number"
+                                  value={setItem.weight}
+                                  onChange={(e) => handleUpdateField(globalIndex, 'weight', Number(e.target.value))}
+                                  sx={{ width: 85 }}
+                                />
+                                <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'weight', 2.5)}>
+                                  <Iconify icon="solar:add-circle-bold" />
+                                </IconButton>
+                                <Tooltip title="Calculadora de Discos en Barra">
+                                  <IconButton size="small" color="primary" onClick={() => handleOpenBarCalc(setItem.weight)}>
+                                    <Iconify icon="mdi:weight-lifter" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+
+                              {/* Chips de ajuste instantáneo con un toque */}
+                              <Stack direction="row" spacing={0.5} sx={{ mt: 0.75, justifyContent: 'center' }}>
+                                <button type="button" className="liquid-quick-chip" style={{ color: '#0f172a' }} onClick={() => handleQuickAdjust(globalIndex, 'weight', -2.5)}>-2.5</button>
+                                <button type="button" className="liquid-quick-chip" style={{ color: '#0f172a' }} onClick={() => handleQuickAdjust(globalIndex, 'weight', 1)}>+1</button>
+                                <button type="button" className="liquid-quick-chip" style={{ color: '#0f172a' }} onClick={() => handleQuickAdjust(globalIndex, 'weight', 2.5)}>+2.5</button>
+                                <button type="button" className="liquid-quick-chip" style={{ color: '#0f172a' }} onClick={() => handleQuickAdjust(globalIndex, 'weight', 5)}>+5kg</button>
+                              </Stack>
+                            </Box>
 
                             {/* Input de Repeticiones */}
                             <Stack direction="row" spacing={0.5} alignItems="center">
@@ -881,42 +923,174 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
       {/* Modal de Calculadora de Discos en Barra */}
       <BarCalculatorModal open={barCalcOpen} onClose={() => setBarCalcOpen(false)} targetWeight={targetWeightCalc} />
 
-      {/* Modal de Finalización y Evaluación */}
-      <Dialog open={finishModalOpen} onClose={() => setFinishModalOpen(false)} maxWidth="sm" fullWidth>
-        <Box sx={{ p: 3, textAlign: 'center', bgcolor: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}>
-          <Iconify icon="solar:cup-star-bold" width={56} height={56} sx={{ color: '#16a34a', mb: 1 }} />
-          <Typography variant="h5" fontWeight="bold" color="#166534">
-            ¡Entrenamiento Completado!
+      {/* Modal de Finalización y Evaluación Celebratoria (iOS 26 Liquid Glass) */}
+      <Dialog
+        open={finishModalOpen}
+        onClose={() => setFinishModalOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '28px',
+            bgcolor: 'rgba(255, 255, 255, 0.88)',
+            backdropFilter: 'blur(28px) saturate(190%)',
+            border: '1px solid rgba(255, 255, 255, 0.9)',
+            boxShadow: '0 24px 60px rgba(0, 0, 0, 0.25)',
+            overflow: 'hidden',
+          },
+        }}
+      >
+        {/* Cabecera Celebratoria con Gradiente y Copa */}
+        <Box
+          sx={{
+            p: 4,
+            textAlign: 'center',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(2, 132, 199, 0.12) 100%)',
+            borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+            position: 'relative',
+          }}
+        >
+          <Box
+            sx={{
+              display: 'inline-flex',
+              p: 2,
+              borderRadius: '50%',
+              bgcolor: 'rgba(255, 255, 255, 0.9)',
+              boxShadow: '0 10px 28px rgba(16, 185, 129, 0.3)',
+              mb: 1.5,
+            }}
+          >
+            <Iconify icon="solar:cup-star-bold" width={48} height={48} sx={{ color: '#10b981' }} />
+          </Box>
+          <Typography variant="h4" fontWeight={800} sx={{ color: '#0f172a', letterSpacing: '-0.02em', mb: 0.5 }}>
+            ¡Sesión Completada con Éxito!
           </Typography>
-          <Typography variant="body2" color="#15803d">
-            Has entrenado durante <strong>{formatTime(duration)}</strong> completando {completedCount} series.
+          <Typography variant="body2" sx={{ color: '#475569', fontWeight: 500 }}>
+            Excelente trabajo. Cada serie suma a tu adaptación neuromuscular y composición corporal.
           </Typography>
+
+          {/* Tríada de Métricas de Rendimiento */}
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5, mt: 3 }}>
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: '18px',
+                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(226, 232, 240, 0.8)',
+              }}
+            >
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>
+                ⏱️ Tiempo
+              </Typography>
+              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#0f172a' }}>
+                {formatTime(duration)}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: '18px',
+                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(226, 232, 240, 0.8)',
+              }}
+            >
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>
+                🏋️ Volumen Total
+              </Typography>
+              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#0284c7' }}>
+                {totalVolumeLifted.toLocaleString()} kg
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 1.5,
+                borderRadius: '18px',
+                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                backdropFilter: 'blur(10px)',
+                border: '1px solid rgba(226, 232, 240, 0.8)',
+              }}
+            >
+              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>
+                🎯 Series
+              </Typography>
+              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#10b981' }}>
+                {completedCount}/{totalCount}
+              </Typography>
+            </Box>
+          </Box>
         </Box>
 
-        <Box sx={{ p: 3 }}>
+        {/* Cuerpo del Diálogo: Evaluación y Notas */}
+        <Box sx={{ p: 3.5 }}>
           <Stack spacing={3}>
-            <Box>
-              <Typography variant="subtitle2" gutterBottom fontWeight="bold">
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#334155', mb: 1 }}>
                 ¿Cómo calificarías tu esfuerzo y sensaciones hoy?
               </Typography>
-              <Rating value={rating} onChange={(_, val) => setRating(val || 5)} size="large" />
+              <Rating value={rating} onChange={(_, val) => setRating(val || 5)} size="large" sx={{ color: '#f59e0b' }} />
             </Box>
 
             <TextField
-              label="Notas del entrenamiento (pesos clave, fatiga, molestias o sensaciones)"
+              label="Notas del entrenamiento (pesos clave, sensaciones, fatiga o congestión)"
               multiline
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               fullWidth
               placeholder="Ej: Muy buenas sensaciones en press banca, subí 2.5 kg con respecto a la semana pasada..."
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: '18px',
+                  bgcolor: 'rgba(255, 255, 255, 0.7)',
+                  backdropFilter: 'blur(10px)',
+                  '& fieldset': { borderColor: 'rgba(226, 232, 240, 0.8)' },
+                },
+              }}
             />
           </Stack>
         </Box>
 
-        <Box sx={{ p: 2, px: 3, display: 'flex', justifyContent: 'flex-end', gap: 1.5, bgcolor: '#f8fafc' }}>
-          <Button onClick={() => setFinishModalOpen(false)}>Continuar Entrenando</Button>
-          <Button variant="contained" color="success" onClick={handleFinishWorkout} disabled={isSubmitting} sx={{ fontWeight: 'bold' }}>
+        {/* Acciones del Diálogo */}
+        <Box
+          sx={{
+            p: 2.5,
+            px: 3.5,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            bgcolor: 'rgba(248, 250, 252, 0.8)',
+            borderTop: '1px solid rgba(226, 232, 240, 0.8)',
+          }}
+        >
+          <Button
+            onClick={() => setFinishModalOpen(false)}
+            sx={{ borderRadius: '9999px', color: '#64748b', fontWeight: 600 }}
+          >
+            Volver
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleFinishWorkout}
+            disabled={isSubmitting}
+            startIcon={<Iconify icon="solar:check-circle-bold" width={20} />}
+            sx={{
+              borderRadius: '9999px',
+              px: 3,
+              py: 1,
+              fontWeight: 700,
+              bgcolor: '#0f172a',
+              color: '#ffffff',
+              boxShadow: '0 6px 20px rgba(15, 23, 42, 0.25)',
+              '&:hover': {
+                bgcolor: '#10b981',
+                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)',
+              },
+            }}
+          >
             {isSubmitting ? 'Guardando...' : 'Guardar y Registrar Historial'}
           </Button>
         </Box>

@@ -13,8 +13,9 @@ import {
   IconButton,
   TablePagination,
   Grid,
-  useTheme,
-  useMediaQuery,
+  Stack,
+  Button,
+  Tooltip,
 } from '@mui/material';
 import { Iconify } from '../../utils/iconify';
 import { WorkoutWithExercises } from '../../types/WorkoutWithExercises';
@@ -47,9 +48,8 @@ export const WorkoutList = ({
   loading 
 }: WorkoutListProps) => {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const [rowsPerPage, setRowsPerPage] = useState(9);
+  const [displayMode, setDisplayMode] = useState<'grid' | 'table'>('grid');
 
   // Function to get user name by ID
   const getUserName = (userId: number) => {
@@ -68,17 +68,31 @@ export const WorkoutList = ({
 
   if (loading) {
     return (
-      <Box sx={{ textAlign: 'center', py: 4 }}>
-        <Typography>Cargando entrenamientos...</Typography>
+      <Box sx={{ textAlign: 'center', py: 8 }}>
+        <Typography sx={{ color: 'text.secondary', fontWeight: 600 }}>Cargando entrenamientos...</Typography>
       </Box>
     );
   }
 
   if (workouts.length === 0) {
     return (
-      <Box sx={{ textAlign: 'center', py: 4 }}>
-        <Typography variant="body1" color="text.secondary">
-          No hay entrenamientos registrados
+      <Box
+        className="liquid-glass-card"
+        sx={{
+          textAlign: 'center',
+          py: 8,
+          px: 3,
+          maxWidth: 500,
+          mx: 'auto',
+          my: 4,
+        }}
+      >
+        <Iconify icon="solar:dumbbell-large-minimalistic-broken" width={54} height={54} sx={{ color: '#94a3b8', mb: 2 }} />
+        <Typography variant="h6" fontWeight="bold" sx={{ color: '#1e293b', mb: 1 }}>
+          No hay entrenamientos que coincidan
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          Prueba a cambiar el término de búsqueda o añade una nueva rutina haciendo clic en "Nuevo Entrenamiento".
         </Typography>
       </Box>
     );
@@ -86,13 +100,59 @@ export const WorkoutList = ({
 
   const paginatedWorkouts = workouts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
-  // Mobile view - Card Grid
-  if (isMobile) {
-    return (
-      <Box>
+  return (
+    <Box>
+      {/* Selector de Modo de Visualización (Grid vs Tabla) */}
+      <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2.5 }}>
+        <Box
+          sx={{
+            display: 'inline-flex',
+            bgcolor: 'rgba(255,255,255,0.7)',
+            backdropFilter: 'blur(12px)',
+            border: '1px solid rgba(226, 232, 240, 0.8)',
+            borderRadius: '9999px',
+            p: 0.5,
+          }}
+        >
+          <Tooltip title="Vista en Cuadrícula">
+            <IconButton
+              size="small"
+              onClick={() => setDisplayMode('grid')}
+              sx={{
+                bgcolor: displayMode === 'grid' ? '#0f172a' : 'transparent',
+                color: displayMode === 'grid' ? '#ffffff' : '#64748b',
+                '&:hover': {
+                  bgcolor: displayMode === 'grid' ? '#0f172a' : 'rgba(0,0,0,0.05)',
+                },
+              }}
+            >
+              <Iconify icon="solar:widget-2-bold" width={18} />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip title="Vista en Tabla">
+            <IconButton
+              size="small"
+              onClick={() => setDisplayMode('table')}
+              sx={{
+                bgcolor: displayMode === 'table' ? '#0f172a' : 'transparent',
+                color: displayMode === 'table' ? '#ffffff' : '#64748b',
+                '&:hover': {
+                  bgcolor: displayMode === 'table' ? '#0f172a' : 'rgba(0,0,0,0.05)',
+                },
+              }}
+            >
+              <Iconify icon="solar:list-bold" width={18} />
+            </IconButton>
+          </Tooltip>
+        </Box>
+      </Box>
+
+      {/* Renderizado Condicional: Cuadrícula Liquid Glass o Tabla */}
+      {displayMode === 'grid' ? (
         <Grid container spacing={3}>
           {paginatedWorkouts.map((workout) => (
-            <Grid key={workout.id} size={{ xs: 12, sm: 6 }}>
+            <Grid key={workout.id} size={{ xs: 12, sm: 6, md: 4 }}>
               <WorkoutCard
                 workout={workout}
                 userName={getUserName(workout.user_id)}
@@ -107,6 +167,108 @@ export const WorkoutList = ({
             </Grid>
           ))}
         </Grid>
+      ) : (
+        <Card className="liquid-glass-card" sx={{ overflow: 'hidden' }}>
+          <TableContainer>
+            <Table>
+              <TableHead sx={{ bgcolor: 'rgba(241, 245, 249, 0.6)' }}>
+                <TableRow>
+                  <TableCell sx={{ fontWeight: 700, color: '#334155' }}>Nombre</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#334155' }}>Usuario</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: '#334155' }}>Categoría</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700, color: '#334155' }}>Ejercicios</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, color: '#334155' }}>Acciones</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {paginatedWorkouts.map((workout) => (
+                  <TableRow key={workout.id} hover sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.6)' } }}>
+                    <TableCell>
+                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#0f172a' }}>
+                        {workout.name}
+                      </Typography>
+                      {workout.notes && (
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                          {workout.notes}
+                        </Typography>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Typography variant="body2" sx={{ color: '#475569' }}>
+                        {getUserName(workout.user_id)}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
+                      <Chip
+                        label={workout.category}
+                        size="small"
+                        sx={{
+                          fontWeight: 600,
+                          borderRadius: '9999px',
+                          bgcolor: 'rgba(2, 132, 199, 0.1)',
+                          color: '#0284c7',
+                        }}
+                      />
+                    </TableCell>
+                    <TableCell align="center">
+                      <Chip
+                        icon={<Iconify icon="solar:dumbbell-bold" width={14} />}
+                        label={workout.workout_exercises?.length || workout.exercises?.length || 0}
+                        size="small"
+                        sx={{ fontWeight: 600, borderRadius: '9999px' }}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
+                        {onStartLiveWorkout && (
+                          <Tooltip title="Iniciar en Vivo">
+                            <IconButton
+                              size="small"
+                              onClick={() => onStartLiveWorkout(workout)}
+                              sx={{ color: '#10b981', bgcolor: 'rgba(16, 185, 129, 0.1)' }}
+                            >
+                              <Iconify icon="solar:play-circle-bold" width={18} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        {onShareQr && (
+                          <Tooltip title="Compartir QR">
+                            <IconButton
+                              size="small"
+                              onClick={() => onShareQr(workout)}
+                              sx={{ color: '#f59e0b' }}
+                            >
+                              <Iconify icon="eva:qr-code-fill" width={18} />
+                            </IconButton>
+                          </Tooltip>
+                        )}
+                        <Tooltip title="Ver detalles">
+                          <IconButton size="small" onClick={() => onViewDetails(workout)} sx={{ color: '#0284c7' }}>
+                            <Iconify icon="solar:eye-bold" width={16} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Editar">
+                          <IconButton size="small" onClick={() => onEdit(workout)} sx={{ color: '#475569' }}>
+                            <Iconify icon="solar:pen-bold" width={16} />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Eliminar">
+                          <IconButton size="small" onClick={() => onDelete(workout.id)} sx={{ color: '#ef4444' }}>
+                            <Iconify icon="solar:trash-bin-trash-bold" width={16} />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        </Card>
+      )}
+
+      {/* Paginación Liquid Glass */}
+      <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
         <TablePagination
           component="div"
           count={workouts.length}
@@ -114,139 +276,18 @@ export const WorkoutList = ({
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 10, 25]}
-          sx={{ mt: 2 }}
+          rowsPerPageOptions={[6, 9, 18, 36]}
+          labelRowsPerPage="Por página:"
+          sx={{
+            bgcolor: 'rgba(255,255,255,0.7)',
+            backdropFilter: 'blur(16px)',
+            borderRadius: '16px',
+            border: '1px solid rgba(226, 232, 240, 0.8)',
+          }}
         />
       </Box>
-    );
-  }
-
-  // Desktop view - Table
-  return (
-    <Card>
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Nombre</TableCell>
-              <TableCell>Usuario</TableCell>
-              <TableCell>Categoría</TableCell>
-              <TableCell align="center">Ejercicios</TableCell>
-              <TableCell align="right">Acciones</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {paginatedWorkouts.map((workout) => (
-              <TableRow key={workout.id} hover>
-                <TableCell>
-                  <Typography variant="subtitle2" fontWeight={600}>
-                    {workout.name}
-                  </Typography>
-                  {workout.notes && (
-                    <Typography variant="body2" color="text.secondary">
-                      {workout.notes}
-                    </Typography>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Typography variant="body2">
-                    {getUserName(workout.user_id)}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Chip
-                    label={workout.category}
-                    color="primary"
-                    variant="outlined"
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell align="center">
-                  <Chip
-                    icon={<Iconify icon="solar:dumbbell-bold" width={16} />}
-                    label={workout.workout_exercises?.length || workout.exercises?.length || 0}
-                    color="secondary"
-                    variant="outlined"
-                    size="small"
-                  />
-                </TableCell>
-                <TableCell align="right">
-                  {onStartLiveWorkout && (
-                    <IconButton
-                      size="small"
-                      color="success"
-                      onClick={() => onStartLiveWorkout(workout)}
-                      title="Iniciar Entrenamiento en Vivo"
-                    >
-                      <Iconify icon="eva:play-circle-fill" width={20} />
-                    </IconButton>
-                  )}
-                  {onShareQr && (
-                    <IconButton
-                      size="small"
-                      color="warning"
-                      onClick={() => onShareQr(workout)}
-                      title="Compartir por QR"
-                    >
-                      <Iconify icon="eva:qr-code-fill" width={18} />
-                    </IconButton>
-                  )}
-                  <IconButton
-                    size="small"
-                    color="info"
-                    onClick={() => onViewDetails(workout)}
-                    title="Ver detalles"
-                  >
-                    <Iconify icon="solar:eye-bold" width={16} />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="secondary"
-                    onClick={() => onManageExercises(workout)}
-                    title="Gestionar ejercicios"
-                  >
-                    <Iconify icon="solar:dumbbell-bold" width={16} />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="info"
-                    onClick={() => onManageUser(workout)}
-                    title="Gestionar usuario"
-                  >
-                    <Iconify icon="solar:user-bold" width={16} />
-                  </IconButton>
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    onClick={() => onEdit(workout)}
-                    title="Editar entrenamiento"
-                  >
-                    <Iconify icon="solar:pen-bold" width={16} />
-                  </IconButton>
-                  <IconButton
-                    size="small" 
-                    color="error"
-                    onClick={() => onDelete(workout.id)}
-                    title="Eliminar entrenamiento"
-                  >
-                    <Iconify icon="solar:trash-bin-trash-bold" width={16} />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        component="div"
-        count={workouts.length}
-        page={page}
-        onPageChange={handleChangePage}
-        rowsPerPage={rowsPerPage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-        rowsPerPageOptions={[5, 10, 25]}
-      />
-    </Card>
+    </Box>
   );
 };
+
 

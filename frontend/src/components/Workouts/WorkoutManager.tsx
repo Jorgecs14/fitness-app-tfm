@@ -51,6 +51,7 @@ export const WorkoutManager = () => {
   const [exerciseManagerOpen, setExerciseManagerOpen] = useState(false)
   const [userManagerOpen, setUserManagerOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCategory, setSelectedCategory] = useState<string>('all')
   const [exportMenuAnchor, setExportMenuAnchor] = useState<null | HTMLElement>(
     null
   )
@@ -67,7 +68,7 @@ export const WorkoutManager = () => {
 
   useEffect(() => {
     filterWorkouts()
-  }, [workouts, searchQuery])
+  }, [workouts, searchQuery, selectedCategory])
 
   const loadWorkouts = async () => {
     try {
@@ -91,17 +92,31 @@ export const WorkoutManager = () => {
   }
 
   const filterWorkouts = () => {
-    if (!searchQuery.trim()) {
-      setFilteredWorkouts(workouts)
-    } else {
-      const filtered = workouts.filter(
-        (workout) =>
-          workout.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          workout.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          workout.notes.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      setFilteredWorkouts(filtered)
+    let list = [...workouts]
+
+    if (selectedCategory !== 'all') {
+      list = list.filter(w => {
+        const cat = (w.category || '').toLowerCase()
+        if (selectedCategory === 'hipertrofia') return cat.includes('hiper') || cat.includes('hyper')
+        if (selectedCategory === 'fuerza') return cat.includes('fuerza') || cat.includes('strength')
+        if (selectedCategory === 'resistencia') return cat.includes('resistencia') || cat.includes('endurance')
+        if (selectedCategory === 'cardio') return cat.includes('cardio')
+        if (selectedCategory === 'movilidad') return cat.includes('movil') || cat.includes('flex')
+        return cat.includes(selectedCategory.toLowerCase())
+      })
     }
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      list = list.filter(
+        (workout) =>
+          workout.name.toLowerCase().includes(q) ||
+          workout.category.toLowerCase().includes(q) ||
+          (workout.notes && workout.notes.toLowerCase().includes(q))
+      )
+    }
+
+    setFilteredWorkouts(list)
   }
 
   const handleAdd = () => {
@@ -256,73 +271,206 @@ export const WorkoutManager = () => {
     setExportMenuAnchor(null)
   }
 
+  // Cálculos rápidos de estadísticas para el banner
+  const totalExercisesCount = workouts.reduce(
+    (acc, w) => acc + (w.workout_exercises?.length || w.exercises?.length || 0),
+    0
+  )
+
+  const categoriesList = [
+    { id: 'all', label: 'Todas las Rutinas' },
+    { id: 'hipertrofia', label: 'Hipertrofia' },
+    { id: 'fuerza', label: 'Fuerza' },
+    { id: 'resistencia', label: 'Resistencia' },
+    { id: 'cardio', label: 'Cardio' },
+    { id: 'movilidad', label: 'Movilidad' },
+  ]
+
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 } }}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
       <ToastContainer />
 
       {error && (
-        <Alert severity='error' sx={{ mb: 2 }}>
+        <Alert severity='error' sx={{ mb: 3, borderRadius: '16px' }}>
           {error}
         </Alert>
       )}
 
+      {/* Hero Glass Banner con Métricas y Botones de Acción */}
+      <Box className="liquid-hero-banner" sx={{ p: { xs: 3, sm: 4 }, mb: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', md: 'center' },
+            gap: 3,
+          }}
+        >
+          <Box>
+            <Typography
+              variant='h3'
+              sx={{
+                fontSize: { xs: '1.75rem', sm: '2.25rem' },
+                fontWeight: 800,
+                letterSpacing: '-0.02em',
+                color: '#0f172a',
+                mb: 1,
+              }}
+            >
+              Catálogo de Entrenamientos
+            </Typography>
+            <Typography variant='body1' sx={{ color: '#475569', maxWidth: 650, lineHeight: 1.6 }}>
+              Diseña, personaliza y ejecuta rutinas de entrenamiento optimizadas con seguimiento biométrico y biblioteca de 1.320 ejercicios.
+            </Typography>
+
+            {/* Micro-Badges de Métricas */}
+            <Stack direction="row" spacing={2} sx={{ mt: 2.5 }} flexWrap="wrap" useFlexGap>
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 2,
+                  py: 0.75,
+                  borderRadius: '9999px',
+                  bgcolor: 'rgba(255, 255, 255, 0.85)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}
+              >
+                <Iconify icon="solar:folder-with-files-bold" width={18} sx={{ color: '#0284c7' }} />
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                  {workouts.length} Rutinas Totales
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 2,
+                  py: 0.75,
+                  borderRadius: '9999px',
+                  bgcolor: 'rgba(255, 255, 255, 0.85)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}
+              >
+                <Iconify icon="solar:dumbbell-bold" width={18} sx={{ color: '#10b981' }} />
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                  {totalExercisesCount} Ejercicios Asignados
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+
+          <Stack direction={{ xs: 'row' }} spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+            <Button
+              variant='outlined'
+              startIcon={<Iconify icon='eva:download-fill' />}
+              onClick={(e) => setExportMenuAnchor(e.currentTarget)}
+              sx={{
+                borderRadius: '9999px',
+                px: 2.5,
+                py: 1,
+                fontWeight: 600,
+                borderColor: 'rgba(15, 23, 42, 0.2)',
+                color: '#0f172a',
+                bgcolor: 'rgba(255, 255, 255, 0.6)',
+                backdropFilter: 'blur(10px)',
+                '&:hover': {
+                  borderColor: '#0f172a',
+                  bgcolor: 'rgba(255, 255, 255, 0.9)',
+                },
+              }}
+            >
+              Exportar
+            </Button>
+            <Button
+              variant='contained'
+              startIcon={<Iconify icon='mingcute:add-line' />}
+              onClick={handleAdd}
+              sx={{
+                borderRadius: '9999px',
+                px: 3,
+                py: 1,
+                fontWeight: 700,
+                bgcolor: '#0f172a',
+                color: '#ffffff',
+                boxShadow: '0 6px 20px rgba(15, 23, 42, 0.25)',
+                '&:hover': {
+                  bgcolor: '#0284c7',
+                  boxShadow: '0 8px 24px rgba(2, 132, 199, 0.35)',
+                },
+              }}
+            >
+              Nueva Rutina
+            </Button>
+          </Stack>
+        </Box>
+      </Box>
+
+      {/* Barra de Filtros: Cápsula de Categorías y Buscador Glass */}
       <Box
         sx={{
           display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
+          flexDirection: { xs: 'column', lg: 'row' },
           justifyContent: 'space-between',
-          alignItems: { xs: 'stretch', sm: 'center' },
-          mb: 3,
-          gap: { xs: 2, sm: 0 }
+          alignItems: { xs: 'stretch', lg: 'center' },
+          gap: 2,
+          mb: 3.5,
         }}
       >
-        <Typography
-          variant='h4'
-          sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}
+        {/* Selector de Categorías en Cápsula Deslizante */}
+        <Box
+          sx={{
+            overflowX: 'auto',
+            pb: { xs: 1, lg: 0 },
+            '&::-webkit-scrollbar': { display: 'none' },
+          }}
         >
-          Gestión de Entrenamientos
-        </Typography>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          sx={{ width: { xs: '100%', sm: 'auto' } }}
-        >
-          <Button
-            variant='outlined'
-            startIcon={<Iconify icon='eva:download-fill' />}
-            onClick={(e) => setExportMenuAnchor(e.currentTarget)}
-            sx={{ width: { xs: '100%', sm: 'auto' } }}
-          >
-            Exportar
-          </Button>
-          <Button
-            variant='contained'
-            startIcon={<Iconify icon='mingcute:add-line' />}
-            onClick={handleAdd}
-            sx={{ width: { xs: '100%', sm: 'auto' } }}
-          >
-            Nuevo Entrenamiento
-          </Button>
-        </Stack>
-      </Box>
+          <Box className="liquid-segment-bar">
+            {categoriesList.map((cat) => (
+              <button
+                key={cat.id}
+                type="button"
+                className={`liquid-segment-tab ${selectedCategory === cat.id ? 'active' : ''}`}
+                onClick={() => setSelectedCategory(cat.id)}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </Box>
+        </Box>
 
-      <Box sx={{ mb: 3 }}>
+        {/* Buscador de Rutinas Glass */}
         <TextField
-          fullWidth
-          placeholder='Buscar entrenamientos...'
+          placeholder='Buscar por nombre o nota...'
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          size="small"
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                <Iconify icon='eva:search-fill' />
+                <Iconify icon='eva:search-fill' sx={{ color: '#64748b' }} />
               </InputAdornment>
-            )
+            ),
           }}
-          sx={{ maxWidth: 400 }}
+          sx={{
+            minWidth: { xs: '100%', sm: 300 },
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '9999px',
+              bgcolor: 'rgba(255, 255, 255, 0.7)',
+              backdropFilter: 'blur(16px)',
+              '& fieldset': { borderColor: 'rgba(226, 232, 240, 0.8)' },
+              '&:hover fieldset': { borderColor: '#0284c7' },
+              '&.Mui-focused fieldset': { borderColor: '#0284c7' },
+            },
+          }}
         />
       </Box>
 
+      {/* Listado de Rutinas */}
       <WorkoutList
         workouts={filteredWorkouts}
         users={users}

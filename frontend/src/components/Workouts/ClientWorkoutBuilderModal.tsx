@@ -330,6 +330,47 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
 
             <Divider />
 
+            {/* Distribución Muscular en Vivo (Anatomical Heat Preview) */}
+            {selectedExercises.length > 0 && (
+              <Box
+                sx={{
+                  p: 2,
+                  borderRadius: '18px',
+                  bgcolor: 'rgba(2, 132, 199, 0.06)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(2, 132, 199, 0.2)',
+                }}
+              >
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#0284c7', display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                  <Iconify icon="solar:body-bold" width={16} />
+                  Estímulo Muscular Estimado ({selectedExercises.reduce((acc, i) => acc + i.sets, 0)} series totales):
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  {Object.entries(
+                    selectedExercises.reduce<{ [k: string]: number }>((acc, item) => {
+                      const p = item.body_part || 'general';
+                      acc[p] = (acc[p] || 0) + (Number(item.sets) || 1);
+                      return acc;
+                    }, {})
+                  ).map(([part, count]) => (
+                    <Chip
+                      key={part}
+                      label={`${part.toUpperCase()}: ${count} series`}
+                      size="small"
+                      sx={{
+                        fontWeight: 700,
+                        fontSize: '0.75rem',
+                        bgcolor: 'rgba(255, 255, 255, 0.9)',
+                        color: '#0f172a',
+                        border: '1px solid rgba(2, 132, 199, 0.25)',
+                        borderRadius: '9999px',
+                      }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+
             {/* Ejercicios seleccionados en la rutina */}
             <Box>
               <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
