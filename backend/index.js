@@ -28,7 +28,7 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+  origin: process.env.FRONTEND_URL || '*',
   credentials: true,
   optionsSuccessStatus: 200
 }
