@@ -48,20 +48,7 @@ export const SignInPage = () => {
   }, [email, password, navigate])
 
   const handleGoogleSignIn = async () => {
-    try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard/home`
-        }
-      })
-
-      if (error) {
-        setError('Error al iniciar sesión con Google')
-      }
-    } catch (err) {
-      setError('Error al conectar con Google')
-    }
+    alert('El inicio de sesión con Google estará disponible próximamente con OAuth nativo.')
   }
 
   const renderForm = (
