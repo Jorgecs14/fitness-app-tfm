@@ -28,12 +28,21 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*',
+  origin: (origin, callback) => {
+    // Permitir llamadas sin origin (curl, postman, llamadas servidor a servidor)
+    if (!origin) return callback(null, true)
+    const allowed = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(s => s.trim()) : []
+    if (allowed.length === 0 || allowed.includes('*') || allowed.includes(origin)) {
+      return callback(null, true)
+    }
+    return callback(null, true) // Por defecto permitir origin dinámico para credentials: true
+  },
   credentials: true,
   optionsSuccessStatus: 200
 }
 
 app.use(cors(corsOptions))
+app.options('*', cors(corsOptions))
 app.use(express.json())
 
 // Normalizador para rutas /api viniendo de rewrites de Vercel
