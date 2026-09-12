@@ -42,7 +42,6 @@ const corsOptions = {
 }
 
 app.use(cors(corsOptions))
-app.options('*', cors(corsOptions))
 app.use(express.json())
 
 // Normalizador para rutas /api viniendo de rewrites de Vercel
