@@ -53,6 +53,13 @@ app.use((req, res, next) => {
   next()
 })
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Fitness App API Running' })
+})
+app.get('/health', (req, res) => {
+  res.json({ status: 'healthy', timestamp: new Date().toISOString() })
+})
+
 app.use('/users', usersRouter)
 app.use('/diets', authenticateToken, dietsRouter)
 app.use('/workouts', authenticateToken, workoutsRouter)
