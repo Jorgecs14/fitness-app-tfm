@@ -56,8 +56,8 @@ async function seedExercises() {
       main_muscle_group: item.mg || null,
       secondary_muscles: item.sm || [],
       instructions,
-      image_url: item.img ? `https://raw.githubusercontent.com/DuarteSantos8/openGym/main/media/exercises/${item.img}` : null,
-      gif_url: item.gif ? `https://raw.githubusercontent.com/DuarteSantos8/openGym/main/media/exercises/${item.gif}` : null,
+      image_url: item.img ? `https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/images/${item.img}` : null,
+      gif_url: item.gif ? `https://cdn.jsdelivr.net/gh/hasaneyldrm/exercises-dataset@7455efae41b330c265e7cd4b78dfa848e7ce5ebd/videos/${item.gif}` : null,
     });
   }
 

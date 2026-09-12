@@ -40,6 +40,16 @@ export const getDietWithFoods = async (id: number): Promise<DietWithFoods> => {
   }
 }
 
+export const getUserDiet = async (userId: number): Promise<DietWithFoods | null> => {
+  try {
+    const response = await axiosInstance.get(`/diets/user/${userId}`)
+    return response.data
+  } catch (error: any) {
+    console.error('Error al obtener dieta de usuario:', error)
+    return null
+  }
+}
+
 export const createDiet = async (diet: Omit<Diet, 'id'>): Promise<Diet> => {
   try {
     const response = await axiosInstance.post('/diets', diet)

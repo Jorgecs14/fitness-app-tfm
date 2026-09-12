@@ -1,25 +1,24 @@
 /**
  * Rutas para gestionar entrenamientos en la aplicación fitness-app-tfm
- * Incluye CRUD de entrenamientos, gestión de ejercicios asociados y asignación a usuarios
+ * Incluye CRUD de entrenamientos, gestión de ejercicios asociados y asignación a usuarios con Neon PostgreSQL nativo
  */
 
 const express = require('express')
 const router = express.Router()
-const { supabase, supabaseAdmin, pool } = require('../database/supabaseClient')
+const { pool } = require('../database/supabaseClient')
 
+// Obtener todos los entrenamientos
 router.get('/', async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from('workouts')
-      .select('*')
-      .order('id')
-    if (error) throw error
-    res.json(data)
+    const { rows } = await pool.query('SELECT * FROM workouts ORDER BY id ASC')
+    res.json(rows)
   } catch (err) {
-    res.status(500).json({ error: 'Error al obtener entrenamientos' })
+    console.error('Error al obtener entrenamientos:', err)
+    res.status(500).json({ error: 'Error al obtener entrenamientos', details: err.message })
   }
 })
 
+// Obtener entrenamientos con sus ejercicios asociados
 router.get('/with-exercises', async (req, res) => {
   try {
     const { rows: workouts } = await pool.query('SELECT * FROM workouts ORDER BY id ASC')
@@ -57,100 +56,92 @@ router.get('/with-exercises', async (req, res) => {
     res.json(result)
   } catch (err) {
     console.error('Error en GET /workouts/with-exercises:', err)
-    res.status(500).json({ error: 'Error al obtener entrenamientos con ejercicios' })
+    res.status(500).json({ error: 'Error al obtener entrenamientos con ejercicios', details: err.message })
   }
 })
 
+// Obtener un entrenamiento por ID
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const { data, error } = await supabase
-      .from('workouts')
-      .select('*')
-      .eq('id', id)
-      .single()
-    if (error) throw error
-    if (!data)
+    const { rows } = await pool.query('SELECT * FROM workouts WHERE id = $1', [id])
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'Entrenamiento no encontrado' })
-    res.json(data)
+    }
+    res.json(rows[0])
   } catch (err) {
-    res.status(500).json({ error: 'Error al buscar entrenamiento' })
+    console.error('Error al buscar entrenamiento:', err)
+    res.status(500).json({ error: 'Error al buscar entrenamiento', details: err.message })
   }
 })
 
+// Crear un entrenamiento
 router.post('/', async (req, res) => {
   try {
     const { user_id, name, category, notes } = req.body
 
     if (!user_id || !name || !category) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' })
+      return res.status(400).json({ error: 'Faltan campos requeridos: user_id, name, category' })
     }
 
-    const { data, error } = await supabase
-      .from('workouts')
-      .insert([{ user_id, name, category, notes }])
-      .select()
-      .single()
+    const { rows } = await pool.query(
+      `INSERT INTO workouts (user_id, name, category, notes)
+       VALUES ($1, $2, $3, $4)
+       RETURNING *`,
+      [user_id, name.trim(), category, notes || '']
+    )
 
-    if (error) throw error
-
-    res.status(201).json(data)
+    res.status(201).json(rows[0])
   } catch (err) {
-    res.status(500).json({ error: 'Error al crear entrenamiento' })
+    console.error('Error al crear entrenamiento:', err)
+    res.status(500).json({ error: 'Error al crear entrenamiento', details: err.message })
   }
 })
 
+// Actualizar un entrenamiento
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params
     const { name, category, notes } = req.body
 
-    const { data, error } = await supabase
-      .from('workouts')
-      .update({ name, category, notes })
-      .eq('id', id)
-      .select()
-      .single()
+    const { rows } = await pool.query(
+      `UPDATE workouts
+       SET name = COALESCE($1, name),
+           category = COALESCE($2, category),
+           notes = COALESCE($3, notes)
+       WHERE id = $4
+       RETURNING *`,
+      [name ? name.trim() : null, category || null, notes != null ? notes : null, id]
+    )
 
-    if (error) throw error
-    res.json(data)
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Entrenamiento no encontrado' })
+    }
+
+    res.json(rows[0])
   } catch (err) {
-    res.status(500).json({ error: 'Error al actualizar entrenamiento' })
+    console.error('Error al actualizar entrenamiento:', err)
+    res.status(500).json({ error: 'Error al actualizar entrenamiento', details: err.message })
   }
 })
 
+// Eliminar un entrenamiento
 router.delete('/:id', async (req, res) => {
   try {
     const { id } = req.params
 
-    const { error: deleteExercisesError } = await supabase
-      .from('workout_exercises')
-      .delete()
-      .eq('workout_id', id)
+    await pool.query('DELETE FROM workout_exercises WHERE workout_id = $1', [id])
+    const { rows } = await pool.query('DELETE FROM workouts WHERE id = $1 RETURNING name', [id])
 
-    if (deleteExercisesError) {
-      throw deleteExercisesError
-    }
-
-    const { data, error } = await supabase
-      .from('workouts')
-      .delete()
-      .eq('id', id)
-      .select('name')
-      .single()
-
-    if (error) {
-      throw error
-    }
-
-    if (!data) {
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'Entrenamiento no encontrado' })
     }
 
     res.json({
-      message: `Entrenamiento "${data.name}" eliminado correctamente`
+      message: `Entrenamiento "${rows[0].name}" eliminado correctamente`
     })
   } catch (err) {
+    console.error('Error al eliminar entrenamiento:', err)
     res.status(500).json({
       error: 'Error al eliminar entrenamiento',
       details: err.message
@@ -158,35 +149,11 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
-router.get('/:id/full', async (req, res) => {
+// Obtener detalles completos de un entrenamiento con ejercicios
+router.get('/:id/details', async (req, res) => {
   try {
     const { id } = req.params
 
-    const { rows: workouts } = await pool.query('SELECT * FROM workouts WHERE id = $1', [id])
-    const workout = workouts[0]
-
-    if (!workout) {
-      return res.status(404).json({ error: 'Entrenamiento no encontrado' })
-    }
-
-    const { rows: workoutExercises } = await pool.query(
-      `SELECT we.id as link_id, we.sets, we.reps, e.id, e.name, e.description, e.execution_time, e.body_part, e.equipment, e.target_muscle, e.gif_url
-       FROM workout_exercises we
-       LEFT JOIN exercises e ON we.exercise_id = e.id
-       WHERE we.workout_id = $1`,
-      [id]
-    )
-
-    res.json({ ...workout, exercises: workoutExercises })
-  } catch (err) {
-    console.error('Error en GET /workouts/:id/full:', err)
-    res.status(500).json({ error: 'Error al obtener el entrenamiento completo' })
-  }
-})
-
-router.get('/:id/details', async (req, res) => {
-  const { id } = req.params
-  try {
     const { rows: workouts } = await pool.query('SELECT * FROM workouts WHERE id = $1', [id])
     const workout = workouts[0]
 
@@ -208,10 +175,11 @@ router.get('/:id/details', async (req, res) => {
     })
   } catch (err) {
     console.error('Error en GET /workouts/:id/details:', err)
-    res.status(500).json({ error: 'Error cargando detalles del entrenamiento' })
+    res.status(500).json({ error: 'Error cargando detalles del entrenamiento', details: err.message })
   }
 })
 
+// Obtener usuario asignado al entrenamiento
 router.get('/:id/user', async (req, res) => {
   try {
     const { id } = req.params
@@ -242,57 +210,49 @@ router.get('/:id/user', async (req, res) => {
     res.json(user)
   } catch (error) {
     console.error('Error en GET /workouts/:id/user:', error)
-    res.status(500).json({ error: 'Error al obtener usuario del workout' })
+    res.status(500).json({ error: 'Error al obtener usuario del workout', details: error.message })
   }
 })
 
+// Cambiar usuario del entrenamiento
 router.put('/:id/user/:userId', async (req, res) => {
   try {
     const { id, userId } = req.params
 
-    const { data, error } = await supabase
-      .from('workouts')
-      .update({ user_id: userId })
-      .eq('id', id)
-      .select()
-      .single()
+    const { rows } = await pool.query(
+      'UPDATE workouts SET user_id = $1 WHERE id = $2 RETURNING *',
+      [userId, id]
+    )
 
-    if (error) {
-      throw error
-    }
-
-    if (!data) {
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'Workout no encontrado' })
     }
 
-    res.json({ message: 'Propietario cambiado correctamente', data })
+    res.json({ message: 'Propietario cambiado correctamente', data: rows[0] })
   } catch (error) {
-    res.status(500).json({ error: 'Error al cambiar propietario del workout' })
+    console.error('Error al cambiar propietario del workout:', error)
+    res.status(500).json({ error: 'Error al cambiar propietario del workout', details: error.message })
   }
 })
 
+// Quitar usuario del entrenamiento
 router.delete('/:id/user', async (req, res) => {
   try {
     const { id } = req.params
 
-    const { data, error } = await supabase
-      .from('workouts')
-      .update({ user_id: null })
-      .eq('id', id)
-      .select()
-      .single()
+    const { rows } = await pool.query(
+      'UPDATE workouts SET user_id = NULL WHERE id = $1 RETURNING *',
+      [id]
+    )
 
-    if (error) {
-      throw error
-    }
-
-    if (!data) {
+    if (rows.length === 0) {
       return res.status(404).json({ error: 'Workout no encontrado' })
     }
 
     res.json({ message: 'Propietario quitado correctamente' })
   } catch (error) {
-    res.status(500).json({ error: 'Error al quitar propietario del workout' })
+    console.error('Error al quitar propietario del workout:', error)
+    res.status(500).json({ error: 'Error al quitar propietario del workout', details: error.message })
   }
 })
 

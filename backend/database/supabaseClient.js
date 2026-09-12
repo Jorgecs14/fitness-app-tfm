@@ -81,6 +81,33 @@ class QueryBuilder {
     return this
   }
 
+  ilike(column, pattern) {
+    if (pattern !== undefined) {
+      this.values.push(pattern)
+      this.whereConditions.push(`"${column}" ILIKE $${this.values.length}`)
+    }
+    return this
+  }
+
+  like(column, pattern) {
+    if (pattern !== undefined) {
+      this.values.push(pattern)
+      this.whereConditions.push(`"${column}" LIKE $${this.values.length}`)
+    }
+    return this
+  }
+
+  range(from, to) {
+    this.limitVal = to - from + 1
+    this.offsetVal = from
+    return this
+  }
+
+  limit(count) {
+    this.limitVal = count
+    return this
+  }
+
   order(column, options = {}) {
     const direction = options.ascending === false ? 'DESC' : 'ASC'
     this.orderClause = `ORDER BY "${column}" ${direction}`
@@ -115,6 +142,12 @@ class QueryBuilder {
         }
         if (this.orderClause) {
           queryText += ` ${this.orderClause}`
+        }
+        if (this.limitVal !== undefined) {
+          queryText += ` LIMIT ${parseInt(this.limitVal, 10)}`
+        }
+        if (this.offsetVal !== undefined) {
+          queryText += ` OFFSET ${parseInt(this.offsetVal, 10)}`
         }
       } else if (this.operation === 'INSERT' || this.operation === 'UPSERT') {
         const items = Array.isArray(this.insertData) ? this.insertData : [this.insertData]

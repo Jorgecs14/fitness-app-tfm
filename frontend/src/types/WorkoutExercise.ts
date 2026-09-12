@@ -15,6 +15,11 @@ export interface WorkoutExerciseDetail {
   name: string
   description: string
   execution_time: number
+  gif_url?: string
+  image_url?: string
+  body_part?: string
+  equipment?: string
+  target_muscle?: string
 }
 
 export interface SelectedExercise {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -20,12 +20,13 @@ import {
   Tab,
 } from '@mui/material';
 import { Iconify } from '../../utils/iconify';
-import { createDiet, assignUserToDiet } from '../../services/dietService';
+import { createDiet, updateDiet, assignUserToDiet } from '../../services/dietService';
 
 interface ClientDietBuilderModalProps {
   open: boolean;
   onClose: () => void;
   userId: number;
+  dietToEdit?: any | null;
   onSuccess: () => void;
 }
 
@@ -54,6 +55,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
   open,
   onClose,
   userId,
+  dietToEdit,
   onSuccess,
 }) => {
   const [activeTab, setActiveTab] = useState<number>(0);
@@ -62,6 +64,22 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
   const [description, setDescription] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      if (dietToEdit) {
+        setName(dietToEdit.name || '');
+        setCalories(dietToEdit.calories || 2200);
+        setDescription(dietToEdit.description || '');
+      } else {
+        setName('');
+        setCalories(2200);
+        setDescription('');
+      }
+      setErrorMsg(null);
+      setActiveTab(0);
+    }
+  }, [open, dietToEdit]);
 
   const handleSelectTemplate = (template: (typeof NUTRITION_TEMPLATES)[0]) => {
     setName(template.title.replace(/^[^\w\s]+/, '').trim());
@@ -84,15 +102,22 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
     setErrorMsg(null);
 
     try {
-      // 1. Crear dieta
-      const newDiet = await createDiet({
-        name: name.trim(),
-        description: description.trim() || 'Plan nutricional personalizado',
-        calories: Number(calories),
-      });
-
-      // 2. Asignar usuario a esta dieta
-      await assignUserToDiet(newDiet.id, userId);
+      if (dietToEdit?.id) {
+        // Actualizar dieta existente
+        await updateDiet(dietToEdit.id, {
+          name: name.trim(),
+          description: description.trim() || 'Plan nutricional personalizado',
+          calories: Number(calories),
+        });
+      } else {
+        // Crear nueva dieta y asignar
+        const newDiet = await createDiet({
+          name: name.trim(),
+          description: description.trim() || 'Plan nutricional personalizado',
+          calories: Number(calories),
+        });
+        await assignUserToDiet(newDiet.id, userId);
+      }
 
       setIsSubmitting(false);
       onSuccess();

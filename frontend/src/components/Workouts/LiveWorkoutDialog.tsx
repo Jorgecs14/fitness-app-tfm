@@ -537,6 +537,62 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
                     )}
                   </Stack>
 
+                  {/* Animación / Video del Ejercicio */}
+                  {currentGroup.gifUrl ? (
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        bgcolor: '#0a0f1d',
+                        border: '1px solid #1e293b',
+                        my: 2.5,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minHeight: 220,
+                        maxHeight: 320,
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+                      }}
+                    >
+                      <img
+                        src={currentGroup.gifUrl}
+                        alt={currentGroup.name}
+                        style={{
+                          maxHeight: 320,
+                          maxWidth: '100%',
+                          objectFit: 'contain',
+                          display: 'block',
+                        }}
+                        loading="eager"
+                      />
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          bottom: 12,
+                          left: 12,
+                          display: 'flex',
+                          gap: 1,
+                          alignItems: 'center',
+                        }}
+                      >
+                        <Chip
+                          icon={<Iconify icon="solar:play-circle-bold" width={16} sx={{ color: '#22c55e !important' }} />}
+                          label="Demostración Técnica en Video"
+                          size="small"
+                          sx={{
+                            bgcolor: 'rgba(15, 23, 42, 0.85)',
+                            color: 'white',
+                            backdropFilter: 'blur(6px)',
+                            fontWeight: 600,
+                            border: '1px solid rgba(255,255,255,0.15)',
+                          }}
+                        />
+                      </Box>
+                    </Box>
+                  ) : null}
+
                   <Divider sx={{ my: 2 }} />
 
                   {/* Tabla de Series de este Ejercicio */}
@@ -710,16 +766,41 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
               {exercisesGrouped.map((group, gIdx) => (
                 <Card key={group.id} sx={{ borderRadius: 3, boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
                   <CardContent sx={{ p: 3 }}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                      <Box>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: 2 }}>
+                      {group.gifUrl && (
+                        <Box
+                          component="img"
+                          src={group.gifUrl}
+                          alt={group.name}
+                          sx={{
+                            width: { xs: '100%', sm: 88 },
+                            height: 88,
+                            borderRadius: 2,
+                            objectFit: 'contain',
+                            bgcolor: '#0a0f1d',
+                            border: '1px solid #1e293b',
+                            flexShrink: 0,
+                          }}
+                          loading="lazy"
+                        />
+                      )}
+                      <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="h6" fontWeight="bold" color="primary.main">
                           {gIdx + 1}. {group.name}
                         </Typography>
                         {prevHistory[group.id] && (
-                          <Typography variant="caption" color="success.main" fontWeight="bold">
+                          <Typography variant="caption" color="success.main" fontWeight="bold" display="block">
                             Última sesión: {prevHistory[group.id].weight} kg x {prevHistory[group.id].reps} reps
                           </Typography>
                         )}
+                        <Stack direction="row" spacing={0.8} sx={{ mt: 0.5 }} flexWrap="wrap">
+                          {group.bodyPart && (
+                            <Chip label={group.bodyPart} size="small" variant="outlined" />
+                          )}
+                          {group.equipment && (
+                            <Chip label={group.equipment} size="small" />
+                          )}
+                        </Stack>
                       </Box>
 
                       <Button

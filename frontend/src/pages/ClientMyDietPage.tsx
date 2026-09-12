@@ -3,20 +3,20 @@ import {
   Box,
   Typography,
   Paper,
-  Alert,
   Stack,
   Button,
   Chip
 } from '@mui/material'
 import { Iconify } from '../utils/iconify'
 import { getCurrentUser } from '../services/userService'
-import { getDietsWithFoods, getDietWithFoods, getDietUsers } from '../services/dietService'
+import { getDietsWithFoods, getDietWithFoods, getUserDiet } from '../services/dietService'
 import { DietWithFoods } from '../types/DietWithFoods'
 import { User } from '../types/User'
 import { DietMealChecklist } from '../components/Diet/DietMealChecklist'
 import { DietVisualPdfModal } from '../components/Diet/DietVisualPdfModal'
 import { CalorieCalculatorModal } from '../components/Diet/CalorieCalculatorModal'
 import { ClientDietBuilderModal } from '../components/Diet/ClientDietBuilderModal'
+import { DietFoodsManager } from '../components/Diet/DietFoodsManager'
 
 export const ClientMyDietPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -25,6 +25,8 @@ export const ClientMyDietPage: React.FC = () => {
   const [pdfModalOpen, setPdfModalOpen] = useState(false)
   const [calculatorOpen, setCalculatorOpen] = useState(false)
   const [dietBuilderOpen, setDietBuilderOpen] = useState(false)
+  const [foodsManagerOpen, setFoodsManagerOpen] = useState(false)
+  const [editingDietTarget, setEditingDietTarget] = useState<DietWithFoods | null>(null)
 
   useEffect(() => {
     loadDiet()
@@ -36,26 +38,18 @@ export const ClientMyDietPage: React.FC = () => {
       const user = await getCurrentUser()
       setCurrentUser(user)
 
-      const diets = await getDietsWithFoods()
-      let matchedDiet: DietWithFoods | null = null
+      // 1. Intentar obtener la dieta directa asignada a este usuario
+      let matchedDiet = await getUserDiet(user.id)
 
-      for (const d of diets) {
-        try {
-          const users = await getDietUsers(d.id)
-          if (users.some((u: any) => u.id === user.id)) {
-            matchedDiet = await getDietWithFoods(d.id)
-            break
+      // 2. Si no hay dieta directa, consultar la lista completa con alimentos
+      if (!matchedDiet) {
+        const diets = await getDietsWithFoods()
+        if (diets.length > 0) {
+          try {
+            matchedDiet = await getDietWithFoods(diets[0].id)
+          } catch (e) {
+            matchedDiet = diets[0]
           }
-        } catch (e) {
-          // Si falla consulta de usuarios individuales
-        }
-      }
-
-      if (!matchedDiet && diets.length > 0) {
-        try {
-          matchedDiet = await getDietWithFoods(diets[0].id)
-        } catch (e) {
-          matchedDiet = diets[0]
         }
       }
 
@@ -100,14 +94,44 @@ export const ClientMyDietPage: React.FC = () => {
             Calculadora Calórica
           </Button>
 
+          {diet && (
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<Iconify icon="eva:edit-2-fill" width={20} />}
+              onClick={() => {
+                setEditingDietTarget(diet)
+                setDietBuilderOpen(true)
+              }}
+              sx={{ borderRadius: 2.5, py: 1.2, px: 2 }}
+            >
+              Editar Mi Dieta
+            </Button>
+          )}
+
+          {diet && (
+            <Button
+              variant="outlined"
+              color="secondary"
+              startIcon={<Iconify icon="solar:plate-bold" width={20} />}
+              onClick={() => setFoodsManagerOpen(true)}
+              sx={{ borderRadius: 2.5, py: 1.2, px: 2 }}
+            >
+              Gestionar Alimentos
+            </Button>
+          )}
+
           <Button
             variant="outlined"
             color="success"
             startIcon={<Iconify icon="solar:pen-new-square-bold" width={20} />}
-            onClick={() => setDietBuilderOpen(true)}
+            onClick={() => {
+              setEditingDietTarget(null)
+              setDietBuilderOpen(true)
+            }}
             sx={{ borderRadius: 2.5, py: 1.2, px: 2 }}
           >
-            {diet ? 'Cambiar Mi Dieta' : 'Crear Mi Dieta'}
+            Nueva Dieta
           </Button>
 
           {diet && (
@@ -144,7 +168,10 @@ export const ClientMyDietPage: React.FC = () => {
             color="primary"
             size="large"
             startIcon={<Iconify icon="solar:add-circle-bold" />}
-            onClick={() => setDietBuilderOpen(true)}
+            onClick={() => {
+              setEditingDietTarget(null)
+              setDietBuilderOpen(true)
+            }}
             sx={{ fontWeight: 'bold', borderRadius: 2.5 }}
           >
             Crear Mi Plan Nutricional Ahora
@@ -164,12 +191,34 @@ export const ClientMyDietPage: React.FC = () => {
                 </Typography>
               </Box>
 
-              <Chip
-                icon={<Iconify icon="solar:fire-bold" width={20} />}
-                label={`${diet.calories} Kcal / día`}
-                color="error"
-                sx={{ fontWeight: 'bold', fontSize: '1.1rem', py: 2.5, px: 2 }}
-              />
+              <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
+                <Chip
+                  icon={<Iconify icon="solar:fire-bold" width={20} />}
+                  label={`${diet.calories} Kcal / día`}
+                  color="error"
+                  sx={{ fontWeight: 'bold', fontSize: '1.1rem', py: 2.5, px: 2 }}
+                />
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={<Iconify icon="eva:edit-2-outline" />}
+                  onClick={() => {
+                    setEditingDietTarget(diet)
+                    setDietBuilderOpen(true)
+                  }}
+                >
+                  Editar Plan
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="secondary"
+                  startIcon={<Iconify icon="solar:plate-bold" />}
+                  onClick={() => setFoodsManagerOpen(true)}
+                >
+                  Alimentos ({diet.diet_foods?.length || 0})
+                </Button>
+              </Stack>
             </Stack>
           </Paper>
 
@@ -181,36 +230,49 @@ export const ClientMyDietPage: React.FC = () => {
               userName={`${currentUser.name} ${currentUser.surname}`}
             />
           )}
-
-          {/* Modal PDF Visual */}
-          <DietVisualPdfModal
-            open={pdfModalOpen}
-            onClose={() => setPdfModalOpen(false)}
-            diet={diet}
-            clientUser={currentUser}
-            trainerUser={currentUser?.trainer || null}
-          />
-
-          {/* Modal Calculadora Calórica */}
-          <CalorieCalculatorModal
-            open={calculatorOpen}
-            onClose={() => setCalculatorOpen(false)}
-          />
-
-          {/* Modal Creador de Dieta */}
-          {currentUser && (
-            <ClientDietBuilderModal
-              open={dietBuilderOpen}
-              onClose={() => setDietBuilderOpen(false)}
-              userId={currentUser.id}
-              onSuccess={loadDiet}
-            />
-          )}
         </Stack>
+      )}
+
+      {/* MODALES DISPONIBLES SIEMPRE (FUERA DEL CONDICIONAL) */}
+      {/* Modal PDF Visual */}
+      {diet && (
+        <DietVisualPdfModal
+          open={pdfModalOpen}
+          onClose={() => setPdfModalOpen(false)}
+          diet={diet}
+          clientUser={currentUser}
+          trainerUser={currentUser?.trainer || null}
+        />
+      )}
+
+      {/* Modal Calculadora Calórica */}
+      <CalorieCalculatorModal
+        open={calculatorOpen}
+        onClose={() => setCalculatorOpen(false)}
+      />
+
+      {/* Modal Creador / Editor de Dieta */}
+      {currentUser && (
+        <ClientDietBuilderModal
+          open={dietBuilderOpen}
+          onClose={() => setDietBuilderOpen(false)}
+          userId={currentUser.id}
+          dietToEdit={editingDietTarget}
+          onSuccess={loadDiet}
+        />
+      )}
+
+      {/* Modal Gestor de Alimentos de la Dieta */}
+      {diet && (
+        <DietFoodsManager
+          open={foodsManagerOpen}
+          diet={diet}
+          onClose={() => setFoodsManagerOpen(false)}
+          onSave={loadDiet}
+        />
       )}
     </Box>
   )
 }
 
 export default ClientMyDietPage
-

@@ -477,18 +477,38 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
+                            gap: 1.5,
                             '&:hover': { bgcolor: '#f8fafc' },
                           }}
                         >
-                          <Box>
-                            <Typography variant="subtitle2" fontWeight="bold">
-                              {ex.name}
-                            </Typography>
-                            <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                              {ex.body_part && <Chip label={ex.body_part} size="small" variant="outlined" />}
-                              {ex.equipment && <Chip label={ex.equipment} size="small" />}
-                            </Stack>
-                          </Box>
+                          <Stack direction="row" spacing={1.5} alignItems="center">
+                            {(ex.gif_url || ex.image_url) && (
+                              <Box
+                                component="img"
+                                src={ex.gif_url || ex.image_url}
+                                alt={ex.name}
+                                sx={{
+                                  width: 52,
+                                  height: 52,
+                                  borderRadius: 1.5,
+                                  objectFit: 'contain',
+                                  bgcolor: '#0a0f1d',
+                                  border: '1px solid #cbd5e1',
+                                  flexShrink: 0,
+                                }}
+                                loading="lazy"
+                              />
+                            )}
+                            <Box>
+                              <Typography variant="subtitle2" fontWeight="bold">
+                                {ex.name}
+                              </Typography>
+                              <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
+                                {ex.body_part && <Chip label={ex.body_part} size="small" variant="outlined" />}
+                                {ex.equipment && <Chip label={ex.equipment} size="small" />}
+                              </Stack>
+                            </Box>
+                          </Stack>
 
                           <Button
                             size="small"

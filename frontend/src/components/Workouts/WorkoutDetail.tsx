@@ -160,10 +160,29 @@ export const WorkoutDetail: React.FC<Props> = ({ workoutId, open, onClose }) => 
                               justifyContent: 'center',
                               fontSize: '0.875rem',
                               fontWeight: 600,
+                              flexShrink: 0,
                             }}
                           >
                             {index + 1}
                           </Box>
+
+                          {ex.gif_url && (
+                            <Box
+                              component="img"
+                              src={ex.gif_url}
+                              alt={ex.name}
+                              sx={{
+                                width: { xs: 70, sm: 90 },
+                                height: { xs: 70, sm: 90 },
+                                borderRadius: 2,
+                                objectFit: 'contain',
+                                bgcolor: '#0a0f1d',
+                                border: '1px solid #1e293b',
+                                flexShrink: 0,
+                              }}
+                              loading="lazy"
+                            />
+                          )}
                           
                           <Box sx={{ flexGrow: 1 }}>
                             <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
