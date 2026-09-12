@@ -6,6 +6,8 @@ import {
   IconButton,
   Box,
   Chip,
+  Stack,
+  Tooltip,
 } from '@mui/material';
 import { Iconify } from '../../utils/iconify';
 import { DietWithFoods } from '../../types/DietWithFoods';
@@ -31,123 +33,184 @@ export const DietCard = ({
   onManageUsers,
 }: DietCardProps) => {
   const foodsCount = diet.diet_foods?.length ?? diet.foods?.length ?? 0;
+  const totalCalories = calculateDietCalories(diet);
 
   return (
     <Card
+      className="liquid-glass-card"
       sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        transition: 'all 0.2s ease-in-out',
-        '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: (theme) => theme.shadows[8],
-        },
+        p: 0,
+        position: 'relative',
       }}
     >
       <CardContent sx={{ flexGrow: 1, p: 3 }}>
-        <Box sx={{ mb: 2 }}>
-          <Typography variant="h6" component="h3" sx={{ fontWeight: 600, mb: 1 }}>
-            {diet.name}
-          </Typography>
-          {userName && (
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-              Asignado a: {userName}
-            </Typography>
-          )}
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Chip
-              label={formatCalories(calculateDietCalories(diet))}
-              color="primary"
+        {/* Encabezado: Calorías y Alimentos */}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Chip
+            icon={<Iconify icon="solar:fire-bold" width={16} sx={{ color: '#f59e0b !important' }} />}
+            label={formatCalories(totalCalories)}
+            size="small"
+            sx={{
+              bgcolor: 'rgba(245, 158, 11, 0.12)',
+              color: '#d97706',
+              fontWeight: 700,
+              fontSize: '0.75rem',
+              border: '1px solid rgba(245, 158, 11, 0.3)',
+              borderRadius: '9999px',
+            }}
+          />
+
+          <Tooltip title="Ver detalles">
+            <IconButton
               size="small"
-            />
-            <Chip
-              icon={<Iconify icon="solar:apple-bold" sx={{ width: 14, height: 14 }} />}
-              label={`${foodsCount} alimentos`}
-              size="small"
-              color="secondary"
-              variant="outlined"
-            />
-          </Box>
+              onClick={() => onViewDetails(diet)}
+              sx={{
+                color: 'text.secondary',
+                bgcolor: 'rgba(255,255,255,0.6)',
+                backdropFilter: 'blur(8px)',
+                '&:hover': { color: 'primary.main', bgcolor: 'rgba(2, 132, 199, 0.15)' },
+              }}
+            >
+              <Iconify icon="solar:eye-bold" width={16} />
+            </IconButton>
+          </Tooltip>
         </Box>
-        <Box sx={{ mb: 2 }}>
+
+        {/* Título de la Dieta */}
+        <Typography
+          variant="h6"
+          component="h3"
+          sx={{
+            fontWeight: 700,
+            mb: 0.5,
+            color: '#0f172a',
+            fontSize: '1.15rem',
+            lineHeight: 1.3,
+          }}
+        >
+          {diet.name}
+        </Typography>
+
+        {userName && (
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1.5 }}>
+            👤 Asignado a: <strong>{userName}</strong>
+          </Typography>
+        )}
+
+        {diet.description && (
           <Typography
             variant="body2"
-            color="text.secondary"
             sx={{
-              lineHeight: 1.6,
+              color: '#475569',
+              lineHeight: 1.5,
+              fontSize: '0.875rem',
               display: '-webkit-box',
-              WebkitLineClamp: 3,
+              WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
               overflow: 'hidden',
+              mb: 2,
             }}
           >
             {diet.description}
           </Typography>
+        )}
+
+        {/* Alimentos Contenidos */}
+        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mt: 2, flexWrap: 'wrap' }}>
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.75,
+              px: 1.5,
+              py: 0.5,
+              borderRadius: '12px',
+              bgcolor: 'rgba(241, 245, 249, 0.8)',
+              fontSize: '0.8rem',
+              fontWeight: 600,
+              color: '#334155',
+            }}
+          >
+            <Iconify icon="solar:apple-bold" width={16} sx={{ color: '#10b981' }} />
+            {foodsCount} {foodsCount === 1 ? 'alimento' : 'alimentos'}
+          </Box>
         </Box>
       </CardContent>
-      <CardActions sx={{ p: 2, pt: 0, justifyContent: 'space-between' }}>
-        <IconButton
-          size="small"
-          onClick={() => onViewDetails(diet)}
-          sx={{
-            color: 'info.main',
-            '&:hover': { bgcolor: 'info.lighter' },
-          }}
-        >
-          <Iconify icon="eva:eye-outline" sx={{ width: 18, height: 18 }} />
-        </IconButton>
-        <Box>
+
+      {/* Acciones de la Tarjeta */}
+      <CardActions
+        sx={{
+          p: 2,
+          pt: 1.5,
+          borderTop: '1px solid rgba(226, 232, 240, 0.6)',
+          bgcolor: 'rgba(255, 255, 255, 0.4)',
+          backdropFilter: 'blur(12px)',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+        }}
+      >
+        <Stack direction="row" spacing={0.5} alignItems="center">
           {onManageFoods && (
-            <IconButton
-              size="small"
-              onClick={() => onManageFoods(diet)}
-              sx={{
-                color: 'secondary.main',
-                '&:hover': { bgcolor: 'secondary.lighter' },
-                mr: 0.5,
-              }}
-            >
-              <Iconify icon="solar:apple-bold" sx={{ width: 18, height: 18 }} />
-            </IconButton>
+            <Tooltip title="Gestionar Alimentos">
+              <IconButton
+                size="small"
+                onClick={() => onManageFoods(diet)}
+                sx={{
+                  color: '#475569',
+                  '&:hover': { color: '#10b981', bgcolor: 'rgba(16, 185, 129, 0.1)' },
+                }}
+              >
+                <Iconify icon="solar:plate-bold" width={16} />
+              </IconButton>
+            </Tooltip>
           )}
+
           {onManageUsers && (
+            <Tooltip title="Gestionar Usuarios">
+              <IconButton
+                size="small"
+                onClick={() => onManageUsers(diet)}
+                sx={{
+                  color: '#475569',
+                  '&:hover': { color: '#8b5cf6', bgcolor: 'rgba(139, 92, 246, 0.1)' },
+                }}
+              >
+                <Iconify icon="solar:users-group-rounded-bold" width={16} />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          <Tooltip title="Editar">
             <IconButton
               size="small"
-              onClick={() => onManageUsers(diet)}
+              onClick={() => onEdit(diet)}
               sx={{
-                color: 'info.main',
-                '&:hover': { bgcolor: 'info.lighter' },
-                mr: 0.5,
+                color: '#475569',
+                '&:hover': { color: '#0284c7', bgcolor: 'rgba(2, 132, 199, 0.1)' },
               }}
-              title="Gestionar usuarios"
             >
-              <Iconify icon="solar:users-group-rounded-bold" sx={{ width: 18, height: 18 }} />
+              <Iconify icon="solar:pen-bold" width={16} />
             </IconButton>
-          )}
-          <IconButton
-            size="small"
-            onClick={() => onEdit(diet)}
-            sx={{
-              color: 'primary.main',
-              '&:hover': { bgcolor: 'primary.lighter' },
-              mr: 0.5,
-            }}
-          >
-            <Iconify icon="eva:edit-2-outline" sx={{ width: 18, height: 18 }} />
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => onDelete(diet.id)}
-            sx={{
-              color: 'error.main',
-              '&:hover': { bgcolor: 'error.lighter' },
-            }}
-          >
-            <Iconify icon="eva:trash-2-outline" sx={{ width: 18, height: 18 }} />
-          </IconButton>
-        </Box>
+          </Tooltip>
+
+          <Tooltip title="Eliminar">
+            <IconButton
+              size="small"
+              onClick={() => onDelete(diet.id)}
+              sx={{
+                color: '#475569',
+                '&:hover': { color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.1)' },
+              }}
+            >
+              <Iconify icon="solar:trash-bin-trash-bold" width={16} />
+            </IconButton>
+          </Tooltip>
+        </Stack>
       </CardActions>
     </Card>
   );
 };
+

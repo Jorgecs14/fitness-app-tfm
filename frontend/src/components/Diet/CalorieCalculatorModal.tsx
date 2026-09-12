@@ -71,17 +71,46 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth='sm' fullWidth>
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-        <Iconify icon='solar:calculator-minimalistic-bold-duotone' width={28} color='#00a76f' />
-        Calculadora de Calorías Diarias y Macros
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth='sm'
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '28px',
+          bgcolor: 'rgba(255, 255, 255, 0.92)',
+          backdropFilter: 'blur(28px) saturate(190%)',
+          border: '1px solid rgba(255, 255, 255, 0.9)',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.22)',
+          overflow: 'hidden',
+        },
+      }}
+    >
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 3, pb: 2 }}>
+        <Box
+          sx={{
+            display: 'inline-flex',
+            p: 1,
+            borderRadius: '12px',
+            bgcolor: 'rgba(2, 132, 199, 0.12)',
+            color: '#0284c7',
+          }}
+        >
+          <Iconify icon='solar:calculator-minimalistic-bold-duotone' width={26} height={26} />
+        </Box>
+        <Typography variant='h6' fontWeight={800} sx={{ color: '#0f172a' }}>
+          Calculadora de Calorías Diarias y Macros
+        </Typography>
       </DialogTitle>
-      <DialogContent dividers>
-        <Grid container spacing={2} sx={{ mt: 0.5 }}>
-          <Grid item xs={6}>
+
+      <DialogContent dividers sx={{ p: 3 }}>
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 6 }}>
             <TextField
               select
               fullWidth
+              size="small"
               label='Género'
               value={gender}
               onChange={(e) => setGender(e.target.value as any)}
@@ -90,58 +119,63 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
               <MenuItem value='female'>👩 Mujer</MenuItem>
             </TextField>
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 6 }}>
             <TextField
               fullWidth
+              size="small"
               type='number'
               label='Edad (años)'
               value={age}
               onChange={(e) => setAge(Number(e.target.value))}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 6 }}>
             <TextField
               fullWidth
+              size="small"
               type='number'
               label='Peso (kg)'
               value={weight}
               onChange={(e) => setWeight(Number(e.target.value))}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid size={{ xs: 6 }}>
             <TextField
               fullWidth
+              size="small"
               type='number'
               label='Altura (cm)'
               value={height}
               onChange={(e) => setHeight(Number(e.target.value))}
             />
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               select
               fullWidth
+              size="small"
               label='Nivel de Actividad Física'
               value={activity}
               onChange={(e) => setActivity(Number(e.target.value))}
             >
-              <MenuItem value={1.2}>🪑 Sedentario (poco o ningún ejercicio)</MenuItem>
-              <MenuItem value={1.375}>🚶 Ligero (1-3 días/semana)</MenuItem>
-              <MenuItem value={1.55}>🏃 Moderado (3-5 días/semana)</MenuItem>
-              <MenuItem value={1.725}>🏋️ Fuerte (6-7 días/semana)</MenuItem>
-              <MenuItem value={1.9}>⚡ Muy Intenso (atleta profesional)</MenuItem>
+              <MenuItem value={1.2}>🪑 Sedentario (oficina, poco o ningún ejercicio)</MenuItem>
+              <MenuItem value={1.375}>🚶 Ligero (actividad leve, 1-3 días/semana)</MenuItem>
+              <MenuItem value={1.55}>🏃 Moderado (fuerza o cardio 3-5 días/semana)</MenuItem>
+              <MenuItem value={1.725}>🏋️ Fuerte (entrenamiento intenso 6-7 días/semana)</MenuItem>
+              <MenuItem value={1.9}>⚡ Muy Intenso (doble sesión o atleta profesional)</MenuItem>
             </TextField>
           </Grid>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <TextField
               select
               fullWidth
-              label='Objetivo Nutricional'
+              size="small"
+              label='Objetivo Físico'
               value={goal}
               onChange={(e) => setGoal(e.target.value as any)}
             >
               <MenuItem value='lose'>🔥 Perder Grasa / Definición (-20% cal)</MenuItem>
-              <MenuItem value='maintain'>⚖️ Mantener Peso Actual</MenuItem>
+              <MenuItem value='maintain'>⚖️ Mantener Peso / Recomposición</MenuItem>
               <MenuItem value='gain'>💪 Ganar Masa Muscular / Volumen (+15% cal)</MenuItem>
             </TextField>
           </Grid>
@@ -149,67 +183,82 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
 
         <Divider sx={{ my: 3 }} />
 
-        <Box sx={{ bgcolor: 'background.neutral', p: 2, borderRadius: 2 }}>
-          <Typography variant='subtitle1' fontWeight='bold' gutterBottom align='center'>
-            📊 Tus Resultados Estimados
+        {/* Resultados Estimados */}
+        <Box sx={{ bgcolor: 'rgba(241, 245, 249, 0.7)', backdropFilter: 'blur(10px)', p: 2.5, borderRadius: '20px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
+          <Typography variant='subtitle2' fontWeight={800} sx={{ color: '#0f172a', textAlign: 'center', mb: 2 }}>
+            📊 Estimación Metabólica (Mifflin-St Jeor)
           </Typography>
-          <Grid container spacing={2} sx={{ mt: 1 }}>
-            <Grid item xs={4}>
-              <Card sx={{ textAlign: 'center', bgcolor: '#e3f2fd' }}>
-                <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
-                  <Typography variant='caption' color='text.secondary'>Metabolismo Basal</Typography>
-                  <Typography variant='h6' color='primary.main'>{bmr} kcal</Typography>
-                </CardContent>
-              </Card>
+
+          <Grid container spacing={1.5}>
+            <Grid size={{ xs: 4 }}>
+              <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: '14px', bgcolor: 'rgba(2, 132, 199, 0.08)', border: '1px solid rgba(2, 132, 199, 0.2)' }}>
+                <Typography variant='caption' sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>Metabolismo Basal</Typography>
+                <Typography variant='subtitle1' fontWeight={800} sx={{ color: '#0284c7' }}>{bmr} kcal</Typography>
+              </Box>
             </Grid>
-            <Grid item xs={4}>
-              <Card sx={{ textAlign: 'center', bgcolor: '#fff3e0' }}>
-                <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
-                  <Typography variant='caption' color='text.secondary'>Mantenimiento (TDEE)</Typography>
-                  <Typography variant='h6' color='warning.main'>{tdee} kcal</Typography>
-                </CardContent>
-              </Card>
+            <Grid size={{ xs: 4 }}>
+              <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: '14px', bgcolor: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                <Typography variant='caption' sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>Gasto Total (TDEE)</Typography>
+                <Typography variant='subtitle1' fontWeight={800} sx={{ color: '#f59e0b' }}>{tdee} kcal</Typography>
+              </Box>
             </Grid>
-            <Grid item xs={4}>
-              <Card sx={{ textAlign: 'center', bgcolor: '#e8f5e9' }}>
-                <CardContent sx={{ py: 1.5, '&:last-child': { pb: 1.5 } }}>
-                  <Typography variant='caption' color='text.secondary'>Objetivo Diario</Typography>
-                  <Typography variant='h6' color='success.main'>{targetCalories} kcal</Typography>
-                </CardContent>
-              </Card>
+            <Grid size={{ xs: 4 }}>
+              <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: '14px', bgcolor: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                <Typography variant='caption' sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>Objetivo Diario</Typography>
+                <Typography variant='subtitle1' fontWeight={800} sx={{ color: '#10b981' }}>{targetCalories} kcal</Typography>
+              </Box>
             </Grid>
           </Grid>
 
-          <Box sx={{ mt: 2.5, p: 1.5, borderRadius: 1.5, border: '1px dashed #bdbdbd' }}>
-            <Typography variant='subtitle2' align='center' gutterBottom>
-              🥩 Desglose Recomendado de Macronutrientes
+          {/* Desglose de Macros */}
+          <Box sx={{ mt: 2.5, p: 2, borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.85)', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
+            <Typography variant='caption' sx={{ fontWeight: 800, color: '#334155', display: 'block', textAlign: 'center', mb: 1.5 }}>
+              🥩 Reparto Recomendado de Macronutrientes
             </Typography>
             <Grid container spacing={1} textAlign='center'>
-              <Grid item xs={4}>
-                <Typography variant='body2' fontWeight='bold' color='info.main'>Proteínas</Typography>
-                <Typography variant='h6'>{proteinGrams} g</Typography>
+              <Grid size={{ xs: 4 }}>
+                <Typography variant='caption' fontWeight={700} sx={{ color: '#f43f5e' }}>Proteínas</Typography>
+                <Typography variant='h6' fontWeight={800} sx={{ color: '#0f172a' }}>{proteinGrams}g</Typography>
                 <Typography variant='caption' color='text.secondary'>30% ({proteinGrams * 4} kcal)</Typography>
               </Grid>
-              <Grid item xs={4}>
-                <Typography variant='body2' fontWeight='bold' color='warning.main'>Carbohidratos</Typography>
-                <Typography variant='h6'>{carbsGrams} g</Typography>
+              <Grid size={{ xs: 4 }}>
+                <Typography variant='caption' fontWeight={700} sx={{ color: '#0284c7' }}>Carbohidratos</Typography>
+                <Typography variant='h6' fontWeight={800} sx={{ color: '#0f172a' }}>{carbsGrams}g</Typography>
                 <Typography variant='caption' color='text.secondary'>45% ({carbsGrams * 4} kcal)</Typography>
               </Grid>
-              <Grid item xs={4}>
-                <Typography variant='body2' fontWeight='bold' color='error.main'>Grasas</Typography>
-                <Typography variant='h6'>{fatGrams} g</Typography>
+              <Grid size={{ xs: 4 }}>
+                <Typography variant='caption' fontWeight={700} sx={{ color: '#f59e0b' }}>Grasas</Typography>
+                <Typography variant='h6' fontWeight={800} sx={{ color: '#0f172a' }}>{fatGrams}g</Typography>
                 <Typography variant='caption' color='text.secondary'>25% ({fatGrams * 9} kcal)</Typography>
               </Grid>
             </Grid>
           </Box>
         </Box>
       </DialogContent>
-      <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose} color='inherit'>
+
+      <DialogActions sx={{ px: 3, py: 2.5, bgcolor: 'rgba(248, 250, 252, 0.8)' }}>
+        <Button onClick={onClose} sx={{ borderRadius: '9999px', color: '#64748b', fontWeight: 600 }}>
           Cerrar
         </Button>
-        <Button onClick={handleApply} variant='contained' color='primary' startIcon={<Iconify icon='solar:check-circle-bold' />}>
-          Usar {targetCalories} kcal en mi Dieta
+        <Button
+          onClick={handleApply}
+          variant='contained'
+          startIcon={<Iconify icon='solar:check-circle-bold' width={18} />}
+          sx={{
+            borderRadius: '9999px',
+            px: 3,
+            py: 1,
+            fontWeight: 700,
+            bgcolor: '#0f172a',
+            color: '#ffffff',
+            boxShadow: '0 4px 14px rgba(15, 23, 42, 0.25)',
+            '&:hover': {
+              bgcolor: '#0284c7',
+              boxShadow: '0 6px 18px rgba(2, 132, 199, 0.35)',
+            },
+          }}
+        >
+          Usar {targetCalories} kcal en mi Plan
         </Button>
       </DialogActions>
     </Dialog>

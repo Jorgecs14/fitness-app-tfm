@@ -205,72 +205,160 @@ export const DietManager = () => {
     setExportMenuAnchor(null)
   }
 
+  const totalFoodsCount = diets.reduce(
+    (acc, d) => acc + (d.diet_foods?.length ?? d.foods?.length ?? 0),
+    0
+  );
+
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 } }}>
+    <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
       <ToastContainer />
 
       {error && (
-        <Alert severity='error' sx={{ mb: 2 }}>
+        <Alert severity='error' sx={{ mb: 3, borderRadius: '16px' }}>
           {error}
         </Alert>
       )}
 
-      {/* Header */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexDirection: { xs: 'column', sm: 'row' },
-          justifyContent: 'space-between',
-          alignItems: { xs: 'stretch', sm: 'center' },
-          mb: 3,
-          gap: { xs: 2, sm: 0 }
-        }}
-      >
-        <Typography
-          variant='h4'
-          sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}
+      {/* Hero Glass Banner Nutricional */}
+      <Box className="liquid-hero-banner" sx={{ p: { xs: 3, sm: 4 }, mb: 4 }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            justifyContent: 'space-between',
+            alignItems: { xs: 'flex-start', md: 'center' },
+            gap: 3,
+          }}
         >
-          Gestión de Dietas
-        </Typography>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={2}
-          sx={{ width: { xs: '100%', sm: 'auto' } }}
-        >
-          <Button
-            variant='outlined'
-            startIcon={<Iconify icon='eva:download-fill' />}
-            onClick={(e) => setExportMenuAnchor(e.currentTarget)}
-            sx={{ width: { xs: '100%', sm: 'auto' } }}
-          >
-            Exportar
-          </Button>
-          <Button
-            variant='contained'
-            startIcon={<Iconify icon='mingcute:add-line' />}
-            onClick={handleAdd}
-            sx={{ width: { xs: '100%', sm: 'auto' } }}
-          >
-            Nueva Dieta
-          </Button>
-        </Stack>
+          <Box>
+            <Typography
+              variant='h3'
+              sx={{
+                fontSize: { xs: '1.75rem', sm: '2.25rem' },
+                fontWeight: 800,
+                letterSpacing: '-0.02em',
+                color: '#0f172a',
+                mb: 1,
+              }}
+            >
+              Gestión de Planes Nutricionales
+            </Typography>
+            <Typography variant='body1' sx={{ color: '#475569', maxWidth: 650, lineHeight: 1.6 }}>
+              Pauta dietas personalizadas, gestiona macronutrientes, alimentos por comidas y genera reportes editoriales en PDF.
+            </Typography>
+
+            {/* Micro-Badges de Métricas */}
+            <Stack direction="row" spacing={2} sx={{ mt: 2.5 }} flexWrap="wrap" useFlexGap>
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 2,
+                  py: 0.75,
+                  borderRadius: '9999px',
+                  bgcolor: 'rgba(255, 255, 255, 0.85)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}
+              >
+                <Iconify icon="solar:chef-hat-bold-duotone" width={18} sx={{ color: '#0284c7' }} />
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                  {diets.length} Planes Activos
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 2,
+                  py: 0.75,
+                  borderRadius: '9999px',
+                  bgcolor: 'rgba(255, 255, 255, 0.85)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                }}
+              >
+                <Iconify icon="solar:plate-bold" width={18} sx={{ color: '#10b981' }} />
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                  {totalFoodsCount} Alimentos Asignados
+                </Typography>
+              </Box>
+            </Stack>
+          </Box>
+
+          <Stack direction={{ xs: 'row' }} spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+            <Button
+              variant='outlined'
+              startIcon={<Iconify icon='eva:download-fill' />}
+              onClick={(e) => setExportMenuAnchor(e.currentTarget)}
+              sx={{
+                borderRadius: '9999px',
+                px: 2.5,
+                py: 1,
+                fontWeight: 600,
+                borderColor: 'rgba(15, 23, 42, 0.2)',
+                color: '#0f172a',
+                bgcolor: 'rgba(255, 255, 255, 0.6)',
+                backdropFilter: 'blur(10px)',
+                '&:hover': {
+                  borderColor: '#0f172a',
+                  bgcolor: 'rgba(255, 255, 255, 0.9)',
+                },
+              }}
+            >
+              Exportar
+            </Button>
+            <Button
+              variant='contained'
+              startIcon={<Iconify icon='mingcute:add-line' />}
+              onClick={handleAdd}
+              sx={{
+                borderRadius: '9999px',
+                px: 3,
+                py: 1,
+                fontWeight: 700,
+                bgcolor: '#0f172a',
+                color: '#ffffff',
+                boxShadow: '0 6px 20px rgba(15, 23, 42, 0.25)',
+                '&:hover': {
+                  bgcolor: '#0284c7',
+                  boxShadow: '0 8px 24px rgba(2, 132, 199, 0.35)',
+                },
+              }}
+            >
+              Nueva Dieta
+            </Button>
+          </Stack>
+        </Box>
       </Box>
 
-      {/* Search */}
-      <Box sx={{ mb: 3 }}>
+      {/* Buscador de Dietas Glass */}
+      <Box sx={{ mb: 3.5, maxWidth: 420 }}>
         <TextField
           fullWidth
-          placeholder='Buscar dietas...'
+          placeholder='Buscar plan nutricional...'
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
+          size="small"
           InputProps={{
             startAdornment: (
               <InputAdornment position='start'>
-                <Iconify icon='eva:search-fill' />
+                <Iconify icon='eva:search-fill' sx={{ color: '#64748b' }} />
               </InputAdornment>
-            )
+            ),
           }}
-          sx={{ maxWidth: 400 }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: '9999px',
+              bgcolor: 'rgba(255, 255, 255, 0.7)',
+              backdropFilter: 'blur(16px)',
+              '& fieldset': { borderColor: 'rgba(226, 232, 240, 0.8)' },
+              '&:hover fieldset': { borderColor: '#0284c7' },
+              '&.Mui-focused fieldset': { borderColor: '#0284c7' },
+            },
+          }}
         />
       </Box>
 

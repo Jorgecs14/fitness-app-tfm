@@ -17,6 +17,7 @@ import { DietVisualPdfModal } from '../components/Diet/DietVisualPdfModal'
 import { CalorieCalculatorModal } from '../components/Diet/CalorieCalculatorModal'
 import { ClientDietBuilderModal } from '../components/Diet/ClientDietBuilderModal'
 import { DietFoodsManager } from '../components/Diet/DietFoodsManager'
+import { MacroRings } from '../components/Diet/MacroRings'
 
 export const ClientMyDietPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -183,15 +184,28 @@ export const ClientMyDietPage: React.FC = () => {
           </Button>
         </Box>
       ) : (
-        <Stack spacing={3}>
+        <Stack spacing={3.5}>
+          {/* Anillos de Macros Apple-Style */}
+          <MacroRings
+            target={{
+              proteins: Math.round(((diet.calories || 2200) * 0.30) / 4),
+              carbs: Math.round(((diet.calories || 2200) * 0.45) / 4),
+              fats: Math.round(((diet.calories || 2200) * 0.25) / 9),
+              calories: diet.calories || 2200,
+            }}
+            goalType={(diet.calories || 2200) < 2000 ? 'deficit' : (diet.calories || 2200) > 2600 ? 'surplus' : 'maintenance'}
+            title={`Distribución de Macros • ${diet.name}`}
+            subtitle="Equilibrio nutricional diario calculado para optimizar tu rendimiento y composición"
+          />
+
           {/* Ficha Resumen Dieta */}
           <Box className="liquid-glass-card" sx={{ p: 3.5 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
               <Box>
-                <Typography variant="h5" fontWeight="bold" color="primary.main">
+                <Typography variant="h5" fontWeight={800} sx={{ color: '#0f172a', letterSpacing: '-0.01em' }}>
                   {diet.name}
                 </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5, whiteSpace: 'pre-line' }}>
+                <Typography variant="body2" sx={{ color: '#475569', mt: 0.5, maxWidth: 650, lineHeight: 1.6 }}>
                   {diet.description || 'Pautas de nutrición personalizadas para tu objetivo físico.'}
                 </Typography>
               </Box>
@@ -201,22 +215,25 @@ export const ClientMyDietPage: React.FC = () => {
                   icon={<Iconify icon="solar:fire-bold" width={20} />}
                   label={`${diet.calories} Kcal / día`}
                   color="error"
-                  sx={{ fontWeight: 'bold', fontSize: '1.1rem', py: 2.5, px: 2 }}
+                  sx={{ fontWeight: 'bold', fontSize: '1rem', py: 2, px: 1.5, borderRadius: '9999px' }}
                 />
                 <Button
                   size="small"
                   variant="outlined"
+                  className="liquid-pill"
                   startIcon={<Iconify icon="eva:edit-2-outline" />}
                   onClick={() => {
                     setEditingDietTarget(diet)
                     setDietBuilderOpen(true)
                   }}
+                  sx={{ color: '#0f172a', borderColor: 'rgba(15, 23, 42, 0.2)' }}
                 >
                   Editar Plan
                 </Button>
                 <Button
                   size="small"
                   variant="outlined"
+                  className="liquid-pill"
                   color="secondary"
                   startIcon={<Iconify icon="solar:plate-bold" />}
                   onClick={() => setFoodsManagerOpen(true)}
