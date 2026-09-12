@@ -339,7 +339,7 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  <MonitorWeight sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  <Iconify icon="eva:activity-fill" sx={{ mr: 1, verticalAlign: 'middle' }} />
                   Seguimientos Semanales
                 </Typography>
                 <Typography variant="h3" color="primary">
