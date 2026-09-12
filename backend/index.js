@@ -52,6 +52,11 @@ app.use('/logged-sessions', authenticateToken, loggedSessionsRouter)
 app.use('/meal-checks', authenticateToken, mealChecksRouter)
 
 
-app.listen(PORT, () => {
-  console.log(`Servidor ejecutándose en http://localhost:${PORT}`)
-})
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Servidor ejecutándose en http://localhost:${PORT}`)
+  })
+}
+
+module.exports = app
+
