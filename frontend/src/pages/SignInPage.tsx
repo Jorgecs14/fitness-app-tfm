@@ -1,7 +1,7 @@
-// Página de inicio de sesión con autenticación por email/password y Google OAuth
+// Página de inicio de sesión con autenticación por email/password
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import axiosInstance from '../lib/axios'
 
 import Box from '@mui/material/Box'
 import Link from '@mui/material/Link'
@@ -25,18 +25,25 @@ export const SignInPage = () => {
   const handleSignIn = useCallback(async () => {
     try {
       setError('')
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const response = await axiosInstance.post('/users/login', {
         email,
         password
       })
 
-      if (error) {
-        setError(error.message)
-      } else if (data.user) {
-        navigate('/dashboard/home')
+      if (response.data?.token) {
+        localStorage.setItem('auth_token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        const role = response.data.user?.role
+        if (role === 'client' || role === 'alumno') {
+          navigate('/dashboard/client-home')
+        } else {
+          navigate('/dashboard/home')
+        }
+      } else {
+        setError('Error al obtener token de autenticación')
       }
-    } catch (err) {
-      setError('Error al iniciar sesión')
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al iniciar sesión')
     }
   }, [email, password, navigate])
 

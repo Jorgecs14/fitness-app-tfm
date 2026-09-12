@@ -1,7 +1,7 @@
 // Página de registro de usuarios con validación de formulario y términos de servicio
 import { useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { supabase } from '../lib/supabase'
+import axiosInstance from '../lib/axios'
 
 import Box from '@mui/material/Box'
 import Link from '@mui/material/Link'
@@ -73,30 +73,30 @@ export const SignUpPage = () => {
     }
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const response = await axiosInstance.post('/users/register', {
         email: formData.email,
         password: formData.password,
-        options: {
-          data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            name: formData.firstName,
-            surname: formData.lastName,
-            role: formData.role
-          }
-        }
+        name: formData.firstName,
+        surname: formData.lastName,
+        role: formData.role
       })
 
-      if (error) {
-        setError(error.message)
-      } else if (data.user) {
-        setSuccess('Cuenta creada exitosamente. Por favor, inicia sesión con tus credenciales.')
+      if (response.data?.token) {
+        localStorage.setItem('auth_token', response.data.token)
+        localStorage.setItem('user', JSON.stringify(response.data.user))
+        setSuccess('Cuenta creada exitosamente. Redirigiendo a tu panel...')
         setTimeout(() => {
-          navigate('/sign-in')
-        }, 2000)
+          if (formData.role === 'client' || formData.role === 'alumno') {
+            navigate('/dashboard/client-home')
+          } else {
+            navigate('/dashboard/home')
+          }
+        }, 1500)
+      } else {
+        setError('Error al registrar usuario')
       }
-    } catch (err) {
-      setError('Error al crear la cuenta')
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Error al crear la cuenta')
     }
   }, [formData, navigate])
 

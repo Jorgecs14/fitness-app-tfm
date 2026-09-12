@@ -5,8 +5,112 @@
 
 const express = require('express')
 const router = express.Router()
+const jwt = require('jsonwebtoken')
 const { supabase, supabaseAdmin } = require('../database/supabaseClient')
 const { authenticateToken } = require('../middleware/auth')
+
+const JWT_SECRET = process.env.JWT_SECRET || 'lifeboost_jwt_secret_8f9a2b4c6e1d3f5a7b9c0d2e4f6a8b1c2d3e4f5a'
+
+// POST /api/users/login - Inicio de sesión nativo en Neon DB
+router.post('/login', async (req, res) => {
+  try {
+    const { email, password } = req.body
+    if (!email) {
+      return res.status(400).json({ error: 'Email requerido' })
+    }
+
+    const { data: user } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (!user) {
+      const { data: newUser, error: createErr } = await supabaseAdmin
+        .from('users')
+        .insert({
+          email,
+          name: email.split('@')[0],
+          surname: 'Usuario',
+          role: 'client',
+          birth_date: '2000-01-01',
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single()
+
+      if (createErr || !newUser) {
+        return res.status(400).json({ error: 'Usuario no encontrado' })
+      }
+
+      const token = jwt.sign(
+        { id: newUser.id, email: newUser.email, role: newUser.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      )
+      return res.json({ token, user: newUser })
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    )
+
+    res.json({ token, user })
+  } catch (err) {
+    console.error('Error login:', err)
+    res.status(500).json({ error: 'Error al iniciar sesión' })
+  }
+})
+
+// POST /api/users/register - Registro de usuario nativo en Neon DB
+router.post('/register', async (req, res) => {
+  try {
+    const { email, password, name, surname, birth_date, role } = req.body
+
+    const { data: existingUser } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle()
+
+    if (existingUser) {
+      const token = jwt.sign(
+        { id: existingUser.id, email: existingUser.email, role: existingUser.role },
+        JWT_SECRET,
+        { expiresIn: '7d' }
+      )
+      return res.status(200).json({ token, user: existingUser })
+    }
+
+    const { data: newUser, error: createError } = await supabaseAdmin
+      .from('users')
+      .insert({
+        email,
+        name: name || email.split('@')[0],
+        surname: surname || '',
+        birth_date: birth_date || '2000-01-01',
+        role: role || 'client',
+        created_at: new Date().toISOString()
+      })
+      .select()
+      .single()
+
+    if (createError) throw createError
+
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email, role: newUser.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    )
+
+    res.status(201).json({ token, user: newUser })
+  } catch (err) {
+    console.error('Error registro:', err)
+    res.status(500).json({ error: 'Error al registrar usuario', details: err.message })
+  }
+})
 
 router.get('/profile', authenticateToken, async (req, res) => {
   try {

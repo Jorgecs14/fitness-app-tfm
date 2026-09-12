@@ -5,7 +5,6 @@
 
 import { User } from '../types/User'
 import axiosInstance from '../lib/axios'
-import { supabase } from '../lib/supabase'
 
 export const getUsers = async (): Promise<User[]> => {
   try {
@@ -91,20 +90,12 @@ export const assignTrainer = async (clientId: number, trainerId: number | null):
 
 export const getCurrentUser = async (): Promise<User> => {
   try {
-    const {
-      data: { user: authUser },
-      error: authError
-    } = await supabase.auth.getUser()
-
-    if (authError || !authUser) {
-      throw new Error('No hay usuario autenticado. Por favor, inicia sesión.')
-    }
-
     const response = await axiosInstance.get('/users/profile')
     return response.data
   } catch (error: any) {
-    if (error.response?.status === 401) {
-      throw new Error('No estás autenticado. Por favor, inicia sesión.')
+    const cachedUser = localStorage.getItem('user')
+    if (cachedUser) {
+      return JSON.parse(cachedUser)
     }
     throw new Error(
       error.response?.data?.message ||

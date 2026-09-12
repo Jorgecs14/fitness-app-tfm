@@ -36,47 +36,8 @@ import ClientTrackingPage from './pages/ClientTrackingPage'
 import CrmPage from './pages/CrmPage'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [loading, setLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-
-  useEffect(() => {
-    supabase.auth
-      .getSession()
-      .then(({ data: { session } }) => {
-        setIsAuthenticated(!!session)
-        setLoading(false)
-      })
-      .catch(() => {
-        setLoading(false)
-        setIsAuthenticated(false)
-      })
-
-    const {
-      data: { subscription }
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setIsAuthenticated(!!session)
-    })
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  if (loading) {
-    return (
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          height: '100vh',
-          fontFamily: 'Arial, sans-serif'
-        }}
-      >
-        Cargando...
-      </div>
-    )
-  }
-
-  return isAuthenticated ? <>{children}</> : <Navigate to='/sign-in' replace />
+  const token = localStorage.getItem('auth_token')
+  return token ? <>{children}</> : <Navigate to='/sign-in' replace />
 }
 
 const router = createBrowserRouter([
