@@ -146,32 +146,51 @@ const ProgressPhotosManager: React.FC<ProgressPhotosManagerProps> = ({
               const isUploading = uploading === photoType.key;
 
               return (
-                <Grid item xs={12} md={4} key={photoType.key}>
-                  <Card>
-                    <CardContent>
-                      <Typography variant="h6" gutterBottom>
+                <Grid size={{ xs: 12, md: 4 }} key={photoType.key}>
+                  <Card
+                    className="liquid-glass-card"
+                    sx={{
+                      borderRadius: 3.5,
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                    }}
+                  >
+                    <CardContent sx={{ p: 2.5 }}>
+                      <Typography variant="subtitle1" fontWeight="800" gutterBottom>
                         {photoType.label}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                      <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block', minHeight: 32 }}>
                         {photoType.description}
                       </Typography>
 
                       {existingPhoto ? (
                         <Box>
-                          <CardMedia
-                            component="img"
-                            height="200"
-                            image={existingPhoto.photo_url}
-                            alt={photoType.label}
-                            sx={{ mb: 2, objectFit: 'cover' }}
-                          />
+                          <Box
+                            sx={{
+                              height: 220,
+                              borderRadius: 2.5,
+                              overflow: 'hidden',
+                              mb: 2,
+                              position: 'relative',
+                              border: '1px solid rgba(255, 255, 255, 0.1)',
+                            }}
+                          >
+                            <CardMedia
+                              component="img"
+                              height="220"
+                              image={existingPhoto.photo_url}
+                              alt={photoType.label}
+                              sx={{ objectFit: 'cover', width: '100%' }}
+                            />
+                          </Box>
                           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <Chip label="Completado" color="success" size="small" />
+                            <Chip label="Completado" color="success" size="small" sx={{ fontWeight: 700 }} />
                             <Button
                               size="small"
                               color="error"
                               startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
                               onClick={() => handleDeletePhoto(existingPhoto.id)}
+                              sx={{ borderRadius: '12px' }}
                             >
                               Eliminar
                             </Button>
@@ -181,27 +200,30 @@ const ProgressPhotosManager: React.FC<ProgressPhotosManagerProps> = ({
                         <Box>
                           <Box
                             sx={{
-                              height: 200,
-                              border: '2px dashed #ccc',
-                              borderRadius: 1,
+                              height: 220,
+                              border: '1.5px dashed rgba(255, 255, 255, 0.2)',
+                              borderRadius: 2.5,
                               display: 'flex',
+                              flexDirection: 'column',
                               alignItems: 'center',
                               justifyContent: 'center',
                               mb: 2,
-                              backgroundColor: '#f9f9f9'
+                              backgroundColor: 'rgba(255, 255, 255, 0.02)',
+                              gap: 1,
                             }}
                           >
-                            <Typography variant="body2" color="text.secondary">
-                              Sin foto
+                            <Iconify icon="solar:camera-bold" width={36} sx={{ color: 'text.secondary', opacity: 0.5 }} />
+                            <Typography variant="caption" color="text.secondary">
+                              Sin fotografía registrada
                             </Typography>
                           </Box>
                           
                           <Input
-                            accept="image/*"
+                            inputProps={{ accept: "image/*" }}
                             id={`photo-upload-${photoType.key}`}
                             type="file"
                             style={{ display: 'none' }}
-                            onChange={(e) => {
+                            onChange={(e: any) => {
                               const file = e.target.files?.[0];
                               if (file) {
                                 handlePhotoUpload(photoType.key, file);
@@ -213,8 +235,9 @@ const ProgressPhotosManager: React.FC<ProgressPhotosManagerProps> = ({
                               variant="outlined"
                               component="span"
                               fullWidth
-                              startIcon={<Iconify icon="solar:camera-bold" />}
+                              startIcon={<Iconify icon="solar:upload-minimalistic-bold" />}
                               disabled={isUploading}
+                              sx={{ borderRadius: '16px', textTransform: 'none', fontWeight: 700 }}
                             >
                               {isUploading ? 'Subiendo...' : 'Subir Foto'}
                             </Button>
@@ -224,13 +247,13 @@ const ProgressPhotosManager: React.FC<ProgressPhotosManagerProps> = ({
 
                       {/* Botón para reemplazar foto existente */}
                       {existingPhoto && (
-                        <Box sx={{ mt: 2 }}>
+                        <Box sx={{ mt: 1.5 }}>
                           <Input
-                            accept="image/*"
+                            inputProps={{ accept: "image/*" }}
                             id={`photo-replace-${photoType.key}`}
                             type="file"
                             style={{ display: 'none' }}
-                            onChange={(e) => {
+                            onChange={(e: any) => {
                               const file = e.target.files?.[0];
                               if (file) {
                                 handlePhotoUpload(photoType.key, file);
@@ -243,8 +266,9 @@ const ProgressPhotosManager: React.FC<ProgressPhotosManagerProps> = ({
                               component="span"
                               size="small"
                               fullWidth
-                              startIcon={<Iconify icon="solar:camera-bold" />}
+                              startIcon={<Iconify icon="solar:restart-bold" />}
                               disabled={isUploading}
+                              sx={{ textTransform: 'none', color: 'text.secondary' }}
                             >
                               {isUploading ? 'Reemplazando...' : 'Reemplazar Foto'}
                             </Button>

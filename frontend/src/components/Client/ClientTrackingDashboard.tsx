@@ -16,11 +16,14 @@ import { User } from '../../types/User';
 import { WeeklyTracking } from '../../types/WeeklyTracking';
 import { MonthlyTracking } from '../../types/MonthlyTracking';
 import { ClientMedicalInfo } from '../../types/ClientMedicalInfo';
+import { ClientProgressPhoto } from '../../types/ClientProgressPhoto';
 import { weeklyTrackingService } from '../../services/weeklyTrackingService';
 import { monthlyTrackingService } from '../../services/monthlyTrackingService';
 import { clientMedicalInfoService } from '../../services/clientMedicalInfoService';
+import { clientProgressPhotoService } from '../../services/clientProgressPhotoService';
 import WeeklyTrackingForm from './WeeklyTrackingForm';
 import ProgressPhotosManager from './ProgressPhotosManager';
+import BeforeAfterSlider from '../Progress/BeforeAfterSlider';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -57,6 +60,7 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
   const [weeklyTrackings, setWeeklyTrackings] = useState<WeeklyTracking[]>([]);
   const [monthlyTrackings, setMonthlyTrackings] = useState<MonthlyTracking[]>([]);
   const [medicalInfo, setMedicalInfo] = useState<ClientMedicalInfo | null>(null);
+  const [clientPhotos, setClientPhotos] = useState<ClientProgressPhoto[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -76,15 +80,17 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
       setError(null);
 
       // Cargar datos en paralelo
-      const [weeklyData, monthlyData, medicalData] = await Promise.all([
+      const [weeklyData, monthlyData, medicalData, photosData] = await Promise.all([
         weeklyTrackingService.getByUserId(user.id),
         monthlyTrackingService.getByUserId(user.id),
-        clientMedicalInfoService.getByUserId(user.id)
+        clientMedicalInfoService.getByUserId(user.id),
+        clientProgressPhotoService.getByUserId(user.id).catch(() => []),
       ]);
 
       setWeeklyTrackings(weeklyData);
       setMonthlyTrackings(monthlyData);
       setMedicalInfo(medicalData);
+      setClientPhotos(photosData || []);
 
     } catch (error: any) {
       console.error('Error al cargar datos del cliente:', error);
@@ -289,11 +295,19 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
 
       {/* Fotos de Progreso */}
       <TabPanel value={tabValue} index={2}>
-        <Box sx={{ mb: 3 }}>
+        {/* Interactive Before & After Visual Slider */}
+        <Box sx={{ mb: 4 }}>
+          <BeforeAfterSlider photos={clientPhotos} onUploadClick={() => handleOpenProgressPhotos()} />
+        </Box>
+
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h6" fontWeight="800">
+            Historial de Álbumes Mensuales
+          </Typography>
           <Button
             variant="contained"
             onClick={() => handleOpenProgressPhotos()}
-            sx={{ mb: 2 }}
+            startIcon={<Iconify icon="solar:camera-add-bold" />}
           >
             Gestionar Fotos de Hoy
           </Button>
@@ -356,7 +370,7 @@ const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = ({ user 
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  <CameraAlt sx={{ mr: 1, verticalAlign: 'middle' }} />
+                  <Iconify icon="solar:camera-bold" sx={{ mr: 1, verticalAlign: 'middle' }} />
                   Sesiones de Fotos
                 </Typography>
                 <Typography variant="h3" color="primary">
