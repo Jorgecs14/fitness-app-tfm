@@ -4,7 +4,7 @@
 
 const express = require('express')
 const router = express.Router()
-const { supabase } = require('../database/supabaseClient')
+const { supabase, pool } = require('../database/supabaseClient')
 
 // POST /api/logged-sessions - Guardar una nueva sesión de entrenamiento finalizada
 router.post('/', async (req, res) => {
@@ -66,36 +66,46 @@ router.post('/', async (req, res) => {
 router.get('/user/:userId', async (req, res) => {
   try {
     const { userId } = req.params
-    const { data: sessions, error } = await supabase
-      .from('logged_sessions')
-      .select(`
-        *,
-        logged_sets (
-          id,
-          exercise_id,
-          set_order,
-          phase,
-          type,
-          weight,
-          reps,
-          rpe,
-          completed,
-          extra_data,
-          exercises (
-            id,
-            name,
-            body_part,
-            target_muscle,
-            gif_url
-          )
-        )
-      `)
-      .eq('user_id', userId)
-      .order('completed_at', { ascending: false })
 
-    if (error) throw error
-    res.json(sessions)
+    const { rows: sessions } = await pool.query(
+      'SELECT * FROM logged_sessions WHERE user_id = $1 ORDER BY completed_at DESC',
+      [userId]
+    )
+
+    if (sessions.length === 0) {
+      return res.json([])
+    }
+
+    const sessionIds = sessions.map((s) => s.id)
+    const { rows: sets } = await pool.query(
+      `SELECT ls.id, ls.session_id, ls.exercise_id, ls.set_order, ls.phase, ls.type, ls.weight, ls.reps, ls.rpe, ls.completed, ls.extra_data,
+              e.name, e.body_part, e.target_muscle, e.gif_url
+       FROM logged_sets ls
+       LEFT JOIN exercises e ON ls.exercise_id = e.id
+       WHERE ls.session_id = ANY($1::int[])
+       ORDER BY ls.set_order ASC`,
+      [sessionIds]
+    )
+
+    const sessionsWithSets = sessions.map((session) => ({
+      ...session,
+      logged_sets: sets
+        .filter((s) => s.session_id === session.id)
+        .map((s) => ({
+          ...s,
+          exercises: {
+            id: s.exercise_id,
+            name: s.name,
+            body_part: s.body_part,
+            target_muscle: s.target_muscle,
+            gif_url: s.gif_url
+          }
+        }))
+    }))
+
+    res.json(sessionsWithSets)
   } catch (err) {
+    console.error('Error en GET /logged-sessions/user/:userId:', err)
     res.status(500).json({ error: 'Error al obtener historial del usuario', details: err.message })
   }
 })
@@ -104,40 +114,44 @@ router.get('/user/:userId', async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const { data: session, error } = await supabase
-      .from('logged_sessions')
-      .select(`
-        *,
-        logged_sets (
-          id,
-          exercise_id,
-          set_order,
-          phase,
-          type,
-          weight,
-          reps,
-          rpe,
-          completed,
-          extra_data,
-          exercises (
-            id,
-            name,
-            body_part,
-            target_muscle,
-            image_url,
-            gif_url
-          )
-        )
-      `)
-      .eq('id', id)
-      .single()
 
-    if (error) throw error
-    if (!session) return res.status(404).json({ error: 'Sesión no encontrada' })
+    const { rows: sessions } = await pool.query(
+      'SELECT * FROM logged_sessions WHERE id = $1',
+      [id]
+    )
+
+    if (sessions.length === 0) {
+      return res.status(404).json({ error: 'Sesión no encontrada' })
+    }
+
+    const { rows: sets } = await pool.query(
+      `SELECT ls.id, ls.session_id, ls.exercise_id, ls.set_order, ls.phase, ls.type, ls.weight, ls.reps, ls.rpe, ls.completed, ls.extra_data,
+              e.name, e.body_part, e.target_muscle, e.gif_url
+       FROM logged_sets ls
+       LEFT JOIN exercises e ON ls.exercise_id = e.id
+       WHERE ls.session_id = $1
+       ORDER BY ls.set_order ASC`,
+      [id]
+    )
+
+    const session = {
+      ...sessions[0],
+      logged_sets: sets.map((s) => ({
+        ...s,
+        exercises: {
+          id: s.exercise_id,
+          name: s.name,
+          body_part: s.body_part,
+          target_muscle: s.target_muscle,
+          gif_url: s.gif_url
+        }
+      }))
+    }
 
     res.json(session)
   } catch (err) {
-    res.status(500).json({ error: 'Error al obtener detalle de la sesión' })
+    console.error('Error en GET /logged-sessions/:id:', err)
+    res.status(500).json({ error: 'Error al obtener detalle de la sesión', details: err.message })
   }
 })
 

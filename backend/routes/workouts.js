@@ -25,7 +25,7 @@ router.get('/with-exercises', async (req, res) => {
     const { rows: workouts } = await pool.query('SELECT * FROM workouts ORDER BY id ASC')
     const { rows: workoutExercises } = await pool.query(`
       SELECT we.id, we.workout_id, we.sets, we.reps, we.exercise_id,
-             e.name, e.description, e.execution_time
+             e.name, e.description, e.execution_time, e.body_part, e.equipment, e.target_muscle, e.gif_url
       FROM workout_exercises we
       LEFT JOIN exercises e ON we.exercise_id = e.id
     `)
@@ -41,7 +41,11 @@ router.get('/with-exercises', async (req, res) => {
             id: we.exercise_id,
             name: we.name,
             description: we.description,
-            execution_time: we.execution_time
+            execution_time: we.execution_time,
+            body_part: we.body_part,
+            equipment: we.equipment,
+            target_muscle: we.target_muscle,
+            gif_url: we.gif_url
           }
         }))
       return {
@@ -166,7 +170,7 @@ router.get('/:id/full', async (req, res) => {
     }
 
     const { rows: workoutExercises } = await pool.query(
-      `SELECT we.id as link_id, we.sets, we.reps, e.id, e.name, e.description, e.execution_time
+      `SELECT we.id as link_id, we.sets, we.reps, e.id, e.name, e.description, e.execution_time, e.body_part, e.equipment, e.target_muscle, e.gif_url
        FROM workout_exercises we
        LEFT JOIN exercises e ON we.exercise_id = e.id
        WHERE we.workout_id = $1`,
@@ -191,7 +195,7 @@ router.get('/:id/details', async (req, res) => {
     }
 
     const { rows: exercises } = await pool.query(
-      `SELECT we.id as link_id, we.exercise_id, we.sets, we.reps, e.name, e.description, e.execution_time
+      `SELECT we.id as link_id, we.exercise_id, we.sets, we.reps, e.name, e.description, e.execution_time, e.body_part, e.equipment, e.target_muscle, e.gif_url
        FROM workout_exercises we
        LEFT JOIN exercises e ON we.exercise_id = e.id
        WHERE we.workout_id = $1`,

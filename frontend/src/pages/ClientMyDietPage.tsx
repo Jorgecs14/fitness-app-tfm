@@ -10,12 +10,13 @@ import {
 } from '@mui/material'
 import { Iconify } from '../utils/iconify'
 import { getCurrentUser } from '../services/userService'
-import { getDietsWithFoods, getDietWithFoods } from '../services/dietService'
+import { getDietsWithFoods, getDietWithFoods, getDietUsers } from '../services/dietService'
 import { DietWithFoods } from '../types/DietWithFoods'
 import { User } from '../types/User'
 import { DietMealChecklist } from '../components/Diet/DietMealChecklist'
 import { DietVisualPdfModal } from '../components/Diet/DietVisualPdfModal'
 import { CalorieCalculatorModal } from '../components/Diet/CalorieCalculatorModal'
+import { ClientDietBuilderModal } from '../components/Diet/ClientDietBuilderModal'
 
 export const ClientMyDietPage: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -23,6 +24,7 @@ export const ClientMyDietPage: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [pdfModalOpen, setPdfModalOpen] = useState(false)
   const [calculatorOpen, setCalculatorOpen] = useState(false)
+  const [dietBuilderOpen, setDietBuilderOpen] = useState(false)
 
   useEffect(() => {
     loadDiet()
@@ -37,11 +39,21 @@ export const ClientMyDietPage: React.FC = () => {
       const diets = await getDietsWithFoods()
       let matchedDiet: DietWithFoods | null = null
 
-      if (diets.length > 0) {
-        // Cargar primera dieta o detallada
+      for (const d of diets) {
         try {
-          const detail = await getDietWithFoods(diets[0].id)
-          matchedDiet = detail
+          const users = await getDietUsers(d.id)
+          if (users.some((u: any) => u.id === user.id)) {
+            matchedDiet = await getDietWithFoods(d.id)
+            break
+          }
+        } catch (e) {
+          // Si falla consulta de usuarios individuales
+        }
+      }
+
+      if (!matchedDiet && diets.length > 0) {
+        try {
+          matchedDiet = await getDietWithFoods(diets[0].id)
         } catch (e) {
           matchedDiet = diets[0]
         }
@@ -88,6 +100,16 @@ export const ClientMyDietPage: React.FC = () => {
             Calculadora Calórica
           </Button>
 
+          <Button
+            variant="outlined"
+            color="success"
+            startIcon={<Iconify icon="solar:pen-new-square-bold" width={20} />}
+            onClick={() => setDietBuilderOpen(true)}
+            sx={{ borderRadius: 2.5, py: 1.2, px: 2 }}
+          >
+            {diet ? 'Cambiar Mi Dieta' : 'Crear Mi Dieta'}
+          </Button>
+
           {diet && (
             <Button
               variant="contained"
@@ -109,9 +131,25 @@ export const ClientMyDietPage: React.FC = () => {
       </Stack>
 
       {!diet ? (
-        <Alert severity="info" sx={{ borderRadius: 3 }}>
-          No tienes una dieta asignada actualmente. Contacta a tu Entrenador Personal para que te active un plan nutricional a tu medida.
-        </Alert>
+        <Paper sx={{ p: 4, borderRadius: 3, textAlign: 'center', boxShadow: '0 4px 20px rgba(0,0,0,0.06)' }}>
+          <Iconify icon="solar:chef-hat-heart-bold" width={64} height={64} sx={{ color: 'primary.main', mb: 2 }} />
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            Aún no tienes una dieta configurada
+          </Typography>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: 'auto' }}>
+            Puedes crear tu propia dieta personalizada o elegir una de nuestras plantillas nutricionales basadas en tu gasto calórico.
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            startIcon={<Iconify icon="solar:add-circle-bold" />}
+            onClick={() => setDietBuilderOpen(true)}
+            sx={{ fontWeight: 'bold', borderRadius: 2.5 }}
+          >
+            Crear Mi Plan Nutricional Ahora
+          </Button>
+        </Paper>
       ) : (
         <Stack spacing={3}>
           {/* Ficha Resumen Dieta */}
@@ -121,7 +159,7 @@ export const ClientMyDietPage: React.FC = () => {
                 <Typography variant="h5" fontWeight="bold" color="primary.main">
                   {diet.name}
                 </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5 }}>
+                <Typography variant="body1" color="text.secondary" sx={{ mt: 0.5, whiteSpace: 'pre-line' }}>
                   {diet.description || 'Pautas de nutrición personalizadas para tu objetivo físico.'}
                 </Typography>
               </Box>
@@ -158,6 +196,16 @@ export const ClientMyDietPage: React.FC = () => {
             open={calculatorOpen}
             onClose={() => setCalculatorOpen(false)}
           />
+
+          {/* Modal Creador de Dieta */}
+          {currentUser && (
+            <ClientDietBuilderModal
+              open={dietBuilderOpen}
+              onClose={() => setDietBuilderOpen(false)}
+              userId={currentUser.id}
+              onSuccess={loadDiet}
+            />
+          )}
         </Stack>
       )}
     </Box>
