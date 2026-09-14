@@ -1,62 +1,68 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Card,
-  CardContent,
   Typography,
   Checkbox,
   LinearProgress,
   Chip,
   Stack,
   Divider,
-  Paper,
-  Alert,
-  Button,
   Grid
-} from '@mui/material'
-import { Iconify } from '../../utils/iconify'
-import { DietWithFoods } from '../../types/DietWithFoods'
-import { DietFood } from '../../types/DietFood'
+} from '@mui/material';
+import {
+  CheckCircle2,
+  Circle,
+  Flame,
+  Award,
+  Coffee,
+  Apple,
+  UtensilsCrossed,
+  Cookie,
+  ChefHat,
+  Clock
+} from 'lucide-react';
+import { DietWithFoods } from '../../types/DietWithFoods';
+import { DietFood } from '../../types/DietFood';
 import {
   getMealChecks,
   toggleMealCheck,
   getMealCheckStreak,
   StreakInfo
-} from '../../services/mealCheckService'
+} from '../../services/mealCheckService';
 
 interface DietMealChecklistProps {
-  diet: DietWithFoods
-  userId: number
-  readOnly?: boolean
-  userName?: string
+  diet: DietWithFoods;
+  userId: number;
+  readOnly?: boolean;
+  userName?: string;
 }
 
 export interface MealSchedule {
-  key: string
-  title: string
-  time: string
-  icon: string
-  color: string
-  suggestedMacro: string
+  key: string;
+  title: string;
+  time: string;
+  icon: any;
+  color: string;
+  suggestedMacro: string;
 }
 
 export const MEAL_TIMES: MealSchedule[] = [
-  { key: 'breakfast', title: 'Desayuno', time: '08:00 - 08:30', icon: 'solar:cup-hot-bold', color: '#FF9800', suggestedMacro: 'Carbohidratos complejos + Proteína' },
-  { key: 'mid_morning', title: 'Media Mañana', time: '11:00 - 11:30', icon: 'solar:apple-bold', color: '#4CAF50', suggestedMacro: 'Fruta + Frutos secos' },
-  { key: 'lunch', title: 'Almuerzo', time: '14:00 - 14:40', icon: 'solar:plate-bold', color: '#2196F3', suggestedMacro: 'Proteína + Verduras + Carbohidratos' },
-  { key: 'snack', title: 'Merienda', time: '17:30 - 18:00', icon: 'solar:donut-bitten-bold', color: '#9C27B0', suggestedMacro: 'Batido / Snack proteico' },
-  { key: 'dinner', title: 'Cena', time: '21:00 - 21:40', icon: 'solar:chef-hat-bold-duotone', color: '#E91E63', suggestedMacro: 'Proteína magra + Verduras de hoja verde' }
-]
+  { key: 'breakfast', title: 'Desayuno', time: '08:00 - 08:30', icon: Coffee, color: '#FF9500', suggestedMacro: 'Carbohidratos complejos + Proteína' },
+  { key: 'mid_morning', title: 'Media Mañana', time: '11:00 - 11:30', icon: Apple, color: '#34C759', suggestedMacro: 'Fruta + Frutos secos' },
+  { key: 'lunch', title: 'Almuerzo', time: '14:00 - 14:40', icon: UtensilsCrossed, color: '#007AFF', suggestedMacro: 'Proteína + Verduras + Carbohidratos' },
+  { key: 'snack', title: 'Merienda', time: '17:30 - 18:00', icon: Cookie, color: '#AF52DE', suggestedMacro: 'Batido / Snack proteico' },
+  { key: 'dinner', title: 'Cena', time: '21:00 - 21:40', icon: ChefHat, color: '#FF2D55', suggestedMacro: 'Proteína magra + Verduras' }
+];
 
 export const DAYS_OF_WEEK = [
-  { key: 'mon', label: 'Lun' },
-  { key: 'tue', label: 'Mar' },
-  { key: 'wed', label: 'Mié' },
-  { key: 'thu', label: 'Jue' },
-  { key: 'fri', label: 'Vie' },
-  { key: 'sat', label: 'Sáb' },
-  { key: 'sun', label: 'Dom' }
-]
+  { key: 'mon', label: 'L' },
+  { key: 'tue', label: 'M' },
+  { key: 'wed', label: 'X' },
+  { key: 'thu', label: 'J' },
+  { key: 'fri', label: 'V' },
+  { key: 'sat', label: 'S' },
+  { key: 'sun', label: 'D' }
+];
 
 export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
   diet,
@@ -64,47 +70,46 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
   readOnly = false,
   userName
 }) => {
-  const [selectedDay, setSelectedDay] = useState<string>('mon')
-  const [checkedMap, setCheckedMap] = useState<Record<string, boolean>>({})
-  const [streak, setStreak] = useState<StreakInfo>({ streakDays: 0, totalChecks: 0, activeDays: 0 })
+  const [selectedDay, setSelectedDay] = useState<string>('mon');
+  const [checkedMap, setCheckedMap] = useState<Record<string, boolean>>({});
+  const [streak, setStreak] = useState<StreakInfo>({ streakDays: 0, totalChecks: 0, activeDays: 0 });
 
-  const dateStr = new Date().toISOString().split('T')[0]
+  const dateStr = new Date().toISOString().split('T')[0];
 
   useEffect(() => {
-    loadChecks()
-    loadStreak()
-  }, [userId, diet.id, selectedDay])
+    loadChecks();
+    loadStreak();
+  }, [userId, diet.id, selectedDay]);
 
   const loadChecks = async () => {
     try {
-      const checks = await getMealChecks(userId, dateStr)
-      const map: Record<string, boolean> = {}
+      const checks = await getMealChecks(userId, dateStr);
+      const map: Record<string, boolean> = {};
       checks.forEach((c) => {
-        const checkKey = `${c.meal_key}_${c.food_id || 0}`
-        map[checkKey] = c.completed
-      })
-      setCheckedMap(map)
+        const checkKey = `${c.meal_key}_${c.food_id || 0}`;
+        map[checkKey] = c.completed;
+      });
+      setCheckedMap(map);
     } catch (e) {
-      console.error(e)
+      console.error(e);
     }
-  }
+  };
 
   const loadStreak = async () => {
-    const data = await getMealCheckStreak(userId)
-    setStreak(data)
-  }
+    const data = await getMealCheckStreak(userId);
+    setStreak(data);
+  };
 
   const handleToggle = async (mealKey: string, foodId?: number) => {
-    if (readOnly) return
-    const checkKey = `${mealKey}_${foodId || 0}`
-    const isCurrentlyChecked = !!checkedMap[checkKey]
-    const nextState = !isCurrentlyChecked
+    if (readOnly) return;
+    const checkKey = `${mealKey}_${foodId || 0}`;
+    const isCurrentlyChecked = !!checkedMap[checkKey];
+    const nextState = !isCurrentlyChecked;
 
-    // Actualización optimista de UI
     setCheckedMap((prev) => ({
       ...prev,
       [checkKey]: nextState
-    }))
+    }));
 
     try {
       await toggleMealCheck({
@@ -114,89 +119,85 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
         meal_key: mealKey,
         food_id: foodId || null,
         completed: nextState
-      })
-      loadStreak()
+      });
+      loadStreak();
     } catch (e) {
-      // Revertir en caso de error
       setCheckedMap((prev) => ({
         ...prev,
         [checkKey]: isCurrentlyChecked
-      }))
+      }));
     }
-  }
+  };
 
-  // Agrupar alimentos por comidas
-  const foods: DietFood[] = diet.diet_foods || []
-  const foodsPerMeal = Math.max(1, Math.ceil(foods.length / MEAL_TIMES.length))
+  const foods: DietFood[] = diet.diet_foods || [];
+  const foodsPerMeal = Math.max(1, Math.ceil(foods.length / MEAL_TIMES.length));
 
   const mealItemsMap = MEAL_TIMES.reduce((acc, meal, index) => {
-    const start = index * foodsPerMeal
-    const mealFoods = foods.slice(start, start + foodsPerMeal)
-    acc[meal.key] = mealFoods
-    return acc
-  }, {} as Record<string, DietFood[]>)
+    const start = index * foodsPerMeal;
+    const mealFoods = foods.slice(start, start + foodsPerMeal);
+    acc[meal.key] = mealFoods;
+    return acc;
+  }, {} as Record<string, DietFood[]>);
 
-  // Calcular progreso total
-  const totalMealSlots = MEAL_TIMES.length
-  let checkedCount = 0
+  const totalMealSlots = MEAL_TIMES.length;
+  let checkedCount = 0;
   MEAL_TIMES.forEach((meal) => {
-    const mealFoods = mealItemsMap[meal.key] || []
+    const mealFoods = mealItemsMap[meal.key] || [];
     if (mealFoods.length > 0) {
-      const allChecked = mealFoods.every((f) => checkedMap[`${meal.key}_${f.food_id}`])
-      if (allChecked) checkedCount++
+      const allChecked = mealFoods.every((f) => checkedMap[`${meal.key}_${f.food_id}`]);
+      if (allChecked) checkedCount++;
     } else {
-      if (checkedMap[`${meal.key}_0`]) checkedCount++
+      if (checkedMap[`${meal.key}_0`]) checkedCount++;
     }
-  })
+  });
 
-  const progressPercent = Math.round((checkedCount / totalMealSlots) * 100)
+  const progressPercent = Math.round((checkedCount / totalMealSlots) * 100);
 
   return (
-    <Card sx={{ borderRadius: 3, boxShadow: '0 8px 32px rgba(0,0,0,0.08)', overflow: 'hidden' }}>
-      {/* Header Banner */}
+    <Box className="apple-card" sx={{ overflow: 'hidden' }}>
+      {/* Header Banner Apple Style */}
       <Box
         sx={{
-          p: 3,
-          background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)',
-          color: 'white'
+          p: { xs: 2.5, sm: 3 },
+          background: 'linear-gradient(180deg, #1C1C1E 0%, #161618 100%)',
+          borderBottom: '0.5px solid rgba(255, 255, 255, 0.08)',
         }}
       >
         <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={2}>
           <Box>
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
-              <Iconify icon="solar:checklist-minimalistic-bold-duotone" width={28} style={{ color: '#38bdf8' }} />
-              <Typography variant="h5" fontWeight="bold">
-                Retos Alimenticios y Seguimiento Diario
-              </Typography>
-            </Stack>
-            <Typography variant="body2" sx={{ opacity: 0.8 }}>
-              {userName ? `Progreso interactivo de ${userName}` : 'Haz check en cada comida conforme completes tu plan diario'}
+            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+              Retos Nutricionales & Registro Diario
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+              {userName ? `Seguimiento de ${userName}` : 'Registra tus tomas conforme las vayas realizando'}
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1.5} alignItems="center">
+          <Stack direction="row" spacing={1} alignItems="center">
             <Chip
-              icon={<Iconify icon="solar:fire-bold" width={18} style={{ color: '#ff7043' }} />}
-              label={`Racha: ${streak.streakDays} Días 🔥`}
-              sx={{ bgcolor: 'rgba(255,112,67,0.15)', color: '#ff7043', fontWeight: 'bold', border: '1px solid rgba(255,112,67,0.3)' }}
+              icon={<Flame size={14} color="#FF9500" />}
+              label={`Racha: ${streak.streakDays}d`}
+              size="small"
+              sx={{ bgcolor: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 700, height: 24, fontSize: '0.72rem' }}
             />
             <Chip
-              icon={<Iconify icon="solar:medal-star-bold" width={18} style={{ color: '#facc15' }} />}
+              icon={<Award size={14} color="#34C759" />}
               label={`${progressPercent}% Cumplido`}
-              sx={{ bgcolor: 'rgba(250,204,21,0.15)', color: '#facc15', fontWeight: 'bold', border: '1px solid rgba(250,204,21,0.3)' }}
+              size="small"
+              sx={{ bgcolor: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, height: 24, fontSize: '0.72rem' }}
             />
           </Stack>
         </Stack>
 
-        {/* Progress bar */}
-        <Box sx={{ mt: 3 }}>
-          <Stack direction="row" justifyContent="space-between" sx={{ mb: 1 }}>
-            <Typography variant="caption" sx={{ opacity: 0.9 }}>
-              {checkedCount} de {totalMealSlots} tomas completadas hoy
+        {/* Progress bar Apple Style */}
+        <Box sx={{ mt: 2.5 }}>
+          <Stack direction="row" justifyContent="space-between" sx={{ mb: 0.8 }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+              {checkedCount} de {totalMealSlots} tomas completadas
             </Typography>
 
-            <Typography variant="caption" fontWeight="bold">
-              Meta Diaria: {diet.calories} Kcal
+            <Typography variant="caption" fontWeight="700" sx={{ color: '#FFFFFF' }}>
+              Meta: {diet.calories} kcal
             </Typography>
           </Stack>
 
@@ -204,80 +205,80 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
             variant="determinate"
             value={progressPercent}
             sx={{
-              height: 10,
-              borderRadius: 5,
-              backgroundColor: 'rgba(255,255,255,0.1)',
+              height: 6,
+              borderRadius: 3,
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
               '& .MuiLinearProgress-bar': {
-                borderRadius: 5,
-                background: progressPercent === 100
-                  ? 'linear-gradient(90deg, #10b981 0%, #059669 100%)'
-                  : 'linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)'
+                borderRadius: 3,
+                backgroundColor: progressPercent === 100 ? '#34C759' : '#007AFF',
               }
             }}
           />
         </Box>
       </Box>
 
-      {/* Days Selector */}
-      <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+      {/* Days Selector (Apple Segmented Style) */}
+      <Box sx={{ p: 1.5, bgcolor: 'rgba(255, 255, 255, 0.02)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>
         <Stack direction="row" spacing={1} justifyContent="center">
-          {DAYS_OF_WEEK.map((day) => (
-            <Button
-              key={day.key}
-              size="small"
-              variant={selectedDay === day.key ? 'contained' : 'text'}
-              color="primary"
-              onClick={() => setSelectedDay(day.key)}
-              sx={{
-                borderRadius: 2,
-                minWidth: 44,
-                fontWeight: selectedDay === day.key ? 'bold' : 'normal'
-              }}
-            >
-              {day.label}
-            </Button>
-          ))}
+          {DAYS_OF_WEEK.map((day) => {
+            const isSelected = selectedDay === day.key;
+            return (
+              <Box
+                key={day.key}
+                onClick={() => setSelectedDay(day.key)}
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '10px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  fontSize: '0.82rem',
+                  background: isSelected ? '#FFFFFF' : 'transparent',
+                  color: isSelected ? '#000000' : 'rgba(255, 255, 255, 0.6)',
+                  transition: 'all 0.15s ease',
+                  '&:hover': {
+                    background: isSelected ? '#FFFFFF' : 'rgba(255, 255, 255, 0.08)',
+                  }
+                }}
+              >
+                {day.label}
+              </Box>
+            );
+          })}
         </Stack>
       </Box>
 
-      <CardContent sx={{ p: 3 }}>
-        {progressPercent === 100 && (
-          <Alert severity="success" icon={<Iconify icon="solar:cup-star-bold" width={24} />} sx={{ mb: 3, borderRadius: 2 }}>
-            <strong>¡Excelente trabajo! 🎉</strong> Has completado el 100% de tus retos nutricionales para este día. ¡Mantén la disciplina!
-          </Alert>
-        )}
-
+      {/* Meals Grid */}
+      <Box sx={{ p: { xs: 2, sm: 2.5 } }}>
         <Grid container spacing={2}>
           {MEAL_TIMES.map((meal) => {
-            const mealFoods = mealItemsMap[meal.key] || []
-            const isSingleCheckMode = mealFoods.length === 0
-            const singleCheckKey = `${meal.key}_0`
-            const isSingleChecked = !!checkedMap[singleCheckKey]
+            const IconComp = meal.icon;
+            const mealFoods = mealItemsMap[meal.key] || [];
+            const isSingleCheckMode = mealFoods.length === 0;
+            const singleCheckKey = `${meal.key}_0`;
+            const isSingleChecked = !!checkedMap[singleCheckKey];
 
             return (
               <Grid size={{ xs: 12, md: 6 }} key={meal.key}>
-                <Paper
-                  elevation={0}
+                <Box
                   sx={{
                     p: 2,
-                    borderRadius: 2.5,
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
-                    transition: 'all 0.25s ease',
-                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
-                    backdropFilter: 'blur(12px)',
-                    '&:hover': {
-                      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
-                      borderColor: meal.color
-                    }
+                    borderRadius: '14px',
+                    background: '#1C1C1E',
+                    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                    transition: 'all 0.2s ease',
                   }}
                 >
-                  <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
-                    <Stack direction="row" spacing={1.5} alignItems="center">
+                  <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.2 }}>
+                    <Stack direction="row" spacing={1.2} alignItems="center">
                       <Box
                         sx={{
-                          width: 38,
-                          height: 38,
-                          borderRadius: 2,
+                          width: 32,
+                          height: 32,
+                          borderRadius: '8px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
@@ -285,46 +286,47 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
                           color: meal.color
                         }}
                       >
-                        <Iconify icon={meal.icon} width={22} />
+                        <IconComp size={18} />
                       </Box>
 
                       <Box>
-                        <Typography variant="subtitle1" fontWeight="bold" sx={{ color: '#f8fafc' }}>
+                        <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF' }}>
                           {meal.title}
                         </Typography>
 
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                           {meal.time}
                         </Typography>
                       </Box>
                     </Stack>
 
                     {isSingleCheckMode && (
-                      <Checkbox
-                        checked={isSingleChecked}
-                        disabled={readOnly}
-                        onChange={() => handleToggle(meal.key, 0)}
-                        sx={{
-                          color: meal.color,
-                          '&.Mui-checked': { color: meal.color }
-                        }}
-                      />
+                      <Box
+                        onClick={() => !readOnly && handleToggle(meal.key, 0)}
+                        sx={{ cursor: readOnly ? 'default' : 'pointer' }}
+                      >
+                        {isSingleChecked ? (
+                          <CheckCircle2 size={24} color="#34C759" />
+                        ) : (
+                          <Circle size={24} color="rgba(255, 255, 255, 0.2)" />
+                        )}
+                      </Box>
                     )}
                   </Stack>
 
-                  <Typography variant="caption" sx={{ display: 'block', color: 'text.secondary', fontStyle: 'italic', mb: 1 }}>
+                  <Typography variant="caption" sx={{ display: 'block', color: 'rgba(255, 255, 255, 0.4)', mb: 1 }}>
                     💡 {meal.suggestedMacro}
                   </Typography>
 
                   <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
 
                   {mealFoods.length > 0 ? (
-                    <Stack spacing={1}>
+                    <Stack spacing={0.8}>
                       {mealFoods.map((f) => {
-                        const checkKey = `${meal.key}_${f.food_id}`
-                        const isChecked = !!checkedMap[checkKey]
-                        const foodName = f.foods?.name || `Alimento #${f.food_id}`
-                        const foodKcal = f.foods?.calories || 0
+                        const checkKey = `${meal.key}_${f.food_id}`;
+                        const isChecked = !!checkedMap[checkKey];
+                        const foodName = f.foods?.name || `Alimento #${f.food_id}`;
+                        const foodKcal = f.foods?.calories || 0;
 
                         return (
                           <Box
@@ -332,94 +334,85 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
                             onClick={() => !readOnly && handleToggle(meal.key, f.food_id)}
                             sx={{
                               p: 1,
-                              borderRadius: 1.5,
+                              borderRadius: '10px',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'space-between',
                               cursor: readOnly ? 'default' : 'pointer',
-                              backgroundColor: isChecked ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
-                              border: '1px solid',
-                              borderColor: isChecked ? 'rgba(16, 185, 129, 0.3)' : 'transparent',
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                backgroundColor: isChecked ? 'rgba(16, 185, 129, 0.18)' : 'rgba(34, 211, 238, 0.06)',
-                                borderColor: isChecked ? 'rgba(16, 185, 129, 0.5)' : 'rgba(34, 211, 238, 0.25)',
-                              }
+                              backgroundColor: isChecked ? 'rgba(52, 199, 89, 0.1)' : 'rgba(255, 255, 255, 0.02)',
+                              border: '0.5px solid',
+                              borderColor: isChecked ? 'rgba(52, 199, 89, 0.3)' : 'transparent',
+                              transition: 'all 0.15s ease',
                             }}
                           >
                             <Stack direction="row" spacing={1} alignItems="center">
-                              <Checkbox
-                                size="small"
-                                checked={isChecked}
-                                disabled={readOnly}
-                                onChange={(e) => {
-                                  e.stopPropagation()
-                                  handleToggle(meal.key, f.food_id)
-                                }}
-                                sx={{ p: 0.5, color: meal.color, '&.Mui-checked': { color: meal.color } }}
-                              />
+                              {isChecked ? (
+                                <CheckCircle2 size={18} color="#34C759" />
+                              ) : (
+                                <Circle size={18} color="rgba(255, 255, 255, 0.2)" />
+                              )}
 
                               <Typography
                                 variant="body2"
-                                fontWeight={isChecked ? 'bold' : 'medium'}
+                                fontWeight={isChecked ? '600' : '500'}
                                 sx={{
                                   textDecoration: isChecked ? 'line-through' : 'none',
-                                  color: isChecked ? 'text.secondary' : 'text.primary'
+                                  color: isChecked ? 'rgba(255, 255, 255, 0.4)' : '#FFFFFF',
+                                  fontSize: '0.85rem'
                                 }}
                               >
                                 {foodName}
                               </Typography>
                             </Stack>
 
-                            <Stack direction="row" spacing={1}>
-                              <Chip label={`${f.quantity} g`} size="small" variant="outlined" sx={{ height: 20, fontSize: '0.7rem' }} />
-                              <Chip label={`${foodKcal} kcal`} size="small" color="primary" sx={{ height: 20, fontSize: '0.7rem' }} />
+                            <Stack direction="row" spacing={0.8}>
+                              <Chip label={`${f.quantity}g`} size="small" sx={{ height: 20, fontSize: '0.68rem', bgcolor: 'rgba(255, 255, 255, 0.06)', color: 'rgba(255, 255, 255, 0.7)' }} />
+                              <Chip label={`${foodKcal} kcal`} size="small" sx={{ height: 20, fontSize: '0.68rem', bgcolor: 'rgba(0, 122, 255, 0.15)', color: '#007AFF' }} />
                             </Stack>
                           </Box>
-                        )
+                        );
                       })}
                     </Stack>
                   ) : (
                     <Box
                       onClick={() => !readOnly && handleToggle(meal.key, 0)}
                       sx={{
-                        p: 1.5,
-                        borderRadius: 1.5,
+                        p: 1.2,
+                        borderRadius: '10px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         cursor: readOnly ? 'default' : 'pointer',
-                        backgroundColor: isSingleChecked ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid',
-                        borderColor: isSingleChecked ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.06)',
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          backgroundColor: isSingleChecked ? 'rgba(16, 185, 129, 0.18)' : 'rgba(34, 211, 238, 0.06)',
-                          borderColor: isSingleChecked ? 'rgba(16, 185, 129, 0.5)' : 'rgba(34, 211, 238, 0.25)',
-                        }
+                        backgroundColor: isSingleChecked ? 'rgba(52, 199, 89, 0.1)' : 'rgba(255, 255, 255, 0.02)',
+                        border: '0.5px solid',
+                        borderColor: isSingleChecked ? 'rgba(52, 199, 89, 0.3)' : 'rgba(255, 255, 255, 0.04)',
+                        transition: 'all 0.15s ease',
                       }}
                     >
-                      <Typography variant="body2" color={isSingleChecked ? 'text.secondary' : 'text.primary'} sx={{ textDecoration: isSingleChecked ? 'line-through' : 'none' }}>
-                        {isSingleChecked ? 'Comida Registrada como Completada' : 'Marcar toma como realizada'}
+                      <Typography variant="caption" sx={{ color: isSingleChecked ? 'rgba(255, 255, 255, 0.5)' : '#FFFFFF', textDecoration: isSingleChecked ? 'line-through' : 'none' }}>
+                        {isSingleChecked ? 'Comida Registrada' : 'Toca para marcar como realizada'}
                       </Typography>
 
                       <Chip
                         label={isSingleChecked ? 'Completado' : 'Pendiente'}
                         size="small"
-                        color={isSingleChecked ? 'success' : 'default'}
-                        variant={isSingleChecked ? 'filled' : 'outlined'}
-                        sx={{ fontSize: '0.7rem' }}
+                        sx={{
+                          height: 20,
+                          fontSize: '0.68rem',
+                          bgcolor: isSingleChecked ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                          color: isSingleChecked ? '#34C759' : 'rgba(255, 255, 255, 0.5)',
+                        }}
                       />
                     </Box>
                   )}
-                </Paper>
+                </Box>
               </Grid>
-            )
+            );
           })}
         </Grid>
-      </CardContent>
-    </Card>
-  )
-}
+      </Box>
+    </Box>
+  );
+};
 
-export default DietMealChecklist
+export default DietMealChecklist;

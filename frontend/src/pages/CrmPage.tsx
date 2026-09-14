@@ -14,7 +14,16 @@ import {
   CircularProgress
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Iconify } from '../utils/iconify';
+import {
+  Users,
+  UserPlus,
+  HeartPulse,
+  Camera,
+  Search,
+  UserCheck,
+  ChevronRight,
+  ShieldAlert,
+} from 'lucide-react';
 import { getUsers } from '../services/userService';
 import { User } from '../types/User';
 
@@ -56,55 +65,54 @@ export const CrmPage = () => {
   }, [users, searchTerm]);
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1280, mx: 'auto' }}>
-      {/* Header Liquid Glass */}
+    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1280, mx: 'auto', pb: 8 }}>
+      {/* Header Apple Inset Grouped */}
       <Box
-        className="liquid-glass-card"
+        className="apple-card"
         sx={{
-          p: { xs: 3, md: 4 },
-          borderRadius: 4,
-          mb: 4,
-          background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%)',
-          border: '1px solid rgba(6, 182, 212, 0.3)',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.35)',
+          p: { xs: 2.5, md: 4 },
+          mb: 3,
+          background: 'linear-gradient(180deg, #1C1C1E 0%, #161618 100%)',
         }}
       >
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
           <Box>
-            <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+            <Stack direction="row" spacing={1.5} alignItems="center" mb={1}>
               <Chip
                 label="CRM & Expedientes"
                 size="small"
                 sx={{
-                  background: 'rgba(6, 182, 212, 0.2)',
-                  color: '#22d3ee',
-                  fontWeight: 800,
-                  border: '1px solid rgba(6, 182, 212, 0.4)',
+                  background: 'rgba(0, 122, 255, 0.15)',
+                  color: '#007AFF',
+                  fontWeight: 700,
+                  fontSize: '0.72rem',
+                  border: '0.5px solid rgba(0, 122, 255, 0.3)',
+                  height: 24,
                 }}
               />
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
                 Gestión Integral de Alumnos
               </Typography>
             </Stack>
 
-            <Typography variant="h3" fontWeight="900" sx={{ letterSpacing: '-0.02em', mb: 1 }}>
-              CRM - Expedientes de Alumnos
+            <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.02em', mb: 0.5, color: '#FFFFFF' }}>
+              Expedientes de Alumnos
             </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 700 }}>
-              Accede directamente al historial de salud, lesiones, mediciones biométricas y fichas completas de tus asesorados.
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', maxWidth: 680 }}>
+              Acceso a historiales de salud, lesiones, mediciones antropométricas y fichas técnicas completas.
             </Typography>
           </Box>
 
           <Button
             variant="contained"
             onClick={() => navigate('/dashboard/users')}
-            startIcon={<Iconify icon="solar:user-plus-bold" />}
+            startIcon={<UserPlus size={16} />}
+            className="apple-button-primary"
             sx={{
-              borderRadius: '24px',
-              background: 'linear-gradient(135deg, #06b6d4, #10b981)',
-              fontWeight: 800,
+              borderRadius: '12px',
+              fontWeight: 700,
               textTransform: 'none',
-              px: 3,
+              px: 2.5,
             }}
           >
             Añadir Nuevo Alumno
@@ -113,23 +121,21 @@ export const CrmPage = () => {
       </Box>
 
       {/* KPI Strip */}
-      <Grid container spacing={2.5} sx={{ mb: 4 }}>
+      <Grid container spacing={2} sx={{ mb: 3 }}>
         <Grid size={{ xs: 12, sm: 4 }}>
           <Box
-            className="liquid-glass-card"
+            className="apple-card"
             sx={{
-              p: 2.5,
-              borderRadius: 3.5,
-              border: '1px solid rgba(6, 182, 212, 0.3)',
+              p: 2.2,
             }}
           >
-            <Box display="flex" alignItems="center" gap={1.5} mb={1}>
-              <Iconify icon="solar:users-group-two-rounded-bold" width={22} sx={{ color: '#22d3ee' }} />
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
+            <Box display="flex" alignItems="center" gap={1.2} mb={1}>
+              <Users size={18} color="#007AFF" />
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Total Alumnos en Cartera
               </Typography>
             </Box>
-            <Typography variant="h4" fontWeight="900" sx={{ color: '#fff' }}>
+            <Typography variant="h4" fontWeight="800" sx={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
               {users.length}
             </Typography>
           </Box>
@@ -137,20 +143,18 @@ export const CrmPage = () => {
 
         <Grid size={{ xs: 12, sm: 4 }}>
           <Box
-            className="liquid-glass-card"
+            className="apple-card"
             sx={{
-              p: 2.5,
-              borderRadius: 3.5,
-              border: '1px solid rgba(16, 185, 129, 0.3)',
+              p: 2.2,
             }}
           >
-            <Box display="flex" alignItems="center" gap={1.5} mb={1}>
-              <Iconify icon="solar:health-bold" width={22} sx={{ color: '#10b981' }} />
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
+            <Box display="flex" alignItems="center" gap={1.2} mb={1}>
+              <HeartPulse size={18} color="#34C759" />
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Fichas Médicas Activas
               </Typography>
             </Box>
-            <Typography variant="h4" fontWeight="900" sx={{ color: '#10b981' }}>
+            <Typography variant="h4" fontWeight="800" sx={{ color: '#34C759', letterSpacing: '-0.02em' }}>
               {users.length}
             </Typography>
           </Box>
@@ -158,20 +162,18 @@ export const CrmPage = () => {
 
         <Grid size={{ xs: 12, sm: 4 }}>
           <Box
-            className="liquid-glass-card"
+            className="apple-card"
             sx={{
-              p: 2.5,
-              borderRadius: 3.5,
-              border: '1px solid rgba(245, 158, 11, 0.3)',
+              p: 2.2,
             }}
           >
-            <Box display="flex" alignItems="center" gap={1.5} mb={1}>
-              <Iconify icon="solar:camera-bold" width={22} sx={{ color: '#f59e0b' }} />
-              <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 700 }}>
+            <Box display="flex" alignItems="center" gap={1.2} mb={1}>
+              <Camera size={18} color="#AF52DE" />
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                 Seguimiento y Fotos
               </Typography>
             </Box>
-            <Typography variant="h4" fontWeight="900" sx={{ color: '#f59e0b' }}>
+            <Typography variant="h4" fontWeight="800" sx={{ color: '#AF52DE', letterSpacing: '-0.02em' }}>
               {users.length}
             </Typography>
           </Box>
@@ -180,82 +182,80 @@ export const CrmPage = () => {
 
       {/* Search Bar */}
       <Box
-        className="liquid-glass-card"
+        className="apple-card"
         sx={{
-          p: 2.5,
-          borderRadius: 3.5,
+          p: 1.5,
           mb: 3,
-          border: '1px solid rgba(255, 255, 255, 0.08)',
         }}
       >
         <TextField
           size="small"
-          placeholder="Buscar alumno en el CRM por nombre o email..."
+          placeholder="Buscar alumno por nombre o email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
+          fullWidth
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <Iconify icon="solar:magnifer-bold" sx={{ color: 'text.secondary' }} />
+                <Search size={18} color="rgba(255, 255, 255, 0.4)" />
               </InputAdornment>
             ),
           }}
           sx={{
-            maxWidth: 420,
-            background: 'rgba(255, 255, 255, 0.03)',
-            borderRadius: '12px',
+            background: 'rgba(255, 255, 255, 0.04)',
+            borderRadius: '10px',
+            '& fieldset': { border: 'none' },
           }}
         />
       </Box>
 
       {/* Clients CRM Cards Grid */}
       {loading ? (
-        <Box display="flex" justifyContent="center" alignItems="center" minHeight={260}>
-          <CircularProgress color="info" />
+        <Box display="flex" justifyContent="center" alignItems="center" minHeight={240}>
+          <CircularProgress color="primary" />
         </Box>
       ) : error ? (
-        <Alert severity="error">{error}</Alert>
+        <Alert severity="error" sx={{ borderRadius: '12px' }}>{error}</Alert>
       ) : filteredClients.length === 0 ? (
-        <Box className="liquid-glass-card" sx={{ p: 5, textAlign: 'center', borderRadius: 4 }}>
-          <Typography color="text.secondary">No se encontraron alumnos en el CRM.</Typography>
+        <Box className="apple-card" sx={{ p: 5, textAlign: 'center' }}>
+          <Typography color="rgba(255, 255, 255, 0.5)">No se encontraron alumnos en el CRM.</Typography>
         </Box>
       ) : (
-        <Grid container spacing={2.5}>
+        <Grid container spacing={2}>
           {filteredClients.map((client) => (
             <Grid size={{ xs: 12, md: 6 }} key={client.id}>
               <Box
-                className="liquid-glass-card"
+                className="apple-card"
                 sx={{
-                  p: 3,
-                  borderRadius: 4,
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  boxShadow: '0 12px 30px rgba(0,0,0,0.25)',
-                  transition: 'all 0.25s ease',
+                  p: 2.5,
+                  transition: 'transform 0.2s ease',
                   '&:hover': {
-                    transform: 'translateY(-3px)',
-                    borderColor: 'rgba(6, 182, 212, 0.4)',
+                    transform: 'translateY(-2px)',
+                    borderColor: 'rgba(0, 122, 255, 0.3)',
                   },
                 }}
               >
-                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                  <Box display="flex" alignItems="center" gap={1.8}>
+                <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
+                  <Box display="flex" alignItems="center" gap={1.5}>
                     <Avatar
                       sx={{
-                        width: 50,
-                        height: 50,
-                        background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-                        fontWeight: 800,
-                        border: '2px solid rgba(255, 255, 255, 0.2)',
+                        width: 44,
+                        height: 44,
+                        background: '#2C2C2E',
+                        color: '#FFFFFF',
+                        fontWeight: 700,
+                        fontSize: '0.95rem',
+                        border: '0.5px solid rgba(255, 255, 255, 0.15)',
                       }}
                     >
                       {client.name.charAt(0).toUpperCase()}
                       {client.surname?.charAt(0).toUpperCase()}
                     </Avatar>
                     <Box>
-                      <Typography variant="subtitle1" fontWeight="800">
+                      <Typography variant="subtitle1" fontWeight="700" sx={{ color: '#FFFFFF' }}>
                         {client.name} {client.surname}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
                         {client.email}
                       </Typography>
                     </Box>
@@ -265,28 +265,30 @@ export const CrmPage = () => {
                     label="Alumno"
                     size="small"
                     sx={{
-                      background: 'rgba(6, 182, 212, 0.15)',
-                      color: '#22d3ee',
-                      fontWeight: 700,
-                      border: '1px solid rgba(6, 182, 212, 0.3)',
+                      background: 'rgba(0, 122, 255, 0.15)',
+                      color: '#007AFF',
+                      fontWeight: 600,
+                      fontSize: '0.7rem',
+                      height: 22,
                     }}
                   />
                 </Box>
 
-                <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
+                <Divider sx={{ my: 1.5, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
 
                 {/* Quick Action Navigation Buttons */}
-                <Stack direction="row" spacing={1.5} flexWrap="wrap">
+                <Stack direction="row" spacing={1} flexWrap="wrap" gap={0.5}>
                   <Button
                     variant="contained"
                     size="small"
-                    startIcon={<Iconify icon="solar:user-bold" />}
                     onClick={() => navigate(`/dashboard/users/${client.id}`)}
+                    className="apple-button-primary"
                     sx={{
-                      borderRadius: '16px',
-                      background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-                      fontWeight: 700,
+                      borderRadius: '8px',
+                      fontWeight: 600,
                       textTransform: 'none',
+                      fontSize: '0.78rem',
+                      py: 0.6,
                     }}
                   >
                     Ficha 360°
@@ -295,15 +297,16 @@ export const CrmPage = () => {
                   <Button
                     variant="outlined"
                     size="small"
-                    startIcon={<Iconify icon="solar:health-bold" />}
                     onClick={() => navigate(`/dashboard/users/${client.id}/medical-info`)}
                     sx={{
-                      borderRadius: '16px',
-                      borderColor: 'rgba(255, 255, 255, 0.2)',
-                      color: '#fff',
-                      fontWeight: 700,
+                      borderRadius: '8px',
+                      borderColor: 'rgba(255, 255, 255, 0.15)',
+                      color: '#FFFFFF',
+                      fontWeight: 600,
                       textTransform: 'none',
-                      '&:hover': { borderColor: '#10b981', color: '#10b981' },
+                      fontSize: '0.78rem',
+                      py: 0.6,
+                      '&:hover': { borderColor: '#34C759', color: '#34C759', background: 'rgba(52, 199, 89, 0.1)' },
                     }}
                   >
                     Ficha Médica
@@ -312,15 +315,16 @@ export const CrmPage = () => {
                   <Button
                     variant="outlined"
                     size="small"
-                    startIcon={<Iconify icon="solar:camera-bold" />}
                     onClick={() => navigate(`/dashboard/client-tracking`)}
                     sx={{
-                      borderRadius: '16px',
-                      borderColor: 'rgba(255, 255, 255, 0.2)',
-                      color: '#fff',
-                      fontWeight: 700,
+                      borderRadius: '8px',
+                      borderColor: 'rgba(255, 255, 255, 0.15)',
+                      color: '#FFFFFF',
+                      fontWeight: 600,
                       textTransform: 'none',
-                      '&:hover': { borderColor: '#f59e0b', color: '#f59e0b' },
+                      fontSize: '0.78rem',
+                      py: 0.6,
+                      '&:hover': { borderColor: '#AF52DE', color: '#AF52DE', background: 'rgba(175, 82, 222, 0.1)' },
                     }}
                   >
                     Seguimiento
