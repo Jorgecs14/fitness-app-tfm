@@ -1,185 +1,133 @@
-/** **************************************
-* COMPONENT STYLES - FITNESS APP (Liquid Glass v26)
-* Estilos para componentes integrados con la estética iOS 26
-*************************************** */
+/**
+ * COMPONENT COMPATIBILITY ADAPTER - APPLE HIG
+ * Maps legacy classes to authentic Apple design tokens
+ */
 
-/** **************************************
-* Cards y Contenedores Liquid Glass
-*************************************** */
 .fitness-card {
-  border-radius: 20px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.72) 100%);
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: 0 16px 40px -8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 16px;
+  background-color: var(--apple-grouped-bg);
+  border: 0.5px solid var(--apple-hairline);
+  color: var(--apple-label-primary);
+  transition: transform 0.15s ease;
 }
 
-.fitness-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(34, 211, 238, 0.4);
-  box-shadow: 0 20px 48px -10px rgba(0, 0, 0, 0.5), 0 0 25px rgba(6, 182, 212, 0.15);
+.fitness-card:active {
+  transform: scale(0.99);
 }
 
 .fitness-card-header {
-  padding: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px;
+  border-bottom: 0.5px solid var(--apple-hairline-subtle);
 }
 
 .fitness-card-content {
-  padding: 1.5rem;
+  padding: 16px;
 }
 
-/** **************************************
-* Botones Liquid Glass
-*************************************** */
 .fitness-btn {
-  border-radius: 14px;
-  padding: 0.75rem 1.5rem;
-  font-weight: 700;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  text-transform: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 600;
+  font-size: 15px;
+  border: none;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 8px;
+  min-height: 44px;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.fitness-btn:active {
+  transform: scale(0.97);
+  opacity: 0.88;
 }
 
 .fitness-btn-primary {
-  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.25);
-  box-shadow: 0 8px 20px rgba(6, 182, 212, 0.35);
-}
-
-.fitness-btn-primary:hover {
-  transform: translateY(-1.5px);
-  background: linear-gradient(135deg, #0891b2 0%, #2563eb 100%);
-  box-shadow: 0 12px 28px rgba(6, 182, 212, 0.55);
+  background-color: var(--apple-blue);
+  color: #ffffff;
 }
 
 .fitness-btn-secondary {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-}
-
-.fitness-btn-secondary:hover {
-  background: rgba(6, 182, 212, 0.12);
-  border-color: rgba(34, 211, 238, 0.45);
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.2);
-}
-
-/** **************************************
-* Formularios & Entradas Liquid Glass
-*************************************** */
-.fitness-form {
-  max-width: 480px;
-  margin: 0 auto;
-}
-
-.fitness-form-group {
-  margin-bottom: 1.5rem;
+  background-color: var(--apple-secondary-grouped);
+  color: var(--apple-label-primary);
+  border: 0.5px solid var(--apple-hairline);
 }
 
 .fitness-input {
   width: 100%;
-  padding: 0.85rem 1.15rem;
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  font-size: 0.95rem;
-  color: #ffffff;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.fitness-input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
-}
-
-.fitness-input:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border-color: rgba(34, 211, 238, 0.45);
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.18);
+  height: 48px;
+  min-height: 44px;
+  padding: 10px 14px;
+  background-color: var(--apple-grouped-bg);
+  border: 0.5px solid var(--apple-hairline);
+  border-radius: 12px;
+  font-size: 16px !important;
+  color: var(--apple-label-primary);
+  outline: none;
+  transition: border-color 0.15s ease;
 }
 
 .fitness-input:focus {
-  outline: none;
-  background: rgba(255, 255, 255, 0.09);
-  border-color: #22d3ee;
-  box-shadow: 0 0 25px rgba(6, 182, 212, 0.35);
+  border-color: var(--apple-blue);
 }
 
-/** **************************************
-* Tablas Liquid Glass
-*************************************** */
 .fitness-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  background: rgba(15, 23, 42, 0.75);
-  backdrop-filter: blur(24px);
-  border-radius: 18px;
+  background-color: var(--apple-grouped-bg);
+  border-radius: 16px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 0.5px solid var(--apple-hairline);
 }
 
 .fitness-table th {
-  background: rgba(255, 255, 255, 0.04);
-  padding: 1rem 1.25rem;
+  background-color: var(--apple-secondary-grouped);
+  padding: 12px 16px;
   text-align: left;
-  font-weight: 700;
-  color: #22d3ee;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--apple-label-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 0.5px solid var(--apple-hairline);
 }
 
 .fitness-table td {
-  padding: 1rem 1.25rem;
-  color: rgba(255, 255, 255, 0.85);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px 16px;
+  color: var(--apple-label-primary);
+  border-bottom: 0.5px solid var(--apple-hairline-subtle);
+  font-size: 15px;
 }
 
-.fitness-table tr:hover td {
-  background: rgba(6, 182, 212, 0.08);
+.fitness-table tr:last-child td {
+  border-bottom: none;
 }
 
-/** **************************************
-* Estados & Feedback
-*************************************** */
 .fitness-loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
-  color: #22d3ee;
+  padding: 32px;
+  color: var(--apple-label-secondary);
 }
 
 .fitness-error {
-  background: rgba(244, 63, 94, 0.15);
-  color: #fecdd3;
-  padding: 1rem;
-  border-radius: 14px;
-  border: 1px solid rgba(244, 63, 94, 0.35);
+  background-color: rgba(255, 59, 48, 0.12);
+  color: #ff453a;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 0.5px solid rgba(255, 59, 48, 0.3);
+  font-size: 14px;
 }
 
 .fitness-success {
-  background: rgba(16, 185, 129, 0.15);
-  color: #a7f3d0;
-  padding: 1rem;
-  border-radius: 14px;
-  border: 1px solid rgba(16, 185, 129, 0.35);
-}
-
-/** **************************************
-* Layouts & Contenido
-*************************************** */
-.fitness-main-content {
-  flex: 1;
-  padding: 2rem;
-  background: transparent;
+  background-color: rgba(52, 199, 89, 0.12);
+  color: #32d74b;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 0.5px solid rgba(52, 199, 89, 0.3);
+  font-size: 14px;
 }

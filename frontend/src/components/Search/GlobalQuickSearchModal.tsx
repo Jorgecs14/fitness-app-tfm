@@ -11,7 +11,20 @@ import {
   IconButton,
   Divider,
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  Search,
+  Dumbbell,
+  PlayCircle,
+  ChefHat,
+  PieChart,
+  Users,
+  LineChart,
+  Camera,
+  ShoppingBag,
+  User,
+  X,
+  ArrowRight
+} from 'lucide-react';
 
 interface SearchItem {
   id: string;
@@ -19,20 +32,19 @@ interface SearchItem {
   category: 'Alumnos' | 'Entrenamientos' | 'Nutrición' | 'Analítica' | 'Gestión';
   description: string;
   path: string;
-  icon: string;
+  icon: any;
   badgeColor: string;
 }
 
 const SEARCH_DIRECTORY: SearchItem[] = [
-  // Entrenamientos
   {
     id: 'workouts-list',
     title: 'Gestor de Rutinas & Entrenamientos',
     category: 'Entrenamientos',
     description: 'Ver, crear y asignar rutinas semanales para hipertrofia y fuerza',
     path: '/dashboard/workouts',
-    icon: 'solar:dumbbell-bold-duotone',
-    badgeColor: '#3b82f6',
+    icon: Dumbbell,
+    badgeColor: '#007aff',
   },
   {
     id: 'client-workouts',
@@ -40,18 +52,17 @@ const SEARCH_DIRECTORY: SearchItem[] = [
     category: 'Entrenamientos',
     description: 'Ejecutar series, registrar pesos, repeticiones y descansos',
     path: '/dashboard/workouts',
-    icon: 'solar:play-circle-bold-duotone',
-    badgeColor: '#10b981',
+    icon: PlayCircle,
+    badgeColor: '#34c759',
   },
-  // Nutrición
   {
     id: 'diets-manager',
     title: 'Plan Nutricional & Gestor de Dietas',
     category: 'Nutrición',
     description: 'Configuración de macros, calorías y alimentos por comidas',
     path: '/dashboard/diets',
-    icon: 'solar:chef-hat-bold-duotone',
-    badgeColor: '#f59e0b',
+    icon: ChefHat,
+    badgeColor: '#ff9500',
   },
   {
     id: 'client-my-diet',
@@ -59,37 +70,26 @@ const SEARCH_DIRECTORY: SearchItem[] = [
     category: 'Nutrición',
     description: 'Anillos de macronutrientes, comidas del día y registro de alimentos',
     path: '/dashboard/client-diet',
-    icon: 'solar:pie-chart-2-bold-duotone',
-    badgeColor: '#ec4899',
-  },
-  // Alumnos & CRM
-  {
-    id: 'crm-directory',
-    title: 'CRM Clientes & Seguimiento 360°',
-    category: 'Alumnos',
-    description: 'Estado de alumnos, alertas de inactividad y fichas completas',
-    path: '/dashboard/crm',
-    icon: 'solar:user-speak-bold-duotone',
-    badgeColor: '#06b6d4',
+    icon: PieChart,
+    badgeColor: '#af52de',
   },
   {
     id: 'users-list',
-    title: 'Directorio de Alumnos',
+    title: 'Directorio de Alumnos & CRM',
     category: 'Alumnos',
-    description: 'Lista completa de usuarios registrados y administración',
+    description: 'Lista completa de usuarios registrados y seguimiento',
     path: '/dashboard/users',
-    icon: 'solar:users-group-two-rounded-bold-duotone',
-    badgeColor: '#8b5cf6',
+    icon: Users,
+    badgeColor: '#007aff',
   },
-  // Analítica
   {
     id: 'progress-analytics',
     title: 'Analítica de Fuerza & Historial 1RM',
     category: 'Analítica',
     description: 'Curvas de progresión, estimaciones de 1RM y consistencia',
     path: '/dashboard/progress',
-    icon: 'solar:chart-square-bold-duotone',
-    badgeColor: '#22d3ee',
+    icon: LineChart,
+    badgeColor: '#30b0c7',
   },
   {
     id: 'progress-photos',
@@ -97,18 +97,17 @@ const SEARCH_DIRECTORY: SearchItem[] = [
     category: 'Analítica',
     description: 'Slider interactivo de transformación corporal por ángulos',
     path: '/dashboard/submit-progress',
-    icon: 'solar:camera-bold-duotone',
-    badgeColor: '#f43f5e',
+    icon: Camera,
+    badgeColor: '#ff3b30',
   },
-  // Gestión
   {
     id: 'products-page',
-    title: 'Catálogo de Suplementación & Productos',
+    title: 'Catálogo de Suplementación',
     category: 'Gestión',
     description: 'Tienda, stock y recomendaciones de suplementación deportiva',
     path: '/dashboard/products',
-    icon: 'solar:bag-4-bold-duotone',
-    badgeColor: '#14b8a6',
+    icon: ShoppingBag,
+    badgeColor: '#34c759',
   },
   {
     id: 'profile-page',
@@ -116,8 +115,8 @@ const SEARCH_DIRECTORY: SearchItem[] = [
     category: 'Gestión',
     description: 'Datos personales, credenciales y configuración',
     path: '/dashboard/profile',
-    icon: 'solar:user-circle-bold-duotone',
-    badgeColor: '#64748b',
+    icon: User,
+    badgeColor: '#8e8e93',
   },
 ];
 
@@ -134,7 +133,6 @@ export const GlobalQuickSearchModal: React.FC<GlobalQuickSearchModalProps> = ({
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
 
-  // Reset query on open
   useEffect(() => {
     if (open) {
       setQuery('');
@@ -142,7 +140,6 @@ export const GlobalQuickSearchModal: React.FC<GlobalQuickSearchModalProps> = ({
     }
   }, [open]);
 
-  // Filter items
   const filteredItems = useMemo(() => {
     if (!query.trim()) return SEARCH_DIRECTORY;
     const q = query.toLowerCase().trim();
@@ -154,13 +151,11 @@ export const GlobalQuickSearchModal: React.FC<GlobalQuickSearchModalProps> = ({
     );
   }, [query]);
 
-  // Handle navigation
   const handleSelect = (item: SearchItem) => {
     navigate(item.path);
     onClose();
   };
 
-  // Keyboard controls
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
@@ -187,72 +182,73 @@ export const GlobalQuickSearchModal: React.FC<GlobalQuickSearchModalProps> = ({
       slotProps={{
         backdrop: {
           sx: {
-            backgroundColor: 'rgba(15, 23, 42, 0.65)',
-            backdropFilter: 'blur(12px)',
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(16px)',
           },
         },
       }}
       PaperProps={{
         sx: {
-          borderRadius: 4.5,
+          borderRadius: 4,
           overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.92) 100%)',
-          backdropFilter: 'blur(30px)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          boxShadow: '0 30px 80px rgba(0, 0, 0, 0.6), 0 0 35px rgba(6, 182, 212, 0.2)',
-          color: '#fff',
-          mt: { xs: 4, md: 8 },
+          backgroundColor: '#1c1c1e',
+          border: '0.5px solid rgba(255, 255, 255, 0.12)',
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.8)',
+          color: '#ffffff',
+          mt: { xs: 2, md: 6 },
+          m: { xs: 2, md: 'auto' }
         },
       }}
     >
-      <DialogContent sx={{ p: 2.5 }} onKeyDown={handleKeyDown}>
-        {/* Search Input Bar */}
+      <DialogContent sx={{ p: 2 }} onKeyDown={handleKeyDown}>
+        {/* Search Input Bar (16px to prevent zoom) */}
         <Box
-          className="liquid-command-input"
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1.5,
-            px: 2,
-            py: 1.2,
+            gap: 1.2,
+            px: 1.8,
+            py: 1,
             mb: 2,
+            backgroundColor: 'rgba(120, 120, 128, 0.18)',
+            borderRadius: 3,
+            border: '0.5px solid rgba(255, 255, 255, 0.08)',
           }}
         >
-          <Iconify icon="solar:magnifer-bold" width={22} sx={{ color: '#22d3ee' }} />
+          <Search size={18} color="rgba(235, 235, 245, 0.5)" />
           <InputBase
             autoFocus
             fullWidth
-            placeholder="Escribe para buscar alumnos, rutinas, dietas o analítica..."
+            placeholder="Buscar alumnos, rutinas, dietas..."
             value={query}
             onChange={(e) => {
               setQuery(e.target.value);
               setSelectedIndex(0);
             }}
             sx={{
-              color: '#fff',
-              fontSize: '0.98rem',
+              color: '#ffffff',
+              fontSize: '16px !important', // iOS requirement
               fontWeight: 500,
               '& input::placeholder': {
-                color: 'rgba(255, 255, 255, 0.45)',
+                color: 'rgba(235, 235, 245, 0.4)',
                 opacity: 1,
               },
             }}
           />
           {query ? (
-            <IconButton size="small" onClick={() => setQuery('')} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-              <Iconify icon="solar:close-circle-bold" width={18} />
+            <IconButton size="small" onClick={() => setQuery('')} sx={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+              <X size={16} />
             </IconButton>
           ) : (
             <Chip
               label="ESC"
               size="small"
               sx={{
-                height: 22,
-                fontSize: '0.7rem',
-                fontWeight: 800,
-                background: 'rgba(255, 255, 255, 0.08)',
-                color: 'rgba(255, 255, 255, 0.7)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
+                height: 20,
+                fontSize: '0.65rem',
+                fontWeight: 700,
+                backgroundColor: 'rgba(255, 255, 255, 0.08)',
+                color: 'rgba(235, 235, 245, 0.6)',
               }}
             />
           )}
@@ -261,30 +257,22 @@ export const GlobalQuickSearchModal: React.FC<GlobalQuickSearchModalProps> = ({
         {/* Results List */}
         <Box
           sx={{
-            maxHeight: 380,
+            maxHeight: 360,
             overflowY: 'auto',
             pr: 0.5,
-            '&::-webkit-scrollbar': { width: 5 },
-            '&::-webkit-scrollbar-thumb': {
-              background: 'rgba(255, 255, 255, 0.15)',
-              borderRadius: 3,
-            },
           }}
         >
           {filteredItems.length === 0 ? (
-            <Box sx={{ py: 6, textAlign: 'center', color: 'rgba(255, 255, 255, 0.5)' }}>
-              <Iconify icon="solar:minimalistic-magnifer-zoom-out-bold-duotone" width={44} sx={{ mb: 1.5, color: '#94a3b8' }} />
+            <Box sx={{ py: 5, textAlign: 'center', color: 'rgba(235, 235, 245, 0.5)' }}>
               <Typography variant="body2" fontWeight={600}>
                 No se encontraron resultados para "{query}"
               </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.35)' }}>
-                Prueba buscando "rutina", "dieta", "progreso" o "crm"
-              </Typography>
             </Box>
           ) : (
-            <Stack spacing={0.8}>
+            <Stack spacing={0.6}>
               {filteredItems.map((item, index) => {
                 const isSelected = index === selectedIndex;
+                const IconComponent = item.icon;
 
                 return (
                   <Box
@@ -294,40 +282,35 @@ export const GlobalQuickSearchModal: React.FC<GlobalQuickSearchModalProps> = ({
                     sx={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: 2,
-                      p: 1.5,
-                      borderRadius: 3,
+                      gap: 1.5,
+                      p: 1.2,
+                      borderRadius: 2.5,
                       cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                      background: isSelected
-                        ? 'linear-gradient(90deg, rgba(6, 182, 212, 0.22) 0%, rgba(59, 130, 246, 0.15) 100%)'
-                        : 'rgba(255, 255, 255, 0.03)',
-                      border: isSelected
-                        ? '1px solid rgba(6, 182, 212, 0.45)'
-                        : '1px solid rgba(255, 255, 255, 0.04)',
-                      transform: isSelected ? 'translateX(4px)' : 'none',
+                      transition: 'background-color 0.12s ease',
+                      backgroundColor: isSelected
+                        ? 'rgba(255, 255, 255, 0.08)'
+                        : 'transparent',
                     }}
                   >
                     <Box
                       sx={{
-                        width: 42,
-                        height: 42,
-                        borderRadius: 2.5,
+                        width: 36,
+                        height: 36,
+                        borderRadius: 2,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: `${item.badgeColor}22`,
-                        border: `1px solid ${item.badgeColor}55`,
+                        backgroundColor: 'rgba(120, 120, 128, 0.2)',
                         color: item.badgeColor,
                         flexShrink: 0,
                       }}
                     >
-                      <Iconify icon={item.icon} width={22} />
+                      <IconComponent size={18} />
                     </Box>
 
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                       <Box display="flex" alignItems="center" gap={1}>
-                        <Typography variant="subtitle2" fontWeight={800} noWrap sx={{ color: '#fff' }}>
+                        <Typography variant="subtitle2" fontWeight={600} noWrap sx={{ color: '#ffffff', fontSize: '14px' }}>
                           {item.title}
                         </Typography>
                         <Chip
@@ -336,27 +319,23 @@ export const GlobalQuickSearchModal: React.FC<GlobalQuickSearchModalProps> = ({
                           sx={{
                             height: 18,
                             fontSize: '0.65rem',
-                            fontWeight: 700,
-                            background: 'rgba(255, 255, 255, 0.08)',
-                            color: item.badgeColor,
+                            fontWeight: 600,
+                            backgroundColor: 'rgba(255, 255, 255, 0.06)',
+                            color: 'rgba(235, 235, 245, 0.6)',
                           }}
                         />
                       </Box>
                       <Typography
                         variant="caption"
                         noWrap
-                        sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mt: 0.2 }}
+                        sx={{ color: 'rgba(235, 235, 245, 0.5)', display: 'block', mt: 0.2, fontSize: '12px' }}
                       >
                         {item.description}
                       </Typography>
                     </Box>
 
                     {isSelected && (
-                      <Iconify
-                        icon="solar:arrow-right-bold"
-                        width={18}
-                        sx={{ color: '#22d3ee', flexShrink: 0 }}
-                      />
+                      <ArrowRight size={16} color="#007aff" style={{ flexShrink: 0 }} />
                     )}
                   </Box>
                 );
@@ -365,23 +344,15 @@ export const GlobalQuickSearchModal: React.FC<GlobalQuickSearchModalProps> = ({
           )}
         </Box>
 
-        <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
+        <Divider sx={{ my: 1.5, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
 
         {/* Footer shortcuts helper */}
         <Box display="flex" justifyContent="space-between" alignItems="center" px={1}>
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              <Chip label="↑↓" size="small" sx={{ height: 20, fontSize: '0.65rem', background: 'rgba(255,255,255,0.08)', color: '#fff' }} />
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Navegar</Typography>
-            </Stack>
-            <Stack direction="row" spacing={0.5} alignItems="center">
-              <Chip label="↵ Enter" size="small" sx={{ height: 20, fontSize: '0.65rem', background: 'rgba(255,255,255,0.08)', color: '#fff' }} />
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Seleccionar</Typography>
-            </Stack>
-          </Stack>
-
-          <Typography variant="caption" sx={{ color: '#22d3ee', fontWeight: 700 }}>
-            FITNESS APP PRO
+          <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.4)', fontSize: '12px' }}>
+            Pulsa Enter para abrir
+          </Typography>
+          <Typography variant="caption" sx={{ color: '#007aff', fontWeight: 600, fontSize: '12px' }}>
+            FITNESS PRO
           </Typography>
         </Box>
       </DialogContent>

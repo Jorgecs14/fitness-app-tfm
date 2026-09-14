@@ -1,10 +1,9 @@
-// Página de registro de usuarios con estética Liquid Glass iOS 26 y selector de rol segmentado
+// Página de registro de usuarios con estética Apple iOS HIG (Segmented Control, 16px inputs y botón Apple Hero)
 import { useState, useCallback } from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import axiosInstance from '../lib/axios'
 
 import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
@@ -14,9 +13,7 @@ import Checkbox from '@mui/material/Checkbox'
 import FormControlLabel from '@mui/material/FormControlLabel'
 import CircularProgress from '@mui/material/CircularProgress'
 import Stack from '@mui/material/Stack'
-import Divider from '@mui/material/Divider'
-
-import { Iconify } from '../utils/iconify'
+import { User, Mail, Lock, Eye, EyeOff, Dumbbell, ShieldCheck } from 'lucide-react'
 
 export const SignUpPage = () => {
   const navigate = useNavigate()
@@ -112,84 +109,45 @@ export const SignUpPage = () => {
   }, [formData, navigate])
 
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
       <Box sx={{ mb: 3, textAlign: 'center' }}>
-        <Typography variant="h4" fontWeight={900} sx={{ color: '#fff', letterSpacing: '-0.02em', mb: 0.5 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 800,
+            color: '#ffffff',
+            letterSpacing: '-0.03em',
+            fontSize: { xs: '1.75rem', sm: '2rem' },
+            mb: 0.5
+          }}
+        >
           Crear Cuenta
         </Typography>
-        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-          Únete a la plataforma Liquid Glass Fitness
+        <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+          Únete a la plataforma Fitness App Pro
         </Typography>
       </Box>
 
-      {/* Selector de Rol con Interruptor Segmentado Liquid Glass */}
-      <Box
-        sx={{
-          p: 0.6,
-          mb: 3,
-          borderRadius: 3.5,
-          background: 'rgba(255, 255, 255, 0.05)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: 0.8,
-        }}
-      >
-        <Box
+      {/* Apple Native Segmented Control */}
+      <Box className="apple-segmented-control" sx={{ mb: 2.5 }}>
+        <button
+          type="button"
           onClick={() => handleRoleSelect('client')}
-          sx={{
-            py: 1.2,
-            px: 1.5,
-            borderRadius: 3,
-            cursor: 'pointer',
-            textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 1,
-            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-            background:
-              formData.role === 'client'
-                ? 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)'
-                : 'transparent',
-            color: formData.role === 'client' ? '#fff' : 'rgba(255, 255, 255, 0.6)',
-            boxShadow:
-              formData.role === 'client' ? '0 4px 15px rgba(6, 182, 212, 0.4)' : 'none',
-          }}
+          className={`apple-segmented-btn ${formData.role === 'client' ? 'active' : ''}`}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
         >
-          <Iconify icon="solar:dumbbell-bold" width={18} />
-          <Typography variant="subtitle2" fontWeight={800} sx={{ fontSize: '0.88rem' }}>
-            Soy Alumno
-          </Typography>
-        </Box>
-
-        <Box
+          <Dumbbell size={15} />
+          Soy Alumno
+        </button>
+        <button
+          type="button"
           onClick={() => handleRoleSelect('trainer')}
-          sx={{
-            py: 1.2,
-            px: 1.5,
-            borderRadius: 3,
-            cursor: 'pointer',
-            textAlign: 'center',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 1,
-            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-            background:
-              formData.role === 'trainer'
-                ? 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)'
-                : 'transparent',
-            color: formData.role === 'trainer' ? '#fff' : 'rgba(255, 255, 255, 0.6)',
-            boxShadow:
-              formData.role === 'trainer' ? '0 4px 15px rgba(6, 182, 212, 0.4)' : 'none',
-          }}
+          className={`apple-segmented-btn ${formData.role === 'trainer' ? 'active' : ''}`}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
         >
-          <Iconify icon="solar:user-speak-bold" width={18} />
-          <Typography variant="subtitle2" fontWeight={800} sx={{ fontSize: '0.88rem' }}>
-            Soy Entrenador
-          </Typography>
-        </Box>
+          <ShieldCheck size={15} />
+          Soy Entrenador
+        </button>
       </Box>
 
       {error && (
@@ -198,9 +156,10 @@ export const SignUpPage = () => {
           sx={{
             mb: 2.5,
             borderRadius: 3,
-            background: 'rgba(244, 63, 94, 0.15)',
-            border: '1px solid rgba(244, 63, 94, 0.4)',
-            color: '#fecdd3',
+            backgroundColor: 'rgba(255, 59, 48, 0.12)',
+            border: '0.5px solid rgba(255, 59, 48, 0.3)',
+            color: '#ff453a',
+            fontSize: '14px'
           }}
         >
           {error}
@@ -213,9 +172,10 @@ export const SignUpPage = () => {
           sx={{
             mb: 2.5,
             borderRadius: 3,
-            background: 'rgba(16, 185, 129, 0.15)',
-            border: '1px solid rgba(16, 185, 129, 0.4)',
-            color: '#a7f3d0',
+            backgroundColor: 'rgba(52, 199, 89, 0.12)',
+            border: '0.5px solid rgba(52, 199, 89, 0.3)',
+            color: '#32d74b',
+            fontSize: '14px'
           }}
         >
           {success}
@@ -229,130 +189,136 @@ export const SignUpPage = () => {
           handleSignUp()
         }}
         sx={{
-          '& .MuiTextField-root': {
-            mb: 2,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 3,
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              color: '#fff',
-              transition: 'all 0.25s ease',
-              '& fieldset': { border: 'none' },
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.25)',
-              },
-              '&.Mui-focused': {
-                backgroundColor: 'rgba(255, 255, 255, 0.09)',
-                border: '1px solid #22d3ee',
-                boxShadow: '0 0 20px rgba(6, 182, 212, 0.3)',
-              },
-            },
-            '& .MuiInputLabel-root': {
-              color: 'rgba(255, 255, 255, 0.65)',
-              '&.Mui-focused': { color: '#22d3ee' },
-            },
-          },
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1.8
         }}
       >
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontWeight: 600, color: 'rgba(235, 235, 245, 0.7)' }}>
+              Nombre
+            </Typography>
+            <TextField
+              fullWidth
+              name="firstName"
+              placeholder="Juan"
+              value={formData.firstName}
+              onChange={handleInputChange('firstName')}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <User size={18} color="rgba(235, 235, 245, 0.45)" />
+                    </InputAdornment>
+                  )
+                }
+              }}
+            />
+          </Box>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontWeight: 600, color: 'rgba(235, 235, 245, 0.7)' }}>
+              Apellidos
+            </Typography>
+            <TextField
+              fullWidth
+              name="lastName"
+              placeholder="Pérez"
+              value={formData.lastName}
+              onChange={handleInputChange('lastName')}
+            />
+          </Box>
+        </Stack>
+
+        <Box>
+          <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontWeight: 600, color: 'rgba(235, 235, 245, 0.7)' }}>
+            Correo electrónico
+          </Typography>
           <TextField
             fullWidth
-            name="firstName"
-            label="Nombre"
-            placeholder="Juan"
-            value={formData.firstName}
-            onChange={handleInputChange('firstName')}
+            name="email"
+            placeholder="tu@email.com"
+            value={formData.email}
+            onChange={handleInputChange('email')}
             slotProps={{
               input: {
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Iconify icon="solar:user-bold" width={20} sx={{ color: '#22d3ee' }} />
+                    <Mail size={18} color="rgba(235, 235, 245, 0.45)" />
                   </InputAdornment>
-                ),
-              },
+                )
+              }
             }}
           />
+        </Box>
+
+        <Box>
+          <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontWeight: 600, color: 'rgba(235, 235, 245, 0.7)' }}>
+            Contraseña
+          </Typography>
           <TextField
             fullWidth
-            name="lastName"
-            label="Apellidos"
-            placeholder="Pérez García"
-            value={formData.lastName}
-            onChange={handleInputChange('lastName')}
+            name="password"
+            placeholder="Mínimo 6 caracteres"
+            value={formData.password}
+            onChange={handleInputChange('password')}
+            type={showPassword ? 'text' : 'password'}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock size={18} color="rgba(235, 235, 245, 0.45)" />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      sx={{ color: 'rgba(235, 235, 245, 0.5)' }}
+                    >
+                      {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }
+            }}
           />
-        </Stack>
+        </Box>
 
-        <TextField
-          fullWidth
-          name="email"
-          label="Correo electrónico"
-          placeholder="tu@email.com"
-          value={formData.email}
-          onChange={handleInputChange('email')}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="solar:letter-bold" width={20} sx={{ color: '#22d3ee' }} />
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-
-        <TextField
-          fullWidth
-          name="password"
-          label="Contraseña"
-          placeholder="Mínimo 6 caracteres"
-          value={formData.password}
-          onChange={handleInputChange('password')}
-          type={showPassword ? 'text' : 'password'}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="solar:lock-keyhole-bold" width={20} sx={{ color: '#22d3ee' }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                    <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} width={20} />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
-
-        <TextField
-          fullWidth
-          name="confirmPassword"
-          label="Confirmar Contraseña"
-          placeholder="Repite tu contraseña"
-          value={formData.confirmPassword}
-          onChange={handleInputChange('confirmPassword')}
-          type={showConfirmPassword ? 'text' : 'password'}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="solar:lock-check-bold" width={20} sx={{ color: '#22d3ee' }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                    <Iconify icon={showConfirmPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} width={20} />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            },
-          }}
-        />
+        <Box>
+          <Typography variant="caption" sx={{ display: 'block', mb: 0.5, fontWeight: 600, color: 'rgba(235, 235, 245, 0.7)' }}>
+            Confirmar Contraseña
+          </Typography>
+          <TextField
+            fullWidth
+            name="confirmPassword"
+            placeholder="Repite tu contraseña"
+            value={formData.confirmPassword}
+            onChange={handleInputChange('confirmPassword')}
+            type={showConfirmPassword ? 'text' : 'password'}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock size={18} color="rgba(235, 235, 245, 0.45)" />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      edge="end"
+                      sx={{ color: 'rgba(235, 235, 245, 0.5)' }}
+                    >
+                      {showConfirmPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }
+            }}
+          />
+        </Box>
 
         <FormControlLabel
           control={
@@ -360,52 +326,36 @@ export const SignUpPage = () => {
               checked={formData.acceptTerms}
               onChange={handleInputChange('acceptTerms')}
               sx={{
-                color: 'rgba(255, 255, 255, 0.4)',
-                '&.Mui-checked': { color: '#22d3ee' },
+                color: 'rgba(255, 255, 255, 0.3)',
+                '&.Mui-checked': { color: '#007aff' }
               }}
             />
           }
           label={
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-              Acepto los términos de servicio y la política de privacidad de Fitness App
+            <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.7)', fontSize: '12px' }}>
+              Acepto los términos de servicio y privacidad
             </Typography>
           }
-          sx={{ mb: 2, alignItems: 'flex-start' }}
+          sx={{ my: 0.5 }}
         />
 
-        <Button
-          fullWidth
-          size="large"
+        <button
           type="submit"
           disabled={loading}
-          sx={{
-            py: 1.5,
-            borderRadius: 3,
-            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-            color: '#fff',
-            fontWeight: 800,
-            fontSize: '1rem',
-            textTransform: 'none',
-            boxShadow: '0 10px 25px rgba(6, 182, 212, 0.4)',
-            transition: 'all 0.25s ease',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 15px 35px rgba(6, 182, 212, 0.6)',
-              background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
-            },
-          }}
+          className="apple-btn-primary"
+          style={{ opacity: loading ? 0.7 : 1 }}
         >
-          {loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Registrarse Ahora'}
-        </Button>
+          {loading ? <CircularProgress size={20} sx={{ color: '#000000' }} /> : 'Registrarse Ahora'}
+        </button>
 
-        <Box sx={{ mt: 2.5, textAlign: 'center' }}>
-          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-            ¿Ya tienes una cuenta registrada?{' '}
+        <Box sx={{ mt: 1, textAlign: 'center' }}>
+          <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '14px' }}>
+            ¿Ya tienes una cuenta?{' '}
             <RouterLink
               to="/sign-in"
-              style={{ color: '#22d3ee', fontWeight: 800, textDecoration: 'none' }}
+              style={{ color: '#007aff', fontWeight: 600, textDecoration: 'none' }}
             >
-              Inicia sesión aquí
+              Inicia sesión
             </RouterLink>
           </Typography>
         </Box>

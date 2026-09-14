@@ -124,28 +124,6 @@ export function DashboardLayout({
         slots={{
           leftArea: (
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-              <IconButton
-                onClick={() => setNavOpen(true)}
-                sx={{
-                  display: { xs: 'flex', lg: 'none' },
-                  width: { xs: 38, sm: 42 },
-                  height: { xs: 38, sm: 42 },
-                  color: 'text.primary',
-                  borderRadius: 2.5,
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                  }
-                }}
-              >
-                <Iconify
-                  icon="solar:hamburger-menu-bold-duotone"
-                  width={22}
-                  sx={{ color: '#22d3ee' }}
-                />
-              </IconButton>
-
               <Box
                 sx={{
                   display: 'flex',
@@ -157,28 +135,27 @@ export function DashboardLayout({
               >
                 <Box
                   sx={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: '10px',
-                    background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+                    width: 32,
+                    height: 32,
+                    borderRadius: '9px',
+                    background: '#ffffff',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 0 14px rgba(6, 182, 212, 0.5)'
                   }}
                 >
-                  <Iconify icon="solar:dumbbell-large-bold" width={20} sx={{ color: '#fff' }} />
+                  <Iconify icon="solar:dumbbell-large-bold" width={18} sx={{ color: '#000000' }} />
                 </Box>
                 <Box
                   component="span"
                   sx={{
-                    fontWeight: 900,
-                    fontSize: { xs: '0.95rem', sm: '1.15rem' },
-                    color: 'text.primary',
+                    fontWeight: 800,
+                    fontSize: { xs: '1rem', sm: '1.1rem' },
+                    color: '#ffffff',
                     letterSpacing: -0.5
                   }}
                 >
-                  FITNESS <span style={{ color: '#22d3ee' }}>APP</span>
+                  FITNESS <span style={{ color: '#007aff' }}>PRO</span>
                 </Box>
               </Box>
             </Box>
@@ -189,40 +166,37 @@ export function DashboardLayout({
               sx={{
                 display: { xs: 'none', md: 'flex' },
                 alignItems: 'center',
-                gap: 1.5,
-                px: 2.2,
-                py: 0.85,
-                borderRadius: '9999px',
-                background: 'rgba(255, 255, 255, 0.05)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
-                color: 'text.secondary',
+                gap: 1.2,
+                px: 2,
+                py: 0.75,
+                borderRadius: '12px',
+                background: 'rgba(120, 120, 128, 0.16)',
+                border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                color: 'rgba(235, 235, 245, 0.6)',
                 cursor: 'pointer',
-                minWidth: 280,
-                transition: 'all 0.25s ease',
+                minWidth: 260,
+                transition: 'all 0.15s ease',
                 '&:hover': {
-                  background: 'rgba(255, 255, 255, 0.09)',
-                  borderColor: 'rgba(6, 182, 212, 0.45)',
+                  background: 'rgba(120, 120, 128, 0.24)',
+                  borderColor: 'rgba(255, 255, 255, 0.15)',
                   color: '#fff',
-                  boxShadow: '0 0 20px rgba(6, 182, 212, 0.2)'
                 }
               }}
             >
-              <Iconify icon="solar:magnifer-bold" width={18} sx={{ color: '#22d3ee' }} />
+              <Iconify icon="solar:magnifer-bold" width={16} sx={{ color: 'rgba(235, 235, 245, 0.6)' }} />
               <Typography variant="body2" sx={{ fontSize: '0.85rem', flexGrow: 1, color: 'inherit' }}>
-                Buscar alumnos, rutinas, dietas...
+                Buscar en la app...
               </Typography>
               <Chip
                 label="⌘K"
                 size="small"
                 sx={{
                   height: 20,
-                  fontSize: '0.68rem',
-                  fontWeight: 800,
-                  background: 'rgba(255, 255, 255, 0.08)',
-                  color: 'rgba(255, 255, 255, 0.75)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  borderRadius: 1.5
+                  fontSize: '0.65rem',
+                  fontWeight: 700,
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  borderRadius: 1
                 }}
               />
             </Box>
@@ -240,36 +214,31 @@ export function DashboardLayout({
                 onClick={() => setSearchOpen(true)}
                 sx={{
                   display: { xs: 'flex', md: 'none' },
-                  width: 38,
-                  height: 38,
-                  color: 'text.primary',
-                  borderRadius: 2.5,
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)'
+                  width: 36,
+                  height: 36,
+                  color: '#ffffff',
+                  borderRadius: 2,
+                  background: 'rgba(120, 120, 128, 0.16)',
                 }}
               >
-                <Iconify icon="solar:magnifer-bold" width={20} sx={{ color: '#22d3ee' }} />
+                <Iconify icon="solar:magnifer-bold" width={18} sx={{ color: '#ffffff' }} />
               </IconButton>
 
               <IconButton
                 onClick={handleNotificationsOpen}
                 sx={{
-                  width: { xs: 38, sm: 44 },
-                  height: { xs: 38, sm: 44 },
-                  color: 'text.primary',
-                  borderRadius: 2.5,
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  '&:hover': {
-                    backgroundColor: 'rgba(255, 255, 255, 0.1)'
-                  }
+                  width: 36,
+                  height: 36,
+                  color: '#ffffff',
+                  borderRadius: 2,
+                  background: 'rgba(120, 120, 128, 0.16)',
                 }}
               >
                 <Badge badgeContent={unreadCount} color="error">
                   <Iconify
                     icon="solar:bell-bold-duotone"
-                    width={isMobile ? 20 : 24}
-                    sx={{ color: unreadCount > 0 ? '#f43f5e' : 'inherit' }}
+                    width={20}
+                    sx={{ color: unreadCount > 0 ? '#ff3b30' : 'inherit' }}
                   />
                 </Badge>
               </IconButton>
@@ -277,24 +246,23 @@ export function DashboardLayout({
               <IconButton
                 onClick={handleUserMenuOpen}
                 sx={{
-                  p: 0.4,
+                  p: 0,
                   borderRadius: '50%',
-                  border: '2px solid rgba(6, 182, 212, 0.4)',
-                  boxShadow: '0 0 12px rgba(6, 182, 212, 0.3)',
-                  transition: 'all 0.25s ease',
-                  '&:hover': {
-                    transform: 'scale(1.05)',
-                    boxShadow: '0 0 20px rgba(6, 182, 212, 0.6)'
+                  transition: 'transform 0.15s ease',
+                  '&:active': {
+                    transform: 'scale(0.94)'
                   }
                 }}
               >
                 <Avatar
                   sx={{
-                    width: { xs: 32, sm: 36 },
-                    height: { xs: 32, sm: 36 },
-                    background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-                    fontWeight: 800,
-                    fontSize: '0.85rem'
+                    width: 32,
+                    height: 32,
+                    background: '#2c2c2e',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    fontWeight: 700,
+                    fontSize: '0.85rem',
+                    color: '#ffffff'
                   }}
                 >
                   {(currentUser?.name?.charAt(0) || 'U').toUpperCase()}

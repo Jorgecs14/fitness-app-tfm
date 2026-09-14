@@ -1,4 +1,4 @@
-// Provider del tema Material-UI con configuración Liquid Glass iOS 26 nativa para toda la aplicación
+// Provider del tema Material-UI con configuración nativa Apple iOS Human Interface Guidelines
 import CssBaseline from '@mui/material/CssBaseline'
 import {
   createTheme,
@@ -14,261 +14,229 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     palette: {
       mode: 'dark',
       primary: {
-        main: '#06b6d4',
-        light: '#22d3ee',
-        dark: '#0891b2',
+        main: '#007aff', // Apple System Blue
+        light: '#47a3ff',
+        dark: '#005ecb',
         contrastText: '#ffffff'
       },
       secondary: {
-        main: '#3b82f6',
-        light: '#60a5fa',
-        dark: '#2563eb',
+        main: '#5856d6', // Apple System Indigo
+        light: '#7d7aff',
+        dark: '#3634a3',
         contrastText: '#ffffff'
       },
       error: {
-        main: '#f43f5e',
-        light: '#fb7185',
-        dark: '#e11d48'
+        main: '#ff3b30', // Apple System Red
+        light: '#ff6961',
+        dark: '#d70015'
       },
       warning: {
-        main: '#f59e0b',
-        light: '#fbbf24',
-        dark: '#d97706'
+        main: '#ff9500', // Apple System Orange
+        light: '#ffb340',
+        dark: '#c97200'
       },
       success: {
-        main: '#10b981',
-        light: '#34d399',
-        dark: '#059669'
+        main: '#34c759', // Apple System Green
+        light: '#5cd67c',
+        dark: '#248a3d'
       },
       info: {
-        main: '#22d3ee',
-        light: '#67e8f9',
-        dark: '#0e7490'
+        main: '#007aff',
+        light: '#5ac8fa',
+        dark: '#005ecb'
       },
       background: {
-        default: '#090d16',
-        paper: 'rgba(15, 23, 42, 0.78)'
+        default: '#000000', // Apple OLED Pure Dark
+        paper: '#1c1c1e'   // Apple System Grouped Background
       },
       text: {
-        primary: '#f8fafc',
-        secondary: 'rgba(255, 255, 255, 0.68)'
+        primary: '#ffffff',
+        secondary: 'rgba(235, 235, 245, 0.6)'
       },
-      divider: 'rgba(255, 255, 255, 0.08)'
+      divider: 'rgba(255, 255, 255, 0.1)'
     },
     typography: {
       fontFamily:
-        '"DM Sans Variable", "Barlow", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-      h1: { fontWeight: 900, letterSpacing: '-0.03em' },
-      h2: { fontWeight: 900, letterSpacing: '-0.025em' },
-      h3: { fontWeight: 800, letterSpacing: '-0.02em' },
-      h4: { fontWeight: 800, letterSpacing: '-0.015em' },
-      h5: { fontWeight: 800, letterSpacing: '-0.01em' },
-      h6: { fontWeight: 800 },
-      subtitle1: { fontWeight: 700 },
-      subtitle2: { fontWeight: 700 },
-      body1: { fontSize: '0.95rem' },
-      body2: { fontSize: '0.875rem' },
-      button: { fontWeight: 700, textTransform: 'none' }
+        '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", sans-serif',
+      h1: { fontWeight: 800, letterSpacing: '-0.03em' },
+      h2: { fontWeight: 800, letterSpacing: '-0.025em' },
+      h3: { fontWeight: 700, letterSpacing: '-0.02em' },
+      h4: { fontWeight: 700, letterSpacing: '-0.015em' },
+      h5: { fontWeight: 700, letterSpacing: '-0.01em' },
+      h6: { fontWeight: 600 },
+      subtitle1: { fontWeight: 600, letterSpacing: '-0.01em' },
+      subtitle2: { fontWeight: 600 },
+      body1: { fontSize: '1rem', letterSpacing: '-0.01em' },
+      body2: { fontSize: '0.9rem', color: 'rgba(235, 235, 245, 0.6)' },
+      button: { fontWeight: 600, textTransform: 'none', letterSpacing: '-0.01em' }
     },
     shape: {
-      borderRadius: 16
+      borderRadius: 14
     },
     components: {
-      // 1. Inputs de formulario globales (OutlinedInput) - Liquid Glass con halo cian
+      // 1. Form Inputs - CRITICAL: 16px font to prevent iOS Safari auto-zoom
       MuiOutlinedInput: {
         styleOverrides: {
           root: {
-            borderRadius: 14,
-            backgroundColor: 'rgba(255, 255, 255, 0.04)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            color: '#f8fafc',
-            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+            borderRadius: 12,
+            backgroundColor: 'rgba(120, 120, 128, 0.18)',
+            color: '#ffffff',
+            fontSize: '16px',
+            transition: 'border-color 0.15s ease, background-color 0.15s ease',
             '& .MuiOutlinedInput-notchedOutline': {
-              border: 'none'
+              borderColor: 'rgba(255, 255, 255, 0.08)'
             },
-            '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.08)',
-              border: '1px solid rgba(34, 211, 238, 0.45)',
-              boxShadow: '0 0 16px rgba(6, 182, 212, 0.2)'
+            '&:hover .MuiOutlinedInput-notchedOutline': {
+              borderColor: 'rgba(255, 255, 255, 0.2)'
             },
-            '&.Mui-focused': {
-              backgroundColor: 'rgba(255, 255, 255, 0.12)',
-              border: '1px solid #22d3ee',
-              boxShadow: '0 0 25px rgba(6, 182, 212, 0.38)'
+            '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#007aff',
+              borderWidth: '1.5px'
             },
-            '&.Mui-error': {
-              backgroundColor: 'rgba(244, 63, 94, 0.06)',
-              border: '1px solid #f43f5e',
-              boxShadow: '0 0 16px rgba(244, 63, 94, 0.25)'
-            },
-            '&.Mui-disabled': {
-              backgroundColor: 'rgba(255, 255, 255, 0.02)',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
-              color: 'rgba(255, 255, 255, 0.3)'
+            '&.Mui-error .MuiOutlinedInput-notchedOutline': {
+              borderColor: '#ff3b30'
             }
           },
           input: {
-            color: '#f8fafc',
-            padding: '12px 16px',
+            fontSize: '16px !important', // iOS Safari requirement
+            padding: '13px 16px',
+            color: '#ffffff',
             '&::placeholder': {
-              color: 'rgba(255, 255, 255, 0.45)',
+              color: 'rgba(235, 235, 245, 0.35)',
               opacity: 1
             }
           }
         }
       },
 
-      // 2. Labels de formulario
+      // 2. Input Labels
       MuiInputLabel: {
         styleOverrides: {
           root: {
-            color: 'rgba(255, 255, 255, 0.65)',
-            fontWeight: 500,
-            fontSize: '0.9rem',
+            color: 'rgba(235, 235, 245, 0.6)',
+            fontSize: '15px',
             '&.Mui-focused': {
-              color: '#22d3ee',
-              fontWeight: 700
+              color: '#007aff'
             },
             '&.Mui-error': {
-              color: '#f43f5e'
+              color: '#ff3b30'
             }
           }
         }
       },
 
-      // 3. Menús y Desplegables (Select & MenuItem)
+      // 3. Select & Dropdowns
       MuiSelect: {
         styleOverrides: {
           icon: {
-            color: '#22d3ee',
-            transition: 'transform 0.25s ease'
+            color: 'rgba(235, 235, 245, 0.6)'
           }
         }
       },
       MuiMenu: {
         styleOverrides: {
           paper: {
-            borderRadius: 18,
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.92) 100%)',
-            backdropFilter: 'blur(30px)',
-            WebkitBackdropFilter: 'blur(30px)',
-            border: '1px solid rgba(255, 255, 255, 0.14)',
-            boxShadow: '0 25px 60px rgba(0, 0, 0, 0.65), 0 0 25px rgba(6, 182, 212, 0.15)',
-            padding: '6px'
+            borderRadius: 14,
+            backgroundColor: '#1c1c1e',
+            border: '0.5px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: '0 12px 36px rgba(0, 0, 0, 0.65)',
+            padding: '4px'
           }
         }
       },
       MuiMenuItem: {
         styleOverrides: {
           root: {
-            borderRadius: 10,
-            margin: '2px 4px',
-            color: '#f8fafc',
-            fontSize: '0.9rem',
+            borderRadius: 8,
+            fontSize: '15px',
             fontWeight: 500,
-            transition: 'all 0.2s ease',
+            padding: '8px 12px',
+            color: '#ffffff',
             '&:hover': {
-              backgroundColor: 'rgba(6, 182, 212, 0.18)',
-              color: '#22d3ee',
-              transform: 'translateX(3px)'
+              backgroundColor: 'rgba(255, 255, 255, 0.08)'
             },
             '&.Mui-selected': {
-              backgroundColor: 'rgba(6, 182, 212, 0.25)',
-              color: '#22d3ee',
-              fontWeight: 800,
+              backgroundColor: 'rgba(0, 122, 255, 0.18)',
+              color: '#007aff',
+              fontWeight: 600,
               '&:hover': {
-                backgroundColor: 'rgba(6, 182, 212, 0.32)'
+                backgroundColor: 'rgba(0, 122, 255, 0.24)'
               }
             }
           }
         }
       },
 
-      // 4. Modales y Diálogos
+      // 4. Modals & Dialogs (Apple Sheet style)
       MuiDialog: {
         styleOverrides: {
           paper: {
-            borderRadius: 24,
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(30, 41, 59, 0.90) 100%)',
-            backdropFilter: 'blur(32px)',
-            WebkitBackdropFilter: 'blur(32px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 30px 80px rgba(0, 0, 0, 0.65), 0 0 35px rgba(6, 182, 212, 0.2)',
-            color: '#f8fafc'
+            borderRadius: 20,
+            backgroundColor: '#1c1c1e',
+            border: '0.5px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.75)',
+            color: '#ffffff'
           }
         }
       },
 
-      // 5. Botones Liquid Glass
+      // 5. Apple Buttons
       MuiButton: {
         styleOverrides: {
           root: {
             textTransform: 'none',
-            borderRadius: 14,
-            fontWeight: 700,
-            letterSpacing: '-0.01em',
-            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+            borderRadius: 12,
+            fontWeight: 600,
+            fontSize: '15px',
+            minHeight: '44px',
+            padding: '10px 18px',
+            transition: 'transform 0.12s ease, opacity 0.12s ease',
             '&:active': {
-              transform: 'scale(0.97)'
+              transform: 'scale(0.97)',
+              opacity: 0.88
             }
           },
           containedPrimary: {
-            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+            backgroundColor: '#007aff',
             color: '#ffffff',
-            boxShadow: '0 8px 20px rgba(6, 182, 212, 0.35)',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
+            boxShadow: 'none',
             '&:hover': {
-              background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
-              boxShadow: '0 12px 28px rgba(6, 182, 212, 0.55)',
-              transform: 'translateY(-1.5px)'
+              backgroundColor: '#0062cc',
+              boxShadow: 'none'
             }
           },
           outlined: {
-            borderColor: 'rgba(255, 255, 255, 0.18)',
-            color: '#f8fafc',
-            backgroundColor: 'rgba(255, 255, 255, 0.04)',
-            backdropFilter: 'blur(12px)',
+            borderColor: 'rgba(255, 255, 255, 0.15)',
+            color: '#ffffff',
+            backgroundColor: 'transparent',
             '&:hover': {
-              borderColor: 'rgba(34, 211, 238, 0.5)',
-              backgroundColor: 'rgba(6, 182, 212, 0.1)',
-              boxShadow: '0 0 16px rgba(6, 182, 212, 0.2)'
+              borderColor: 'rgba(255, 255, 255, 0.3)',
+              backgroundColor: 'rgba(255, 255, 255, 0.04)'
             }
           }
         }
       },
 
-      // 6. Cards y Papers
+      // 6. Cards & Papers (Apple Inset Grouped style)
       MuiCard: {
         styleOverrides: {
           root: {
-            borderRadius: 24,
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.80) 0%, rgba(30, 41, 59, 0.72) 100%)',
-            backdropFilter: 'blur(24px) saturate(200%)',
-            WebkitBackdropFilter: 'blur(24px) saturate(200%)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            boxShadow: '0 16px 40px -8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-            color: '#f8fafc',
-            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            '&:hover': {
-              borderColor: 'rgba(34, 211, 238, 0.4)',
-              boxShadow: '0 20px 48px -10px rgba(0, 0, 0, 0.5), 0 0 25px rgba(6, 182, 212, 0.18)',
-              transform: 'translateY(-2px)'
-            }
+            borderRadius: 16,
+            backgroundColor: '#1c1c1e',
+            border: '0.5px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: 'none',
+            color: '#ffffff',
+            backgroundImage: 'none'
           }
         }
       },
       MuiPaper: {
         styleOverrides: {
           root: {
-            color: '#f8fafc',
-            backgroundColor: 'rgba(15, 23, 42, 0.78)',
-            backdropFilter: 'blur(28px) saturate(210%)',
-            WebkitBackdropFilter: 'blur(28px) saturate(210%)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-            backgroundImage: 'none'
+            color: '#ffffff',
+            backgroundColor: '#1c1c1e',
+            backgroundImage: 'none',
+            border: '0.5px solid rgba(255, 255, 255, 0.08)'
           }
         }
       },
@@ -277,66 +245,48 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       MuiChip: {
         styleOverrides: {
           root: {
-            borderRadius: 10,
-            fontWeight: 700,
-            fontSize: '0.78rem'
+            borderRadius: 8,
+            fontWeight: 600,
+            fontSize: '12px',
+            backgroundColor: 'rgba(255, 255, 255, 0.08)',
+            color: '#ffffff',
+            border: 'none'
           }
         }
       },
 
-      // 8. Sliders táctiles con halo neón
+      // 8. Sliders
       MuiSlider: {
         styleOverrides: {
           root: {
-            color: '#22d3ee',
-            height: 8
+            color: '#007aff',
+            height: 6
           },
           thumb: {
             height: 22,
             width: 22,
             backgroundColor: '#ffffff',
-            border: '3px solid #06b6d4',
-            boxShadow: '0 0 15px rgba(6, 182, 212, 0.7)',
-            '&:hover, &.Mui-focusVisible': {
-              boxShadow: '0 0 25px rgba(6, 182, 212, 0.9)'
-            }
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.4)'
           },
           track: {
-            height: 8,
-            borderRadius: 4,
-            background: 'linear-gradient(90deg, #06b6d4, #3b82f6)'
+            height: 6,
+            borderRadius: 3
           },
           rail: {
-            height: 8,
-            borderRadius: 4,
-            backgroundColor: 'rgba(255, 255, 255, 0.12)'
+            height: 6,
+            borderRadius: 3,
+            backgroundColor: 'rgba(255, 255, 255, 0.15)'
           }
         }
       },
 
-      // 9. Tooltips
-      MuiTooltip: {
-        styleOverrides: {
-          tooltip: {
-            background: 'rgba(15, 23, 42, 0.92)',
-            backdropFilter: 'blur(20px)',
-            WebkitBackdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
-            borderRadius: 10,
-            fontSize: '0.8rem',
-            color: '#ffffff'
-          }
-        }
-      },
-
-      // 10. Checkboxes & Switches
+      // 9. Checkboxes & Switches (Apple iOS Style)
       MuiCheckbox: {
         styleOverrides: {
           root: {
             color: 'rgba(255, 255, 255, 0.4)',
             '&.Mui-checked': {
-              color: '#22d3ee'
+              color: '#007aff'
             }
           }
         }
@@ -344,66 +294,69 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       MuiSwitch: {
         styleOverrides: {
           root: {
-            width: 44,
-            height: 26,
+            width: 51,
+            height: 31,
             padding: 0
           },
           switchBase: {
-            padding: 3,
+            padding: 2,
             '&.Mui-checked': {
-              transform: 'translateX(18px)',
+              transform: 'translateX(20px)',
               color: '#ffffff',
               '& + .MuiSwitch-track': {
-                backgroundColor: '#06b6d4',
+                backgroundColor: '#34c759',
                 opacity: 1
               }
             }
           },
           thumb: {
-            width: 20,
-            height: 20
+            width: 27,
+            height: 27,
+            boxShadow: '0 2px 4px rgba(0, 0, 0, 0.3)'
           },
           track: {
-            borderRadius: 13,
-            backgroundColor: 'rgba(255, 255, 255, 0.2)',
+            borderRadius: 31 / 2,
+            backgroundColor: 'rgba(120, 120, 128, 0.32)',
             opacity: 1
           }
         }
       },
 
-      // 11. Tablas Liquid Glass
+      // 10. Tables
       MuiTableCell: {
         styleOverrides: {
           root: {
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            color: '#f8fafc'
+            borderBottom: '0.5px solid rgba(255, 255, 255, 0.08)',
+            color: '#ffffff',
+            padding: '12px 16px',
+            fontSize: '14px'
           },
           head: {
-            color: '#22d3ee',
-            fontWeight: 800,
-            backgroundColor: 'rgba(255, 255, 255, 0.04)'
+            color: 'rgba(235, 235, 245, 0.6)',
+            fontWeight: 600,
+            fontSize: '12px',
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em',
+            backgroundColor: '#1c1c1e'
           }
         }
       },
       MuiTableRow: {
         styleOverrides: {
           root: {
-            transition: 'all 0.2s ease',
             '&:hover': {
-              backgroundColor: 'rgba(6, 182, 212, 0.08) !important'
+              backgroundColor: 'rgba(255, 255, 255, 0.04) !important'
             }
           }
         }
       },
 
-      // 12. Tabs Liquid Glass
+      // 11. Tabs
       MuiTabs: {
         styleOverrides: {
           indicator: {
-            backgroundColor: '#22d3ee',
-            height: 3,
-            borderRadius: '3px 3px 0 0',
-            boxShadow: '0 0 12px #22d3ee'
+            backgroundColor: '#007aff',
+            height: 2.5
           }
         }
       },
@@ -411,46 +364,13 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
         styleOverrides: {
           root: {
             textTransform: 'none',
-            fontWeight: 700,
-            color: 'rgba(255, 255, 255, 0.65)',
-            transition: 'all 0.25s ease',
-            '&:hover': {
-              color: '#22d3ee'
-            },
+            fontWeight: 600,
+            fontSize: '14px',
+            color: 'rgba(235, 235, 245, 0.6)',
             '&.Mui-selected': {
-              color: '#22d3ee',
-              fontWeight: 800
+              color: '#007aff',
+              fontWeight: 700
             }
-          }
-        }
-      },
-
-      // 13. Listas y ListItemButton
-      MuiListItemButton: {
-        styleOverrides: {
-          root: {
-            borderRadius: 12,
-            transition: 'all 0.2s ease',
-            '&:hover': {
-              backgroundColor: 'rgba(6, 182, 212, 0.14)',
-              color: '#22d3ee'
-            }
-          }
-        }
-      },
-
-      // 14. Accordion
-      MuiAccordion: {
-        styleOverrides: {
-          root: {
-            backgroundColor: 'rgba(15, 23, 42, 0.75)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(255, 255, 255, 0.12)',
-            borderRadius: '16px !important',
-            color: '#f8fafc',
-            margin: '8px 0 !important',
-            '&::before': { display: 'none' }
           }
         }
       }

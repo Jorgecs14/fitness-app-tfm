@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Typography, Box, Chip, Stack } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import { Dialog, DialogContent, Typography, Box, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Dumbbell, X } from 'lucide-react';
 
 interface BarCalculatorModalProps {
   open: boolean;
@@ -9,6 +9,8 @@ interface BarCalculatorModalProps {
 }
 
 export const BarCalculatorModal: React.FC<BarCalculatorModalProps> = ({ open, onClose, targetWeight = 60 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [weight, setWeight] = useState<number>(targetWeight);
   const [barWeight, setBarWeight] = useState<number>(20); // Barra olímpica estándar 20kg
 
@@ -30,6 +32,17 @@ export const BarCalculatorModal: React.FC<BarCalculatorModalProps> = ({ open, on
 
   const platesNeeded = calculatePlates();
 
+  const getPlateColor = (plate: number) => {
+    switch (plate) {
+      case 25: return { bg: '#e02424', text: '#ffffff' }; // Rojo olímpico
+      case 20: return { bg: '#1c64f2', text: '#ffffff' }; // Azul olímpico
+      case 15: return { bg: '#e3a008', text: '#000000' }; // Amarillo olímpico
+      case 10: return { bg: '#057a55', text: '#ffffff' }; // Verde olímpico
+      case 5:  return { bg: '#ffffff', text: '#000000' }; // Blanco
+      default: return { bg: '#4b5563', text: '#ffffff' };
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -37,98 +50,127 @@ export const BarCalculatorModal: React.FC<BarCalculatorModalProps> = ({ open, on
       maxWidth="xs"
       fullWidth
       PaperProps={{
+        className: isMobile ? 'apple-sheet-paper' : 'apple-card',
         sx: {
-          background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.96) 0%, rgba(30, 41, 59, 0.92) 100%)',
-          backdropFilter: 'blur(32px) saturate(210%)',
-          WebkitBackdropFilter: 'blur(32px) saturate(210%)',
-          border: '1px solid rgba(255, 255, 255, 0.16)',
-          borderRadius: '24px',
-          color: '#ffffff',
-          boxShadow: '0 30px 80px rgba(0, 0, 0, 0.7), 0 0 35px rgba(6, 182, 212, 0.25)',
-        },
+          backgroundColor: '#1c1c1e !important',
+          border: '0.5px solid rgba(255, 255, 255, 0.1) !important',
+          p: 0,
+          m: isMobile ? 0 : 2,
+          position: isMobile ? 'fixed' : 'relative',
+          bottom: isMobile ? 0 : 'auto',
+          maxHeight: '90vh'
+        }
       }}
     >
-      <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1.2, color: '#ffffff' }}>
-        <Iconify icon="solar:dumbbell-large-bold" width={24} sx={{ color: '#22d3ee' }} />
-        Calculador de Discos (Por Lado)
-      </DialogTitle>
-      <DialogContent>
-        <Stack spacing={2.5} sx={{ mt: 1 }}>
-          <TextField
-            label="Peso Total Objetivo (kg)"
-            type="number"
-            value={weight}
-            onChange={(e) => setWeight(Number(e.target.value))}
-            fullWidth
-          />
-          <TextField
-            label="Peso de la Barra (kg)"
-            type="number"
-            value={barWeight}
-            onChange={(e) => setBarWeight(Number(e.target.value))}
-            fullWidth
-          />
+      {isMobile && <div className="apple-sheet-handle" />}
+
+      <Box sx={{ p: 2.5, pb: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+          <Dumbbell size={20} color="#007aff" />
+          <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '17px', color: '#ffffff' }}>
+            Calculador de Discos
+          </Typography>
+        </Box>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'rgba(120, 120, 128, 0.2)',
+            border: 'none',
+            borderRadius: '50%',
+            width: '28px',
+            height: '28px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+            color: 'rgba(235, 235, 245, 0.6)'
+          }}
+        >
+          <X size={16} />
+        </button>
+      </Box>
+
+      <DialogContent sx={{ px: 2.5, py: 1.5 }}>
+        <Stack spacing={2}>
+          <Box>
+            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600 }}>
+              Peso Objetivo Total (kg)
+            </Typography>
+            <input
+              type="number"
+              value={weight || ''}
+              onChange={(e) => setWeight(Number(e.target.value))}
+              className="fitness-input"
+              placeholder="Ej: 80"
+            />
+          </Box>
+
+          <Box>
+            <Typography variant="caption" sx={{ display: 'block', mb: 0.5, color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600 }}>
+              Peso de la Barra (kg)
+            </Typography>
+            <input
+              type="number"
+              value={barWeight || ''}
+              onChange={(e) => setBarWeight(Number(e.target.value))}
+              className="fitness-input"
+              placeholder="20"
+            />
+          </Box>
 
           <Box
             sx={{
-              p: 2.5,
-              background: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
+              p: 2,
               borderRadius: 3,
-              textAlign: 'center',
+              backgroundColor: 'rgba(120, 120, 128, 0.16)',
+              border: '0.5px solid rgba(255, 255, 255, 0.08)',
+              textAlign: 'center'
             }}
           >
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.65)', display: 'block', mb: 1.5, fontWeight: 700, letterSpacing: '0.04em' }}>
-              DISCOS A CARGAR EN CADA EXTREMO:
+            <Typography variant="caption" sx={{ display: 'block', color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600, mb: 1.2 }}>
+              DISCOS POR LADO:
             </Typography>
 
             {platesNeeded.length === 0 ? (
-              <Typography variant="body2" sx={{ color: '#f43f5e', fontWeight: 800 }}>
-                Barra olímpica sola ({barWeight}kg) o peso objetivo menor.
+              <Typography variant="body2" sx={{ color: '#ff9500', fontWeight: 600 }}>
+                {weight <= barWeight ? `Solo la barra vacía (${barWeight}kg)` : 'Introduce un peso mayor'}
               </Typography>
             ) : (
               <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="center" gap={1}>
-                {platesNeeded.map((p, idx) => (
-                  <Chip
-                    key={idx}
-                    label={`${p} kg`}
-                    sx={{
-                      fontWeight: 800,
-                      fontSize: '0.9rem',
-                      py: 2.2,
-                      px: 1.2,
-                      background: 'rgba(6, 182, 212, 0.2)',
-                      color: '#22d3ee',
-                      border: '1px solid rgba(34, 211, 238, 0.45)',
-                      borderRadius: '9999px',
-                      boxShadow: '0 0 14px rgba(6, 182, 212, 0.3)',
-                    }}
-                  />
-                ))}
+                {platesNeeded.map((p, idx) => {
+                  const plateColor = getPlateColor(p);
+                  return (
+                    <Box
+                      key={idx}
+                      sx={{
+                        backgroundColor: plateColor.bg,
+                        color: plateColor.text,
+                        fontWeight: 700,
+                        fontSize: '13px',
+                        py: 0.8,
+                        px: 1.5,
+                        borderRadius: 2,
+                        minWidth: '42px',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.3)'
+                      }}
+                    >
+                      {p} kg
+                    </Box>
+                  );
+                })}
               </Stack>
             )}
           </Box>
         </Stack>
       </DialogContent>
-      <DialogActions sx={{ p: 2.5, pt: 1 }}>
-        <Button
-          onClick={onClose}
-          fullWidth
-          variant="contained"
-          sx={{
-            py: 1.2,
-            borderRadius: 3,
-            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-            color: '#fff',
-            fontWeight: 800,
-            fontSize: '0.95rem',
-            boxShadow: '0 8px 20px rgba(6, 182, 212, 0.4)',
-          }}
-        >
-          Entendido
-        </Button>
-      </DialogActions>
+
+      <Box sx={{ p: 2.5, pt: 1 }}>
+        <button onClick={onClose} className="apple-btn-blue">
+          Listo
+        </button>
+      </Box>
     </Dialog>
   );
 };
 
+export default BarCalculatorModal;

@@ -2,19 +2,26 @@ import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   Grid,
-  Button,
-  Avatar,
   Chip,
   Stack,
-  Divider,
   CircularProgress,
   Alert,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Iconify } from '../utils/iconify';
+import {
+  Flame,
+  Calendar,
+  PlusCircle,
+  TrendingUp,
+  Dumbbell,
+  Clock,
+  PlayCircle,
+  UtensilsCrossed,
+  ShieldCheck,
+  UserCheck,
+  BookOpen
+} from 'lucide-react';
 import { getCurrentUser } from '../services/userService';
 import { getWorkoutsWithExercises, getWorkoutDetails } from '../services/workoutService';
 import { getDietsWithFoods, getDietUsers, getDietWithFoods, getUserDiet } from '../services/dietService';
@@ -97,7 +104,6 @@ export const ClientHomePage: React.FC = () => {
     }
   };
 
-  // Iniciar entrenamiento en vivo cargando la información completa del workout
   const handleStartLiveWorkout = async (workout: any) => {
     setLoadingWorkoutId(workout.id);
     try {
@@ -105,7 +111,6 @@ export const ClientHomePage: React.FC = () => {
       setActiveLiveWorkout(fullDetails);
       setLiveWorkoutOpen(true);
     } catch (err) {
-      console.error('Error obteniendo detalles del workout, usando datos locales:', err);
       setActiveLiveWorkout(workout);
       setLiveWorkoutOpen(true);
     } finally {
@@ -113,7 +118,6 @@ export const ClientHomePage: React.FC = () => {
     }
   };
 
-  // Sesiones de los últimos 7 días (esta semana)
   const now = new Date();
   const thisWeekSessions = loggedSessions.filter((s) => {
     const d = new Date(s.completed_at || s.started_at || '');
@@ -121,11 +125,9 @@ export const ClientHomePage: React.FC = () => {
     return diffDays <= 7;
   });
 
-  // Cálculo de Carga Muscular Semanal (Series efectivas acumuladas)
   const activeItemsForMuscleLoad: Array<{ sets: number; exercise: any }> = [];
   const activeExerciseListForDetails: Array<{ name: string; target_muscle?: string; sets?: number }> = [];
 
-  // 1. Extraer series completadas de las sesiones de esta semana
   thisWeekSessions.forEach((session) => {
     (session.logged_sets || session.sets || []).forEach((s) => {
       const ex = s.exercises || {
@@ -143,7 +145,6 @@ export const ClientHomePage: React.FC = () => {
     });
   });
 
-  // 2. Si el usuario aún no ha completado series esta semana, proyectar a partir de sus rutinas asignadas
   if (activeItemsForMuscleLoad.length === 0 && assignedWorkouts.length > 0) {
     assignedWorkouts.forEach((w) => {
       const weList = w.workout_exercises || w.exercises || [];
@@ -164,221 +165,215 @@ export const ClientHomePage: React.FC = () => {
 
   if (loading) {
     return (
-      <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress size={48} color="primary" />
-        <Typography sx={{ mt: 2, color: 'text.secondary', fontStyle: 'italic', fontWeight: 500 }}>
-          Cargando tu ecosistema de entrenamiento y mapa corporal...
+      <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="60vh">
+        <CircularProgress size={36} sx={{ color: '#007aff' }} />
+        <Typography sx={{ mt: 2, color: 'rgba(235, 235, 245, 0.6)', fontSize: '14px' }}>
+          Cargando tu plan de entrenamiento...
         </Typography>
       </Box>
     );
   }
 
-  // Rutina recomendada para entrenar hoy (primera disponible)
   const spotlightWorkout = assignedWorkouts.length > 0 ? assignedWorkouts[0] : null;
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3.5 }, maxWidth: 1240, mx: 'auto' }}>
-      {/* =========================================================================
-          HERO BANNER - ESTILO iOS 26 LIQUID GLASS
-          ========================================================================= */}
-      <Box className="liquid-hero-banner" sx={{ p: { xs: 3, sm: 4 }, mb: 4 }}>
-        <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} spacing={3}>
-          <Box sx={{ zIndex: 1 }}>
-            <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }} flexWrap="wrap" gap={0.8}>
-              <Box className="liquid-pill" sx={{ bgcolor: 'rgba(34, 211, 238, 0.15)', color: '#22d3ee', border: '1px solid rgba(34, 211, 238, 0.3)', px: 1.8, py: 0.6, fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                <Iconify icon="solar:fire-bold" width={18} sx={{ color: '#f59e0b' }} />
-                <span>Racha: {thisWeekSessions.length} sesiones esta semana</span>
-              </Box>
-
-              <Box className="liquid-pill" sx={{ bgcolor: 'rgba(255, 255, 255, 0.06)', color: '#94a3b8', border: '1px solid rgba(255, 255, 255, 0.12)', px: 1.8, py: 0.6, fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                <Iconify icon="solar:calendar-bold" width={16} sx={{ color: '#22d3ee' }} />
-                <span style={{ textTransform: 'capitalize' }}>
-                  {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
-                </span>
-              </Box>
-            </Stack>
-
-            <Typography variant="h3" fontWeight={800} sx={{ letterSpacing: '-0.03em', color: '#ffffff' }}>
-              ¡Hola, {currentUser?.name || 'Atleta'}! 👋
-            </Typography>
-
-            <Typography variant="body1" sx={{ mt: 0.8, color: '#94a3b8', maxWidth: 640, lineHeight: 1.6 }}>
-              Visualiza en tiempo real el estímulo muscular de tu cuerpo, sigue tus rutinas con demostraciones en vídeo y mantén el control de tus macros.
-            </Typography>
+    <Box className="apple-content-container">
+      {/* Apple Greeting Hero Card */}
+      <Box
+        className="apple-card"
+        sx={{
+          p: { xs: 2.5, sm: 3.5 },
+          mb: 3,
+          background: 'linear-gradient(180deg, #1c1c1e 0%, #161618 100%)',
+        }}
+      >
+        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }} flexWrap="wrap">
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.8,
+              backgroundColor: 'rgba(255, 149, 0, 0.15)',
+              color: '#ff9500',
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 2,
+              fontSize: '12px',
+              fontWeight: 600,
+            }}
+          >
+            <Flame size={14} />
+            <span>{thisWeekSessions.length} sesiones esta semana</span>
           </Box>
+          <Box
+            sx={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 0.8,
+              backgroundColor: 'rgba(120, 120, 128, 0.2)',
+              color: 'rgba(235, 235, 245, 0.7)',
+              px: 1.5,
+              py: 0.5,
+              borderRadius: 2,
+              fontSize: '12px',
+              fontWeight: 500,
+              textTransform: 'capitalize',
+            }}
+          >
+            <Calendar size={14} />
+            <span>{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+          </Box>
+        </Stack>
 
-          <Stack direction="row" spacing={1.5} flexWrap="wrap" gap={1} sx={{ zIndex: 1 }}>
-            <Button
-              variant="contained"
-              className="liquid-pill"
-              color="primary"
-              size="large"
-              startIcon={<Iconify icon="solar:add-circle-bold" width={20} />}
-              onClick={() => setWorkoutBuilderOpen(true)}
-              sx={{ px: 3, py: 1.4, boxShadow: '0 8px 20px rgba(0, 167, 111, 0.35)' }}
-            >
-              Crear Rutina
-            </Button>
+        <Typography variant="h4" sx={{ fontWeight: 800, color: '#ffffff', letterSpacing: '-0.03em', mb: 0.8 }}>
+          ¡Hola, {currentUser?.name || 'Atleta'}!
+        </Typography>
 
-            <Button
-              variant="outlined"
-              className="liquid-pill"
-              color="inherit"
-              size="large"
-              startIcon={<Iconify icon="solar:camera-add-bold" width={20} />}
-              onClick={() => navigate('/dashboard/submit-progress')}
-              sx={{ px: 2.5, py: 1.4, bgcolor: 'rgba(255,255,255,0.7)', borderColor: 'rgba(226,232,240,0.9)' }}
-            >
-              Progreso
-            </Button>
-          </Stack>
+        <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.65)', maxWidth: 640, mb: 2.5, lineHeight: 1.5 }}>
+          Controla en tiempo real tu estímulo muscular, registra series en vivo y mantén el control de tus objetivos.
+        </Typography>
+
+        <Stack direction="row" spacing={1.5} flexWrap="wrap">
+          <button
+            onClick={() => setWorkoutBuilderOpen(true)}
+            className="apple-btn-secondary"
+            style={{ gap: '6px' }}
+          >
+            <PlusCircle size={17} color="#007aff" />
+            Nueva Rutina
+          </button>
+          <button
+            onClick={() => navigate('/dashboard/submit-progress')}
+            className="apple-btn-secondary"
+            style={{ gap: '6px' }}
+          >
+            <TrendingUp size={17} color="#34c759" />
+            Subir Progreso
+          </button>
         </Stack>
       </Box>
 
-      {/* =========================================================================
-          MAPA DE CALOR ANATÓMICO CORPORAL (FLAGSHIP FEATURE)
-          ========================================================================= */}
-      <Box sx={{ mb: 4 }}>
+      {/* Featured Workout Hero Section */}
+      {spotlightWorkout ? (
+        <Box
+          className="apple-card"
+          sx={{
+            p: { xs: 2.5, sm: 3 },
+            mb: 3,
+            border: '0.5px solid rgba(0, 122, 255, 0.3)',
+            backgroundColor: '#1c1c1e',
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box
+                sx={{
+                  backgroundColor: 'rgba(52, 199, 89, 0.15)',
+                  color: '#34c759',
+                  px: 1.2,
+                  py: 0.4,
+                  borderRadius: 1.5,
+                  fontSize: '11px',
+                  fontWeight: 700,
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                Recomendado Hoy
+              </Box>
+              <Chip
+                label={spotlightWorkout.category}
+                size="small"
+                sx={{ backgroundColor: 'rgba(120, 120, 128, 0.24)', color: '#ffffff', fontWeight: 600 }}
+              />
+            </Box>
+          </Box>
+
+          <Typography variant="h5" sx={{ fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', mb: 0.6 }}>
+            {spotlightWorkout.name}
+          </Typography>
+
+          <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.65)', mb: 2 }}>
+            {spotlightWorkout.notes || 'Rutina estructurada con seguimiento en vivo de pesos y descansos.'}
+          </Typography>
+
+          <Stack direction="row" spacing={2.5} sx={{ mb: 2.5 }} flexWrap="wrap">
+            <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.75)', display: 'flex', alignItems: 'center', gap: 0.8, fontSize: '13px' }}>
+              <Dumbbell size={15} color="#007aff" />
+              {(spotlightWorkout.workout_exercises || spotlightWorkout.exercises || []).length} ejercicios
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.75)', display: 'flex', alignItems: 'center', gap: 0.8, fontSize: '13px' }}>
+              <Clock size={15} color="#ff9500" />
+              ~45 - 60 min
+            </Typography>
+          </Stack>
+
+          <button
+            onClick={() => handleStartLiveWorkout(spotlightWorkout)}
+            disabled={loadingWorkoutId === spotlightWorkout.id}
+            className="apple-btn-primary"
+            style={{ height: '48px' }}
+          >
+            {loadingWorkoutId === spotlightWorkout.id ? (
+              <CircularProgress size={18} sx={{ color: '#000000' }} />
+            ) : (
+              <>
+                <PlayCircle size={20} />
+                Empezar Sesión
+              </>
+            )}
+          </button>
+        </Box>
+      ) : (
+        <Box
+          className="apple-card"
+          sx={{
+            p: 3,
+            mb: 3,
+            textAlign: 'center',
+          }}
+        >
+          <Dumbbell size={36} color="#007aff" style={{ marginBottom: '10px' }} />
+          <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
+            Diseña tu primera rutina
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', maxWidth: 450, mx: 'auto', mb: 2 }}>
+            Elige una plantilla contrastada (Tirón/Empuje/Piernas, Torso/Pierna) o añade tus ejercicios preferidos.
+          </Typography>
+          <button onClick={() => setWorkoutBuilderOpen(true)} className="apple-btn-blue" style={{ maxWidth: '280px', margin: '0 auto' }}>
+            Elegir Plantilla
+          </button>
+        </Box>
+      )}
+
+      {/* Anatomical Heatmap Section */}
+      <Box sx={{ mb: 3 }}>
         <BodyHeatmap
           muscleLoad={calculatedMuscleLoad}
           activeExercises={activeExerciseListForDetails}
         />
       </Box>
 
-      {/* =========================================================================
-          TARJETA DESTACADA: ENTRENAMIENTO RECOMENDADO PARA HOY
-          ========================================================================= */}
-      {spotlightWorkout ? (
-        <Box
-          className="liquid-glass-card"
-          sx={{
-            mb: 4,
-            p: { xs: 2.5, sm: 3.5 },
-            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(30, 41, 59, 0.96) 100%)',
-            color: 'white',
-            boxShadow: '0 16px 36px rgba(15, 23, 42, 0.25)',
-          }}
-        >
-          <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} spacing={3}>
-            <Box sx={{ flexGrow: 1 }}>
-              <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }} flexWrap="wrap" gap={0.8}>
-                <Chip
-                  icon={<Iconify icon="solar:flame-bold" sx={{ color: '#22c55e !important' }} />}
-                  label="ENTRENAMIENTO RECOMENDADO"
-                  size="small"
-                  sx={{ bgcolor: 'rgba(34, 197, 94, 0.2)', color: '#4ade80', fontWeight: 'bold' }}
-                />
-                <Chip
-                  label={spotlightWorkout.category}
-                  size="small"
-                  sx={{ bgcolor: 'rgba(255, 255, 255, 0.15)', color: 'white', fontWeight: 600 }}
-                />
-              </Stack>
-
-              <Typography variant="h4" fontWeight={800} sx={{ letterSpacing: '-0.02em', mb: 0.5 }}>
-                {spotlightWorkout.name}
+      {/* Grid: Routines and Nutrition */}
+      <Grid container spacing={2.5}>
+        <Grid size={{ xs: 12, md: 8 }}>
+          <Box className="apple-card" sx={{ p: { xs: 2.5, sm: 3 } }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+              <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '18px' }}>
+                Mis Rutinas ({assignedWorkouts.length})
               </Typography>
-
-              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.75)', maxWidth: 650, mb: 2 }}>
-                {spotlightWorkout.notes || 'Rutina con seguimiento en vivo de series, repeticiones, cargas y tiempos de descanso.'}
-              </Typography>
-
-              <Stack direction="row" spacing={2.5} flexWrap="wrap" gap={1}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.85)', display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                  <Iconify icon="solar:dumbbell-large-bold" width={18} sx={{ color: '#38bdf8' }} />
-                  {(spotlightWorkout.workout_exercises || spotlightWorkout.exercises || []).length} ejercicios estructurados
-                </Typography>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.85)', display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                  <Iconify icon="solar:clock-circle-bold" width={18} sx={{ color: '#f59e0b' }} />
-                  ~45 - 60 min estimados
-                </Typography>
-              </Stack>
+              <button
+                onClick={() => setWorkoutBuilderOpen(true)}
+                className="apple-btn-secondary"
+                style={{ height: '36px', fontSize: '13px', padding: '0 12px' }}
+              >
+                + Añadir
+              </button>
             </Box>
 
-            <Button
-              variant="contained"
-              className="liquid-pill"
-              color="success"
-              size="large"
-              disabled={loadingWorkoutId === spotlightWorkout.id}
-              startIcon={
-                loadingWorkoutId === spotlightWorkout.id ? (
-                  <CircularProgress size={20} color="inherit" />
-                ) : (
-                  <Iconify icon="solar:play-circle-bold" width={26} height={26} />
-                )
-              }
-              onClick={() => handleStartLiveWorkout(spotlightWorkout)}
-              sx={{
-                px: 4,
-                py: 1.8,
-                fontSize: '1.05rem',
-                fontWeight: 800,
-                boxShadow: '0 8px 24px rgba(34, 197, 94, 0.45)',
-                bgcolor: '#22c55e',
-                '&:hover': { bgcolor: '#16a34a' },
-              }}
-            >
-              {loadingWorkoutId === spotlightWorkout.id ? 'Cargando Rutina...' : 'Comenzar Entrenamiento Ya'}
-            </Button>
-          </Stack>
-        </Box>
-      ) : (
-        <Box
-          className="liquid-glass-card"
-          sx={{
-            mb: 4,
-            p: 3,
-            borderStyle: 'dashed',
-            borderColor: '#94a3b8',
-            textAlign: 'center',
-          }}
-        >
-          <Iconify icon="solar:dumbbell-large-minimalistic-broken" width={52} height={52} sx={{ color: 'primary.main', mb: 1.5 }} />
-          <Typography variant="h6" fontWeight="bold">
-            ¿Listo para diseñar tu primera rutina?
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto', mb: 2 }}>
-            Elige una plantilla contrastada (Tirón/Empuje/Pierna, Torso/Pierna o Full Body) o agrega ejercicios de la biblioteca en 1 clic.
-          </Typography>
-          <Button
-            variant="contained"
-            className="liquid-pill"
-            color="primary"
-            startIcon={<Iconify icon="solar:magic-stick-3-bold" />}
-            onClick={() => setWorkoutBuilderOpen(true)}
-          >
-            Elegir Plantilla de Rutina
-          </Button>
-        </Box>
-      )}
-
-      {/* =========================================================================
-          BLOQUE DE CONTENIDO: MIS RUTINAS & NUTRICIÓN / PERFIL
-          ========================================================================= */}
-      <Grid container spacing={3}>
-        {/* Mis Rutinas de Entrenamiento */}
-        <Grid size={{ xs: 12, md: 8 }}>
-          <Box className="liquid-glass-card" sx={{ p: 3, height: '100%' }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                📋 Mis Rutinas de Entrenamiento ({assignedWorkouts.length})
-              </Typography>
-              <Button
-                size="small"
-                variant="outlined"
-                className="liquid-pill"
-                startIcon={<Iconify icon="eva:plus-fill" />}
-                onClick={() => setWorkoutBuilderOpen(true)}
-              >
-                Nueva Rutina
-              </Button>
-            </Stack>
-            <Divider sx={{ mb: 2.5 }} />
-
             {assignedWorkouts.length === 0 ? (
-              <Alert severity="info" sx={{ borderRadius: 3 }}>
-                Aún no tienes rutinas guardadas. Pulsa en <strong>"Nueva Rutina"</strong> para crear una o cargar una plantilla prediseñada.
+              <Alert severity="info" sx={{ borderRadius: 3, backgroundColor: 'rgba(0, 122, 255, 0.1)', color: '#47a3ff' }}>
+                Aún no tienes rutinas guardadas. Pulsa en "+ Añadir" para crear la primera.
               </Alert>
             ) : (
               <Grid container spacing={2}>
@@ -388,57 +383,39 @@ export const ClientHomePage: React.FC = () => {
                     <Grid size={{ xs: 12, sm: 6 }} key={workout.id}>
                       <Box
                         sx={{
-                          p: 2.5,
-                          borderRadius: 3.5,
-                          bgcolor: 'rgba(255, 255, 255, 0.8)',
-                          border: '1px solid rgba(226, 232, 240, 0.9)',
+                          p: 2,
+                          borderRadius: 3,
+                          backgroundColor: '#2c2c2e',
+                          border: '0.5px solid rgba(255, 255, 255, 0.08)',
                           display: 'flex',
                           flexDirection: 'column',
                           justifyContent: 'space-between',
                           height: '100%',
-                          transition: 'all 0.25s ease',
-                          '&:hover': {
-                            transform: 'translateY(-2px)',
-                            boxShadow: '0 8px 24px rgba(15, 23, 42, 0.08)',
-                            borderColor: 'primary.main',
-                          },
                         }}
                       >
-                        <Box>
-                          <Stack direction="row" justifyContent="space-between" alignItems="flex-start" sx={{ mb: 1 }}>
-                            <Typography variant="subtitle1" fontWeight="bold">
+                        <Box sx={{ mb: 2 }}>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 0.8 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff' }}>
                               {workout.name}
                             </Typography>
-                            <Chip label={workout.category} size="small" color="primary" variant="outlined" />
-                          </Stack>
-
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, minHeight: 40, fontSize: '0.85rem' }}>
+                            <Chip label={workout.category} size="small" sx={{ fontSize: '11px', height: '22px' }} />
+                          </Box>
+                          <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '13px', mb: 1 }}>
                             {workout.notes || 'Rutina personalizada'}
                           </Typography>
-
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.6, mb: 2 }}>
-                            <Iconify icon="solar:dumbbell-bold" width={16} /> {exerciseCount} ejercicios estructurados
+                          <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.5)', display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                            <Dumbbell size={13} /> {exerciseCount} ejercicios
                           </Typography>
                         </Box>
 
-                        <Button
-                          variant="contained"
-                          color="success"
-                          fullWidth
-                          className="liquid-pill"
-                          disabled={loadingWorkoutId === workout.id}
-                          startIcon={
-                            loadingWorkoutId === workout.id ? (
-                              <CircularProgress size={16} color="inherit" />
-                            ) : (
-                              <Iconify icon="eva:play-circle-fill" />
-                            )
-                          }
+                        <button
                           onClick={() => handleStartLiveWorkout(workout)}
-                          sx={{ fontWeight: 'bold' }}
+                          disabled={loadingWorkoutId === workout.id}
+                          className="apple-btn-blue"
+                          style={{ height: '40px', fontSize: '14px' }}
                         >
-                          {loadingWorkoutId === workout.id ? 'Cargando...' : 'Entrenar Ya'}
-                        </Button>
+                          {loadingWorkoutId === workout.id ? 'Iniciando...' : 'Entrenar'}
+                        </button>
                       </Box>
                     </Grid>
                   );
@@ -448,116 +425,156 @@ export const ClientHomePage: React.FC = () => {
           </Box>
         </Grid>
 
-        {/* Panel Lateral: Mi Plan de Nutrición & Perfil */}
+        {/* Nutrition and Trainer Status */}
         <Grid size={{ xs: 12, md: 4 }}>
-          <Stack spacing={3}>
-            {/* Card Dieta & Retos Diarios */}
-            <Box className="liquid-glass-card" sx={{ p: 3 }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
-                <Typography variant="subtitle1" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  🥗 Mi Dieta Diaria
-                </Typography>
-                <Button size="small" onClick={() => navigate('/dashboard/client-diet')}>
-                  Gestionar
-                </Button>
-              </Stack>
-              <Divider sx={{ mb: 2 }} />
+          <Stack spacing={2.5}>
+            <Box className="apple-card" sx={{ p: 2.5 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <UtensilsCrossed size={18} color="#34c759" />
+                  <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '16px' }}>
+                    Mi Plan Nutricional
+                  </Typography>
+                </Box>
+                <button
+                  onClick={() => navigate('/dashboard/client-diet')}
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    color: '#007aff',
+                    fontSize: '13px',
+                    fontWeight: 600,
+                    cursor: 'pointer'
+                  }}
+                >
+                  Ver
+                </button>
+              </Box>
 
               {assignedDiet ? (
                 <Box>
-                  <Typography variant="subtitle1" fontWeight="bold">
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff' }}>
                     {assignedDiet.name}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2, fontSize: '0.85rem', maxHeight: 60, overflow: 'hidden' }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '13px', mb: 1.5 }}>
                     {assignedDiet.description || 'Pautas de alimentación adaptadas a tus metas.'}
                   </Typography>
-
-                  <Chip
-                    icon={<Iconify icon="solar:fire-bold" sx={{ color: '#f59e0b !important' }} />}
-                    label={`${assignedDiet.calories} Kcal Diarias`}
-                    sx={{ bgcolor: '#fef3c7', color: '#d97706', fontWeight: 'bold', mb: 2.5 }}
-                  />
-
-                  <Button
-                    variant="contained"
-                    fullWidth
-                    color="primary"
-                    className="liquid-pill"
-                    onClick={() => navigate('/dashboard/client-diet')}
-                    startIcon={<Iconify icon="eva:checkmark-square-2-fill" />}
-                    sx={{ fontWeight: 'bold' }}
+                  <Box
+                    sx={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 0.6,
+                      backgroundColor: 'rgba(255, 149, 0, 0.15)',
+                      color: '#ff9500',
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: 2,
+                      fontSize: '13px',
+                      fontWeight: 700,
+                      mb: 2,
+                    }}
                   >
-                    Marcar Comidas de Hoy
-                  </Button>
+                    <Flame size={14} />
+                    {assignedDiet.calories} Kcal Diarias
+                  </Box>
+
+                  <button
+                    onClick={() => navigate('/dashboard/client-diet')}
+                    className="apple-btn-secondary"
+                    style={{ width: '100%', height: '40px', fontSize: '13px' }}
+                  >
+                    Registrar Comidas
+                  </button>
                 </Box>
               ) : (
-                <Box sx={{ textAlign: 'center', py: 2 }}>
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Aún no has configurado tu plan de alimentación semanal.
+                <Box sx={{ textAlign: 'center', py: 1.5 }}>
+                  <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.5)', mb: 1.5, fontSize: '13px' }}>
+                    No tienes una dieta asignada actualmente.
                   </Typography>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    className="liquid-pill"
+                  <button
                     onClick={() => navigate('/dashboard/client-diet')}
+                    className="apple-btn-secondary"
+                    style={{ width: '100%', height: '38px', fontSize: '13px' }}
                   >
-                    Crear Mi Plan Nutricional
-                  </Button>
+                    Configurar Dieta
+                  </button>
                 </Box>
               )}
             </Box>
 
-            {/* Card Estado del Alumno / Entrenador */}
-            <Box className="liquid-glass-card" sx={{ p: 3, textAlign: 'center' }}>
-              <Typography variant="overline" color="text.secondary" fontWeight="bold">
-                ESTADO DEL ATLETA
+            {/* Coach or Autonomous Profile Card */}
+            <Box className="apple-card" sx={{ p: 2.5 }}>
+              <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', mb: 1.5 }}>
+                Estado del Atleta
               </Typography>
-              <Divider sx={{ my: 1.5 }} />
 
               {currentUser?.trainer ? (
-                <Stack spacing={1.5} alignItems="center">
-                  <Avatar sx={{ width: 64, height: 64, bgcolor: 'primary.main', fontSize: '1.6rem', fontWeight: 'bold' }}>
-                    {currentUser.trainer.name.charAt(0)}
-                  </Avatar>
-                  <Box>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      {currentUser.trainer.name} {currentUser.trainer.surname}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {currentUser.trainer.email}
-                    </Typography>
-                  </Box>
-                  <Chip icon={<Iconify icon="solar:shield-check-bold" />} label="Entrenador Asignado" color="success" size="small" />
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    className="liquid-pill"
-                    startIcon={<Iconify icon="eva:email-fill" />}
-                    href={`mailto:${currentUser.trainer.email}`}
+                <Box sx={{ textAlign: 'center' }}>
+                  <Box
+                    sx={{
+                      width: 52,
+                      height: 52,
+                      borderRadius: '50%',
+                      backgroundColor: '#2c2c2e',
+                      border: '1px solid rgba(255, 255, 255, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 1,
+                      fontWeight: 700,
+                      fontSize: '18px',
+                      color: '#ffffff'
+                    }}
                   >
-                    Contactar
-                  </Button>
-                </Stack>
+                    {currentUser.trainer.name?.charAt(0)}
+                  </Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff' }}>
+                    {currentUser.trainer.name} {currentUser.trainer.surname}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', display: 'block', mb: 1.5 }}>
+                    {currentUser.trainer.email}
+                  </Typography>
+                  <Chip icon={<ShieldCheck size={14} color="#34c759" />} label="Entrenador Asignado" size="small" sx={{ mb: 1.5 }} />
+                  <a
+                    href={`mailto:${currentUser.trainer.email}`}
+                    className="apple-btn-secondary"
+                    style={{ width: '100%', height: '40px', fontSize: '13px', textDecoration: 'none' }}
+                  >
+                    Contactar Entrenador
+                  </a>
+                </Box>
               ) : (
-                <Box sx={{ py: 1 }}>
-                  <Avatar sx={{ width: 56, height: 56, bgcolor: '#00a76f', mx: 'auto', mb: 1 }}>
-                    <Iconify icon="solar:user-bold" width={32} height={32} />
-                  </Avatar>
-                  <Typography variant="subtitle1" fontWeight="bold">
+                <Box sx={{ textAlign: 'center' }}>
+                  <Box
+                    sx={{
+                      width: 46,
+                      height: 46,
+                      borderRadius: '50%',
+                      backgroundColor: 'rgba(0, 122, 255, 0.15)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      mx: 'auto',
+                      mb: 1,
+                    }}
+                  >
+                    <UserCheck size={22} color="#007aff" />
+                  </Box>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff' }}>
                     Modo Atleta Autónomo
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2, fontSize: '0.825rem' }}>
-                    Controlas tus propias cargas, entrenamientos y dieta de forma independiente.
+                  <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '12px', mb: 2 }}>
+                    Entrenas y planificas tus cargas y dieta de manera independiente.
                   </Typography>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    className="liquid-pill"
-                    startIcon={<Iconify icon="solar:book-bookmark-bold" />}
-                    onClick={() => navigate('/dashboard/exercises')}
+                  <button
+                    onClick={() => navigate('/dashboard/workouts')}
+                    className="apple-btn-secondary"
+                    style={{ width: '100%', height: '40px', fontSize: '13px', gap: '6px' }}
                   >
-                    Biblioteca de Ejercicios
-                  </Button>
+                    <BookOpen size={15} />
+                    Explorar Ejercicios
+                  </button>
                 </Box>
               )}
             </Box>
@@ -565,9 +582,7 @@ export const ClientHomePage: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* =========================================================================
-          MODALES DE SESIÓN EN VIVO Y CREADOR DE RUTINAS
-          ========================================================================= */}
+      {/* Modales */}
       {activeLiveWorkout && (
         <LiveWorkoutDialog
           open={liveWorkoutOpen}

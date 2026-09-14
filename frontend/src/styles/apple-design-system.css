@@ -1,0 +1,299 @@
+/**
+ * APPLE HUMAN INTERFACE GUIDELINES (HIG) - PURE NATIVE DESIGN SYSTEM
+ * Zero AI Neons | Zero Random Gradients | 100% Mobile & Retina Tuned
+ */
+
+:root {
+  /* Apple OLED Dark Mode Canvas & Surfaces */
+  --apple-bg: #000000;
+  --apple-grouped-bg: #1c1c1e;
+  --apple-secondary-grouped: #2c2c2e;
+  --apple-tertiary-grouped: #3a3a3c;
+  --apple-fill: rgba(120, 120, 128, 0.2);
+  --apple-fill-secondary: rgba(120, 120, 128, 0.16);
+  --apple-fill-tertiary: rgba(118, 118, 128, 0.12);
+
+  /* Apple System Colors */
+  --apple-blue: #007aff;
+  --apple-blue-hover: #0062cc;
+  --apple-green: #34c759;
+  --apple-orange: #ff9500;
+  --apple-red: #ff3b30;
+  --apple-purple: #af52de;
+  --apple-teal: #30b0c7;
+
+  /* Typography Colors */
+  --apple-label-primary: #ffffff;
+  --apple-label-secondary: rgba(235, 235, 245, 0.6);
+  --apple-label-tertiary: rgba(235, 235, 245, 0.3);
+  --apple-label-quaternary: rgba(235, 235, 245, 0.18);
+
+  /* Hairlines & Borders */
+  --apple-hairline: rgba(255, 255, 255, 0.1);
+  --apple-hairline-subtle: rgba(255, 255, 255, 0.06);
+
+  /* Native Glass Blur */
+  --apple-glass-blur: blur(25px) saturate(190%);
+  --apple-glass-bg: rgba(28, 28, 30, 0.85);
+
+  /* Safe Area Heights */
+  --nav-bar-height: 48px;
+  --tab-bar-height: 52px;
+}
+
+/* Base Body & Reset */
+html {
+  background-color: var(--apple-bg);
+  color: var(--apple-label-primary);
+  height: 100%;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%;
+  min-height: 100dvh;
+  background-color: var(--apple-bg);
+  color: var(--apple-label-primary);
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Pro Display', 'Inter', sans-serif;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* CRITICAL: Input Font-Size 16px to prevent iOS Safari Auto-Zoom */
+input,
+textarea,
+select,
+.MuiInputBase-input {
+  font-size: 16px !important;
+  font-family: inherit;
+  color: var(--apple-label-primary);
+}
+
+/* Grouped Inset Card (Apple Settings / Fitness card) */
+.apple-card {
+  background-color: var(--apple-grouped-bg);
+  border-radius: 16px;
+  border: 0.5px solid var(--apple-hairline);
+  color: var(--apple-label-primary);
+  overflow: hidden;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.2s ease;
+}
+
+.apple-card:active {
+  transform: scale(0.99);
+}
+
+/* Native Apple Header Bar */
+.apple-nav-bar {
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--apple-glass-bg);
+  backdrop-filter: var(--apple-glass-blur);
+  -webkit-backdrop-filter: var(--apple-glass-blur);
+  border-bottom: 0.5px solid var(--apple-hairline);
+  padding-top: env(safe-area-inset-top, 0px);
+  height: calc(var(--nav-bar-height) + env(safe-area-inset-top, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Native Apple Bottom Tab Bar */
+.apple-tab-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  background: var(--apple-glass-bg);
+  backdrop-filter: var(--apple-glass-blur);
+  -webkit-backdrop-filter: var(--apple-glass-blur);
+  border-top: 0.5px solid var(--apple-hairline);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  height: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+}
+
+.apple-tab-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  height: 100%;
+  min-height: 48px;
+  color: var(--apple-label-secondary);
+  text-decoration: none;
+  font-size: 10px;
+  font-weight: 500;
+  gap: 3px;
+  transition: color 0.15s ease, transform 0.12s ease;
+  user-select: none;
+}
+
+.apple-tab-item:active {
+  transform: scale(0.92);
+}
+
+.apple-tab-item.active {
+  color: var(--apple-blue);
+  font-weight: 600;
+}
+
+/* Apple Primary Action Button (White on Black) */
+.apple-btn-primary {
+  width: 100%;
+  height: 50px;
+  min-height: 44px;
+  border-radius: 14px;
+  background-color: #ffffff;
+  color: #000000;
+  font-size: 16px;
+  font-weight: 700;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+
+.apple-btn-primary:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* Apple Blue Action Button */
+.apple-btn-blue {
+  width: 100%;
+  height: 50px;
+  min-height: 44px;
+  border-radius: 14px;
+  background-color: var(--apple-blue);
+  color: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+}
+
+.apple-btn-blue:active {
+  transform: scale(0.97);
+  background-color: var(--apple-blue-hover);
+}
+
+/* Apple Secondary Inset Button */
+.apple-btn-secondary {
+  height: 44px;
+  min-height: 44px;
+  border-radius: 12px;
+  background-color: var(--apple-secondary-grouped);
+  color: var(--apple-label-primary);
+  font-size: 15px;
+  font-weight: 600;
+  border: 0.5px solid var(--apple-hairline);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.apple-btn-secondary:active {
+  transform: scale(0.97);
+}
+
+/* Apple Inset Grouped List Row */
+.apple-list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background-color: var(--apple-grouped-bg);
+  border-bottom: 0.5px solid var(--apple-hairline-subtle);
+  min-height: 48px;
+}
+
+.apple-list-row:last-child {
+  border-bottom: none;
+}
+
+/* Apple Segmented Control */
+.apple-segmented-control {
+  display: flex;
+  background-color: rgba(118, 118, 128, 0.24);
+  padding: 2px;
+  border-radius: 10px;
+  user-select: none;
+}
+
+.apple-segmented-btn {
+  flex: 1;
+  padding: 7px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--apple-label-secondary);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.apple-segmented-btn.active {
+  background-color: #636366;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+/* Bottom Sheet Container on Mobile */
+.apple-sheet-paper {
+  background-color: var(--apple-grouped-bg) !important;
+  border-radius: 20px 20px 0 0 !important;
+  border-top: 0.5px solid var(--apple-hairline) !important;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.8) !important;
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+}
+
+.apple-sheet-handle {
+  width: 36px;
+  height: 5px;
+  border-radius: 3px;
+  background-color: rgba(255, 255, 255, 0.3);
+  margin: 10px auto 14px auto;
+}
+
+/* Utility layout helper */
+.apple-content-container {
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 16px;
+  padding-bottom: calc(var(--tab-bar-height) + env(safe-area-inset-bottom, 0px) + 24px);
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}

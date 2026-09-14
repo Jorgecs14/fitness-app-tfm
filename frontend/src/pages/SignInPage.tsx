@@ -1,4 +1,4 @@
-// Página de inicio de sesión con estética Liquid Glass iOS 26 y autenticación JWT/Supabase
+// Página de inicio de sesión con estética nativa Apple iOS HIG (OLED Black, tipografía SF y 0 auto-zoom)
 import { useState, useCallback } from 'react'
 import { useNavigate, Link as RouterLink } from 'react-router-dom'
 import axiosInstance from '../lib/axios'
@@ -6,17 +6,14 @@ import axiosInstance from '../lib/axios'
 import Box from '@mui/material/Box'
 import Link from '@mui/material/Link'
 import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
 import TextField from '@mui/material/TextField'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
 import InputAdornment from '@mui/material/InputAdornment'
 import Alert from '@mui/material/Alert'
 import CircularProgress from '@mui/material/CircularProgress'
-import Chip from '@mui/material/Chip'
 import Stack from '@mui/material/Stack'
-
-import { Iconify } from '../utils/iconify'
+import { Mail, Lock, Eye, EyeOff, Dumbbell, ShieldCheck } from 'lucide-react'
 
 export const SignInPage = () => {
   const navigate = useNavigate()
@@ -50,66 +47,62 @@ export const SignInPage = () => {
           navigate('/dashboard/home')
         }
       } else {
-        setError('No se pudo iniciar sesión. Verifica que tu correo y contraseña sean correctos o prueba con las cuentas demo.')
+        setError('No se pudo iniciar sesión. Comprueba tus credenciales.')
       }
     } catch (err: any) {
       const errData = err.response?.data?.error || err.response?.data?.details || err.message
       const errorMsg = typeof errData === 'string' && errData.length < 100
         ? errData
-        : 'Correo o contraseña incorrectos. Verifica que el correo esté bien escrito o pulsa en Usar Demo para acceder al instante.'
+        : 'Correo o contraseña incorrectos. Usa los botones demo para acceder al instante.'
       setError(errorMsg)
     } finally {
       setLoading(false)
     }
   }, [email, password, navigate])
 
-  const handleGoogleSignIn = () => {
-    alert('El inicio de sesión con Google estará disponible próximamente con OAuth nativo.')
-  }
-
-  // Quick fill helper for convenience
   const handleQuickFill = (demoEmail: string) => {
     setEmail(demoEmail)
     setPassword('123456')
   }
 
   return (
-    <Box>
+    <Box sx={{ width: '100%' }}>
+      {/* Header */}
       <Box sx={{ mb: 3.5, textAlign: 'center' }}>
-        <Typography variant="h4" fontWeight={900} sx={{ color: '#fff', letterSpacing: '-0.02em', mb: 0.5 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            fontWeight: 800,
+            color: '#ffffff',
+            letterSpacing: '-0.03em',
+            fontSize: { xs: '1.75rem', sm: '2rem' },
+            mb: 0.5
+          }}
+        >
           Iniciar Sesión
         </Typography>
-        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-          Accede a tu panel y gestiona tu rendimiento
+        <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+          Accede a tu plan de entrenamiento y nutrición
         </Typography>
       </Box>
 
       {error && (
         <Alert
           severity="error"
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() => handleQuickFill('cliente@gym.com')}
-              sx={{ fontWeight: 700, textTransform: 'none', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.3)' }}
-            >
-              Usar Demo
-            </Button>
-          }
           sx={{
             mb: 2.5,
             borderRadius: 3,
-            background: 'rgba(244, 63, 94, 0.15)',
-            border: '1px solid rgba(244, 63, 94, 0.4)',
-            color: '#fecdd3',
-            alignItems: 'center',
+            backgroundColor: 'rgba(255, 59, 48, 0.12)',
+            border: '0.5px solid rgba(255, 59, 48, 0.3)',
+            color: '#ff453a',
+            fontSize: '14px'
           }}
         >
           {error}
         </Alert>
       )}
 
+      {/* Form Container */}
       <Box
         component="form"
         onSubmit={(e) => {
@@ -117,207 +110,178 @@ export const SignInPage = () => {
           handleSignIn()
         }}
         sx={{
-          '& .MuiTextField-root': {
-            mb: 2.2,
-            '& .MuiOutlinedInput-root': {
-              borderRadius: 3,
-              backgroundColor: 'rgba(255, 255, 255, 0.05)',
-              backdropFilter: 'blur(16px)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              color: '#fff',
-              transition: 'all 0.25s ease',
-              '& fieldset': { border: 'none' },
-              '&:hover': {
-                backgroundColor: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.25)'
-              },
-              '&.Mui-focused': {
-                backgroundColor: 'rgba(255, 255, 255, 0.09)',
-                border: '1px solid #22d3ee',
-                boxShadow: '0 0 20px rgba(6, 182, 212, 0.3)'
-              }
-            },
-            '& .MuiInputLabel-root': {
-              color: 'rgba(255, 255, 255, 0.65)',
-              '&.Mui-focused': { color: '#22d3ee' }
-            }
-          }
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2
         }}
       >
-        <TextField
-          fullWidth
-          name="email"
-          label="Correo electrónico"
-          placeholder="ejemplo@gym.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="solar:letter-bold" width={20} sx={{ color: '#22d3ee' }} />
-                </InputAdornment>
-              )
-            }
-          }}
-        />
-
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 1 }}>
-          <Link
+        <Box>
+          <Typography
             variant="caption"
             sx={{
-              color: '#22d3ee',
-              cursor: 'pointer',
+              display: 'block',
+              mb: 0.7,
               fontWeight: 600,
-              textDecoration: 'none',
-              '&:hover': { textDecoration: 'underline' }
+              fontSize: '13px',
+              color: 'rgba(235, 235, 245, 0.7)'
             }}
-            onClick={() => alert('Recuperación de contraseña: Por favor contacta al administrador de tu gimnasio.')}
           >
-            ¿Olvidaste tu contraseña?
-          </Link>
+            Correo Electrónico
+          </Typography>
+          <TextField
+            fullWidth
+            name="email"
+            placeholder="ejemplo@gym.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Mail size={18} color="rgba(235, 235, 245, 0.45)" />
+                  </InputAdornment>
+                )
+              }
+            }}
+          />
         </Box>
 
-        <TextField
-          fullWidth
-          name="password"
-          label="Contraseña"
-          placeholder="••••••••"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          type={showPassword ? 'text' : 'password'}
-          slotProps={{
-            input: {
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="solar:lock-keyhole-bold" width={20} sx={{ color: '#22d3ee' }} />
-                </InputAdornment>
-              ),
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton onClick={() => setShowPassword(!showPassword)} edge="end" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                    <Iconify icon={showPassword ? 'solar:eye-bold' : 'solar:eye-closed-bold'} width={20} />
-                  </IconButton>
-                </InputAdornment>
-              )
-            }
-          }}
-        />
+        <Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.7 }}>
+            <Typography
+              variant="caption"
+              sx={{
+                fontWeight: 600,
+                fontSize: '13px',
+                color: 'rgba(235, 235, 245, 0.7)'
+              }}
+            >
+              Contraseña
+            </Typography>
+            <Link
+              variant="caption"
+              sx={{
+                color: '#007aff',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '13px',
+                textDecoration: 'none',
+                '&:hover': { textDecoration: 'underline' }
+              }}
+              onClick={() => alert('Para restablecer tu contraseña, contacta al administrador.')}
+            >
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </Box>
+          <TextField
+            fullWidth
+            name="password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            type={showPassword ? 'text' : 'password'}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Lock size={18} color="rgba(235, 235, 245, 0.45)" />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                      sx={{ color: 'rgba(235, 235, 245, 0.5)' }}
+                    >
+                      {showPassword ? <Eye size={18} /> : <EyeOff size={18} />}
+                    </IconButton>
+                  </InputAdornment>
+                )
+              }
+            }}
+          />
+        </Box>
 
-        <Button
-          fullWidth
-          size="large"
+        {/* Apple Solid CTA Button */}
+        <button
           type="submit"
           disabled={loading}
-          sx={{
-            py: 1.5,
-            mt: 1,
-            mb: 2,
-            borderRadius: 3,
-            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-            color: '#fff',
-            fontWeight: 800,
-            fontSize: '1rem',
-            textTransform: 'none',
-            boxShadow: '0 10px 25px rgba(6, 182, 212, 0.4)',
-            transition: 'all 0.25s ease',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 15px 35px rgba(6, 182, 212, 0.6)',
-              background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)'
-            }
+          className="apple-btn-primary"
+          style={{
+            marginTop: '8px',
+            opacity: loading ? 0.7 : 1
           }}
         >
-          {loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Iniciar Sesión'}
-        </Button>
+          {loading ? <CircularProgress size={20} sx={{ color: '#000000' }} /> : 'Iniciar Sesión'}
+        </button>
 
-        <Button
-          fullWidth
-          size="large"
-          component={RouterLink}
-          to="/register"
-          sx={{
-            py: 1.4,
-            borderRadius: 3,
-            color: '#fff',
-            background: 'rgba(255, 255, 255, 0.05)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            fontWeight: 700,
-            textTransform: 'none',
-            transition: 'all 0.25s ease',
-            '&:hover': {
-              background: 'rgba(255, 255, 255, 0.1)',
-              borderColor: 'rgba(255, 255, 255, 0.3)'
-            }
-          }}
+        {/* Secondary Account Switch Button */}
+        <button
+          type="button"
+          onClick={() => navigate('/register')}
+          className="apple-btn-secondary"
+          style={{ width: '100%', height: '48px' }}
         >
           Crear Cuenta Nueva
-        </Button>
+        </button>
       </Box>
 
-      {/* Acceso Rápido Demo */}
-      <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid rgba(255, 255, 255, 0.08)', textAlign: 'center' }}>
-        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.45)', display: 'block', mb: 1 }}>
-          Acceso rápido demo (clic para autocompletar):
-        </Typography>
-        <Stack direction="row" spacing={1} justifyContent="center">
-          <Chip
-            size="small"
-            label="Entrenador Demo"
-            onClick={() => handleQuickFill('entrenador@gym.com')}
-            sx={{
-              background: 'rgba(6, 182, 212, 0.15)',
-              color: '#22d3ee',
-              border: '1px solid rgba(6, 182, 212, 0.4)',
-              fontWeight: 700,
-              cursor: 'pointer',
-              '&:hover': { background: 'rgba(6, 182, 212, 0.3)' }
-            }}
-          />
-          <Chip
-            size="small"
-            label="Alumno Demo"
-            onClick={() => handleQuickFill('alumno@gym.com')}
-            sx={{
-              background: 'rgba(16, 185, 129, 0.15)',
-              color: '#10b981',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
-              fontWeight: 700,
-              cursor: 'pointer',
-              '&:hover': { background: 'rgba(16, 185, 129, 0.3)' }
-            }}
-          />
-        </Stack>
-      </Box>
-
-      <Divider sx={{ my: 3, borderColor: 'rgba(255, 255, 255, 0.08)' }}>
-        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 600 }}>
-          O CONTINÚA CON
-        </Typography>
-      </Divider>
-
-      <Button
-        fullWidth
-        variant="outlined"
-        size="large"
-        onClick={handleGoogleSignIn}
-        startIcon={<Iconify width={20} icon="logos:google-icon" />}
+      {/* Apple Inset Demo Quick Access */}
+      <Box
         sx={{
+          mt: 3,
+          p: 2,
           borderRadius: 3,
-          color: 'rgba(255, 255, 255, 0.85)',
-          background: 'rgba(255, 255, 255, 0.04)',
-          border: '1px solid rgba(255, 255, 255, 0.12)',
-          textTransform: 'none',
-          fontWeight: 700,
-          py: 1.2,
-          '&:hover': {
-            background: 'rgba(255, 255, 255, 0.08)',
-            borderColor: 'rgba(255, 255, 255, 0.25)'
-          }
+          backgroundColor: '#1c1c1e',
+          border: '0.5px solid rgba(255, 255, 255, 0.08)'
         }}
       >
-        Continuar con Google
-      </Button>
+        <Typography
+          variant="caption"
+          sx={{
+            color: 'rgba(235, 235, 245, 0.6)',
+            display: 'block',
+            fontWeight: 600,
+            fontSize: '12px',
+            mb: 1.2,
+            textTransform: 'uppercase',
+            letterSpacing: '0.04em'
+          }}
+        >
+          Acceso Rápido de Prueba:
+        </Typography>
+        <Stack direction="row" spacing={1}>
+          <button
+            type="button"
+            onClick={() => handleQuickFill('alumno@gym.com')}
+            className="apple-btn-secondary"
+            style={{
+              flex: 1,
+              height: '40px',
+              fontSize: '13px',
+              gap: '6px'
+            }}
+          >
+            <Dumbbell size={15} color="#34c759" />
+            Alumno Demo
+          </button>
+          <button
+            type="button"
+            onClick={() => handleQuickFill('entrenador@gym.com')}
+            className="apple-btn-secondary"
+            style={{
+              flex: 1,
+              height: '40px',
+              fontSize: '13px',
+              gap: '6px'
+            }}
+          >
+            <ShieldCheck size={15} color="#007aff" />
+            Entrenador Demo
+          </button>
+        </Stack>
+      </Box>
     </Box>
   )
 }

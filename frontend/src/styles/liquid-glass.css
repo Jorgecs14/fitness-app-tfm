@@ -1,472 +1,170 @@
 /* ==========================================================================
-   iOS 26 - Pure Dark Liquid Glass Theme (Apple Obsidian & Specular Cyan)
+   Apple iOS HIG Theme Styles - Replaces legacy neon CSS
    ========================================================================== */
-
-:root {
-  --glass-bg: rgba(15, 23, 42, 0.76);
-  --glass-bg-hover: rgba(30, 41, 59, 0.85);
-  --glass-border: rgba(255, 255, 255, 0.14);
-  --glass-border-subtle: rgba(255, 255, 255, 0.08);
-  --glass-shadow: 0 20px 50px -10px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.22);
-  --glass-shadow-hover: 0 30px 60px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 0 30px rgba(6, 182, 212, 0.22);
-  --glass-blur: blur(28px) saturate(210%);
-  --liquid-cyan: #22d3ee;
-  --liquid-emerald: #10b981;
-  --liquid-amber: #f59e0b;
-  --liquid-coral: #f43f5e;
-  --bm-inert: rgba(255, 255, 255, 0.12);
-  --bm-base: rgba(255, 255, 255, 0.22);
-}
 
 /* Base Glass Card */
 .liquid-glass-card {
-  background: var(--glass-bg);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid var(--glass-border);
-  box-shadow: var(--glass-shadow);
-  border-radius: 24px;
-  color: #f8fafc;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--apple-grouped-bg);
+  border: 0.5px solid var(--apple-hairline);
+  border-radius: 18px;
+  color: var(--apple-label-primary);
+  transition: transform 0.15s ease;
   position: relative;
   overflow: hidden;
 }
 
-.liquid-glass-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
-  pointer-events: none;
+.liquid-glass-card:active {
+  transform: scale(0.99);
 }
 
-.liquid-glass-card:hover {
-  background: var(--glass-bg-hover);
-  border-color: rgba(34, 211, 238, 0.4);
-  box-shadow: var(--glass-shadow-hover);
-  transform: translateY(-2px);
-}
-
-/* Glass Pill Buttons */
+/* Pill Buttons */
 .liquid-pill {
   border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: var(--glass-blur);
-  -webkit-backdrop-filter: var(--glass-blur);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #f8fafc;
+  background: var(--apple-secondary-grouped);
+  border: 0.5px solid var(--apple-hairline);
+  color: var(--apple-label-primary);
   font-weight: 600;
+  font-size: 14px;
+  min-height: 44px;
+  padding: 8px 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   text-transform: none;
-  letter-spacing: -0.01em;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.15s ease, background-color 0.15s ease;
 }
 
-.liquid-pill:hover {
-  background: rgba(6, 182, 212, 0.18);
-  border-color: rgba(34, 211, 238, 0.5);
-  color: #22d3ee;
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.25);
-  transform: translateY(-1px);
+.liquid-pill:active {
+  transform: scale(0.96);
+  background-color: var(--apple-tertiary-grouped);
 }
 
 /* Hero Glass Banner */
 .liquid-hero-banner {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 41, 59, 0.78) 100%);
-  backdrop-filter: blur(32px) saturate(210%);
-  -webkit-backdrop-filter: blur(32px) saturate(210%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 28px;
-  color: #f8fafc;
-  box-shadow: 0 24px 60px -12px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  background: linear-gradient(180deg, #1c1c1e 0%, #121214 100%);
+  border: 0.5px solid var(--apple-hairline);
+  border-radius: 20px;
+  color: #ffffff;
+  padding: 20px;
   position: relative;
   overflow: hidden;
 }
 
-.liquid-hero-banner::after {
-  content: '';
-  position: absolute;
-  top: -40%;
-  right: -20%;
-  width: 340px;
-  height: 340px;
-  background: radial-gradient(circle, rgba(34, 211, 238, 0.18) 0%, rgba(16, 185, 129, 0.1) 50%, transparent 70%);
-  pointer-events: none;
-  border-radius: 50%;
-  filter: blur(40px);
+/* Quick Chip for Sets/Tags */
+.liquid-quick-chip {
+  position: relative !important;
+  background: var(--apple-secondary-grouped) !important;
+  border: 0.5px solid var(--apple-hairline) !important;
+  color: var(--apple-label-primary) !important;
+  font-weight: 600 !important;
+  font-size: 13px !important;
+  border-radius: 9999px !important;
+  padding: 6px 14px !important;
+  min-height: 36px !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease !important;
 }
 
-/* ==========================================================================
-   Anatomical BodyMap Heatmap SVG Styles
-   ========================================================================== */
+.liquid-quick-chip:active {
+  transform: scale(0.95) !important;
+  background-color: var(--apple-tertiary-grouped) !important;
+}
 
+/* Set Row for Live Workout */
+.liquid-set-row {
+  background: var(--apple-grouped-bg);
+  border: 0.5px solid var(--apple-hairline);
+  border-radius: 12px;
+  padding: 10px 14px;
+  transition: background-color 0.15s ease;
+}
+
+.liquid-set-row.completed {
+  background: rgba(52, 199, 89, 0.12);
+  border-color: rgba(52, 199, 89, 0.4);
+}
+
+/* Segment Bar */
+.liquid-segment-bar {
+  background: rgba(118, 118, 128, 0.24);
+  padding: 2px;
+  border-radius: 10px;
+  display: inline-flex;
+  gap: 2px;
+}
+
+.liquid-segment-tab {
+  border-radius: 8px;
+  padding: 6px 16px;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  background: transparent;
+  color: var(--apple-label-secondary);
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-segment-tab.active {
+  background: #636366;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Quick Search Command Input */
+.liquid-command-input {
+  background: var(--apple-secondary-grouped) !important;
+  border: 0.5px solid var(--apple-hairline) !important;
+  border-radius: 12px !important;
+  color: #ffffff !important;
+}
+
+.liquid-command-input:focus-within {
+  border-color: var(--apple-blue) !important;
+}
+
+/* Anatomical BodyMap */
 .bodymap-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: 16px;
   width: 100%;
-  padding: 12px 0;
+  padding: 8px 0;
   user-select: none;
 }
 
 .bm-svg-view {
   flex: 1;
-  max-width: 260px;
+  max-width: 220px;
   height: auto;
-  max-height: 360px;
-  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.4));
-  transition: transform 0.3s ease;
+  max-height: 320px;
 }
 
 .bm-svg-view path {
-  stroke: rgba(255, 255, 255, 0.3);
-  stroke-width: 1.5;
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1;
   stroke-linejoin: round;
 }
 
 .bm-sil {
-  fill: var(--bm-inert);
+  fill: rgba(255, 255, 255, 0.08);
   pointer-events: none;
 }
 
 .bm-muscle {
   cursor: pointer;
-  fill: var(--bm-base);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  fill: rgba(255, 255, 255, 0.18);
+  transition: fill 0.2s ease;
   outline: none;
 }
 
-.bm-muscle:hover {
-  filter: brightness(1.25) drop-shadow(0 0 10px rgba(34, 211, 238, 0.6));
-}
-
-.bm-muscle.l0 {
-  fill: var(--bm-base);
-}
-
-.bm-muscle.l1 {
-  fill: #38bdf8;
-  filter: drop-shadow(0 0 4px rgba(56, 189, 248, 0.4));
-}
-
-.bm-muscle.l2 {
-  fill: #10b981;
-  filter: drop-shadow(0 0 6px rgba(16, 185, 129, 0.5));
-}
-
-.bm-muscle.l3 {
-  fill: #f59e0b;
-  filter: drop-shadow(0 0 8px rgba(245, 158, 11, 0.6));
-}
-
-.bm-muscle.l4 {
-  fill: #f43f5e;
-  filter: drop-shadow(0 0 10px rgba(244, 63, 94, 0.75));
-}
-
+.bm-muscle.l0 { fill: rgba(255, 255, 255, 0.18); }
+.bm-muscle.l1 { fill: #0a84ff; }
+.bm-muscle.l2 { fill: #30d158; }
+.bm-muscle.l3 { fill: #ff9f0a; }
+.bm-muscle.l4 { fill: #ff453a; }
 .bm-muscle.selected {
-  stroke: #22d3ee !important;
-  stroke-width: 3.5 !important;
-  filter: drop-shadow(0 0 14px rgba(34, 211, 238, 0.8)) brightness(1.3);
-  z-index: 20;
-}
-
-.bm-legend-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 14px;
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 9999px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #cbd5e1;
-}
-
-.bm-heat-dot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-}
-
-/* ==========================================================================
-   Phase 1: Live Workout & Workouts Page Liquid Glass Styles
-   ========================================================================== */
-
-.liquid-floating-timer {
-  position: fixed;
-  bottom: 28px;
-  right: 28px;
-  z-index: 1300;
-  background: rgba(15, 23, 42, 0.92);
-  backdrop-filter: blur(28px) saturate(210%);
-  -webkit-backdrop-filter: blur(28px) saturate(210%);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 28px;
-  padding: 14px 22px;
-  color: #ffffff;
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 24px rgba(16, 185, 129, 0.4);
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  animation: liquid-timer-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-  transition: all 0.3s ease;
-}
-
-.liquid-floating-timer.warning {
-  border-color: rgba(244, 63, 94, 0.7);
-  box-shadow: 0 20px 48px rgba(0, 0, 0, 0.65), 0 0 32px rgba(244, 63, 94, 0.65);
-  animation: liquid-pulse 1s infinite alternate;
-}
-
-@keyframes liquid-timer-slide-up {
-  from {
-    opacity: 0;
-    transform: translateY(40px) scale(0.92);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-@keyframes liquid-pulse {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.03); }
-}
-
-.liquid-quick-chip {
-  position: relative !important;
-  background: rgba(255, 255, 255, 0.08) !important;
-  border: 1px solid rgba(255, 255, 255, 0.16) !important;
-  color: #f8fafc !important;
-  font-weight: 700 !important;
-  font-size: 0.75rem !important;
-  border-radius: 9999px !important;
-  padding: 4px 10px !important;
-  height: 28px !important;
-  cursor: pointer !important;
-  transition: all 0.18s ease !important;
-  user-select: none !important;
-}
-
-/* WCAG 2.5.5 / 2.5.8 Touch Target Expansion (44x44px minimum) */
-.liquid-quick-chip::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  min-width: 44px;
-  min-height: 44px;
-}
-
-.liquid-quick-chip:hover {
-  background: rgba(34, 211, 238, 0.25) !important;
-  border-color: rgba(34, 211, 238, 0.6) !important;
-  color: #22d3ee !important;
-  transform: translateY(-1px) scale(1.05) !important;
-  box-shadow: 0 0 12px rgba(6, 182, 212, 0.3) !important;
-}
-
-.liquid-quick-chip:active {
-  transform: scale(0.95) !important;
-}
-
-.liquid-set-row {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 12px 16px;
-  transition: all 0.25s ease;
-}
-
-.liquid-set-row.completed {
-  background: rgba(16, 185, 129, 0.12);
-  border-color: rgba(16, 185, 129, 0.4);
-  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.15);
-}
-
-.liquid-segment-bar {
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 9999px;
-  padding: 4px;
-  display: inline-flex;
-  gap: 4px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-}
-
-.liquid-segment-tab {
-  border-radius: 9999px;
-  padding: 6px 18px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  border: none;
-  background: transparent;
-  color: #94a3b8;
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.liquid-segment-tab.active {
-  background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4);
-}
-
-/* ==========================================================================
-   Phase 5: Floating Mobile Dock & Ambient Light Mesh Styles
-   ========================================================================== */
-
-.liquid-floating-dock {
-  position: fixed;
-  bottom: 18px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1250;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 8px 14px;
-  border-radius: 36px;
-  background: rgba(15, 23, 42, 0.82);
-  backdrop-filter: blur(32px) saturate(220%);
-  -webkit-backdrop-filter: blur(32px) saturate(220%);
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65), 0 0 25px rgba(6, 182, 212, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.3);
-  max-width: 94vw;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.liquid-dock-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  padding: 6px 12px;
-  min-width: 54px;
-  text-decoration: none;
-  border-radius: 22px;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  color: #94a3b8;
-}
-
-.liquid-dock-item:active {
-  transform: scale(0.92);
-}
-
-.liquid-dock-item.active {
-  color: #22d3ee;
-  background: rgba(6, 182, 212, 0.15);
-}
-
-.liquid-dock-item.active::after {
-  content: '';
-  position: absolute;
-  bottom: 3px;
-  width: 14px;
-  height: 3px;
-  border-radius: 2px;
-  background: #22d3ee;
-  box-shadow: 0 0 8px #22d3ee;
-}
-
-/* Specular Quick Search Command Input */
-.liquid-command-input {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  border-radius: 16px !important;
-  color: #ffffff !important;
-  transition: all 0.25s ease !important;
-}
-
-.liquid-command-input:focus-within {
-  border-color: #22d3ee !important;
-  box-shadow: 0 0 20px rgba(6, 182, 212, 0.35) !important;
-  background: rgba(255, 255, 255, 0.09) !important;
-}
-
-/* ==========================================================================
-   Universal Form Controls & Inputs - Liquid Glass iOS 26
-   ========================================================================== */
-
-/* Universal Outlined Input */
-.MuiOutlinedInput-root {
-  background: rgba(255, 255, 255, 0.04) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-  border-radius: 14px !important;
-  color: #ffffff !important;
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
-}
-
-.MuiOutlinedInput-root:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  border-color: rgba(34, 211, 238, 0.5) !important;
-  box-shadow: 0 0 16px rgba(6, 182, 212, 0.2) !important;
-}
-
-.MuiOutlinedInput-root.Mui-focused {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: #22d3ee !important;
-  box-shadow: 0 0 25px rgba(6, 182, 212, 0.38) !important;
-}
-
-.MuiOutlinedInput-notchedOutline {
-  border: none !important;
-}
-
-/* Universal Input Label */
-.MuiInputLabel-root {
-  color: rgba(255, 255, 255, 0.65) !important;
-}
-
-.MuiInputLabel-root.Mui-focused {
-  color: #22d3ee !important;
-  font-weight: 700 !important;
-}
-
-/* Dropdown Menu Items */
-.MuiMenuItem-root {
-  border-radius: 10px !important;
-  margin: 2px 4px !important;
-  color: #ffffff !important;
-  transition: all 0.2s ease !important;
-}
-
-.MuiMenuItem-root:hover {
-  background: rgba(6, 182, 212, 0.18) !important;
-  color: #22d3ee !important;
-  transform: translateX(3px) !important;
-}
-
-.MuiMenuItem-root.Mui-selected {
-  background: rgba(6, 182, 212, 0.25) !important;
-  color: #22d3ee !important;
-  font-weight: 800 !important;
-}
-
-/* Dialog Backdrop & Paper */
-.MuiDialog-paper {
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(30, 41, 59, 0.90) 100%) !important;
-  backdrop-filter: blur(32px) !important;
-  -webkit-backdrop-filter: blur(32px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.15) !important;
-  border-radius: 24px !important;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), 0 0 35px rgba(6, 182, 212, 0.2) !important;
-  color: #ffffff !important;
+  stroke: #ffffff !important;
+  stroke-width: 2 !important;
 }
