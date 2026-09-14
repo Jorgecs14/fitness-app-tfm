@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
   Grid,
   TextField,
   Button,
@@ -12,10 +10,8 @@ import {
   Alert,
   Stack,
   Divider,
-  Paper,
   Chip,
   IconButton,
-  Tooltip,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -23,7 +19,19 @@ import {
   CircularProgress
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Iconify } from '../utils/iconify';
+import {
+  Scale,
+  Camera,
+  Upload,
+  Trash2,
+  CheckCircle2,
+  Info,
+  Send,
+  User,
+  Activity,
+  ChevronRight,
+  Sparkles,
+} from 'lucide-react';
 import { getCurrentUser } from '../services/userService';
 import { weeklyTrackingService } from '../services/weeklyTrackingService';
 import { clientProgressPhotoService } from '../services/clientProgressPhotoService';
@@ -75,7 +83,6 @@ export const ClientProgressSubmitPage: React.FC = () => {
       setUserId(user.id);
       setUserName(user.name);
 
-      // Load user previous photos & trackings
       try {
         const [photos, trackings] = await Promise.all([
           clientProgressPhotoService.getByUserId(user.id),
@@ -95,19 +102,15 @@ export const ClientProgressSubmitPage: React.FC = () => {
     setForm({ ...form, [field]: e.target.value });
   };
 
-  // Handle direct file upload for photos
   const handleFileUpload = async (angle: 'front' | 'side' | 'back', file: File) => {
     try {
       setUploadingPhoto(angle);
-      const res = await clientProgressPhotoService.uploadPhoto(file);
-      if (res && res.url) {
-        if (angle === 'front') setPhotoFront(res.url);
-        if (angle === 'side') setPhotoSide(res.url);
-        if (angle === 'back') setPhotoBack(res.url);
-      }
-    } catch (err) {
-      console.error('Error al subir archivo:', err);
-      setError('Error al subir archivo de imagen. Puedes introducir la URL manualmente.');
+      const url = await clientProgressPhotoService.uploadPhoto(file);
+      if (angle === 'front') setPhotoFront(url);
+      if (angle === 'side') setPhotoSide(url);
+      if (angle === 'back') setPhotoBack(url);
+    } catch (err: any) {
+      setError(err.message || 'Error al subir la imagen');
     } finally {
       setUploadingPhoto(null);
     }
@@ -117,16 +120,12 @@ export const ClientProgressSubmitPage: React.FC = () => {
     e.preventDefault();
     if (!userId) return;
 
-    setLoading(true);
-    setError(null);
-
     try {
-      const today = new Date().toISOString().split('T')[0];
+      setLoading(true);
+      setError(null);
 
-      // 1. Guardar el seguimiento semanal
-      await weeklyTrackingService.create({
+      const trackingPayload: Partial<WeeklyTracking> = {
         user_id: userId,
-        week_start_date: today,
         weight: form.weight ? Number(form.weight) : undefined,
         weight_photo_url: form.weight_photo_url || undefined,
         chest_measurement: form.chest_measurement ? Number(form.chest_measurement) : undefined,
@@ -134,52 +133,63 @@ export const ClientProgressSubmitPage: React.FC = () => {
         hip_measurement: form.hip_measurement ? Number(form.hip_measurement) : undefined,
         thigh_measurement: form.thigh_measurement ? Number(form.thigh_measurement) : undefined,
         bicep_measurement: form.bicep_measurement ? Number(form.bicep_measurement) : undefined,
-        diet_difficulties: form.diet_difficulties,
-        exercise_difficulties: form.exercise_difficulties,
+        diet_difficulties: form.diet_difficulties || undefined,
+        exercise_difficulties: form.exercise_difficulties || undefined,
         bowel_movements_per_week: Number(form.bowel_movements_per_week),
         daily_water_intake: Number(form.daily_water_intake),
-        sleep_quality: form.sleep_quality as any,
+        sleep_quality: form.sleep_quality,
         training_days_completed: Number(form.training_days_completed),
-        diet_deviations: form.diet_deviations,
+        diet_deviations: form.diet_deviations || undefined,
         self_rating: Number(form.self_rating),
-      });
+        date: new Date().toISOString().split('T')[0],
+      };
 
-      // 2. Guardar fotos de progreso si se adjuntaron
+      const tracking = await weeklyTrackingService.create(trackingPayload);
+
+      const photoPromises: Promise<any>[] = [];
       if (photoFront) {
-        await clientProgressPhotoService.create({
-          user_id: userId,
-          photo_type: 'front_arms_cross',
-          photo_url: photoFront,
-          photo_date: today,
-        });
+        photoPromises.push(
+          clientProgressPhotoService.create({
+            user_id: userId,
+            tracking_id: tracking.id,
+            photo_url: photoFront,
+            angle: 'front',
+            taken_at: new Date().toISOString(),
+          })
+        );
       }
       if (photoSide) {
-        await clientProgressPhotoService.create({
-          user_id: userId,
-          photo_type: 'side_arms_front',
-          photo_url: photoSide,
-          photo_date: today,
-        });
+        photoPromises.push(
+          clientProgressPhotoService.create({
+            user_id: userId,
+            tracking_id: tracking.id,
+            photo_url: photoSide,
+            angle: 'side',
+            taken_at: new Date().toISOString(),
+          })
+        );
       }
       if (photoBack) {
-        await clientProgressPhotoService.create({
-          user_id: userId,
-          photo_type: 'back_arms_cross',
-          photo_url: photoBack,
-          photo_date: today,
-        });
+        photoPromises.push(
+          clientProgressPhotoService.create({
+            user_id: userId,
+            tracking_id: tracking.id,
+            photo_url: photoBack,
+            angle: 'back',
+            taken_at: new Date().toISOString(),
+          })
+        );
       }
 
-      setLoading(false);
+      await Promise.all(photoPromises);
       setSubmitted(true);
     } catch (err: any) {
-      console.error(err);
-      setError('Error al enviar reporte de progreso. Intenta de nuevo.');
+      setError(err.message || 'Error al enviar el reporte semanal');
+    } finally {
       setLoading(false);
     }
   };
 
-  // Last logged weight for comparison
   const previousWeight = pastTrackings.length > 0 && pastTrackings[0].weight ? pastTrackings[0].weight : null;
   const weightDiff = form.weight && previousWeight ? Number(form.weight) - previousWeight : null;
 
@@ -187,44 +197,40 @@ export const ClientProgressSubmitPage: React.FC = () => {
     return (
       <Box sx={{ p: 4, maxWidth: 640, mx: 'auto', textAlign: 'center', mt: 4 }}>
         <Box
-          className="liquid-glass-card"
+          className="apple-card"
           sx={{
             p: 5,
-            borderRadius: 4,
-            boxShadow: '0 25px 60px rgba(0,0,0,0.4)',
-            border: '1px solid rgba(16, 185, 129, 0.4)',
+            border: '0.5px solid rgba(52, 199, 89, 0.3)',
           }}
         >
           <Box
             sx={{
-              width: 72,
-              height: 72,
+              width: 64,
+              height: 64,
               borderRadius: '50%',
-              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(6, 182, 212, 0.3))',
+              background: 'rgba(52, 199, 89, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               mx: 'auto',
-              mb: 3,
-              boxShadow: '0 0 30px rgba(16, 185, 129, 0.5)',
+              mb: 2.5,
             }}
           >
-            <Iconify icon="solar:check-circle-bold" width={40} sx={{ color: '#10b981' }} />
+            <CheckCircle2 size={36} color="#34C759" />
           </Box>
-          <Typography variant="h4" fontWeight="800" gutterBottom sx={{ color: '#fff' }}>
-            ¡Reporte Semanal Enviado!
+          <Typography variant="h4" fontWeight="800" gutterBottom sx={{ color: '#FFFFFF' }}>
+            Reporte Semanal Enviado
           </Typography>
-          <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4, lineHeight: 1.6 }}>
-            Tus datos antropométricos, fotos de progreso y hábitos han sido sincronizados en la nube. Tu Entrenador Personal ha sido notificado para su revisión.
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 3.5, lineHeight: 1.6 }}>
+            Tus datos antropométricos, fotos y hábitos han sido sincronizados en la nube. Tu entrenador revisará el progreso para ajustar tus próximas pautas.
           </Typography>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} justifyContent="center">
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center">
             <Button
               variant="contained"
-              size="large"
               onClick={() => navigate('/dashboard/client-home')}
+              className="apple-button-primary"
               sx={{
-                background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
-                borderRadius: '24px',
+                borderRadius: '12px',
                 fontWeight: 700,
                 px: 3,
               }}
@@ -233,12 +239,11 @@ export const ClientProgressSubmitPage: React.FC = () => {
             </Button>
             <Button
               variant="outlined"
-              size="large"
               onClick={() => setSubmitted(false)}
               sx={{
-                borderRadius: '24px',
-                borderColor: 'rgba(255, 255, 255, 0.2)',
-                color: 'text.primary',
+                borderRadius: '12px',
+                borderColor: 'rgba(255, 255, 255, 0.15)',
+                color: '#FFFFFF',
               }}
             >
               Enviar Otro Registro
@@ -250,124 +255,123 @@ export const ClientProgressSubmitPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1100, mx: 'auto' }}>
-      {/* Liquid Glass Hero Header */}
+    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1100, mx: 'auto', pb: 8 }}>
+      {/* Header Apple Inset Grouped */}
       <Box
-        className="liquid-glass-card"
+        className="apple-card"
         sx={{
-          p: { xs: 3, md: 4 },
-          borderRadius: 4,
-          mb: 4,
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(59, 130, 246, 0.08) 100%)',
-          border: '1px solid rgba(6, 182, 212, 0.3)',
-          boxShadow: '0 20px 50px rgba(0, 0, 0, 0.35)',
+          p: { xs: 2.5, md: 4 },
+          mb: 3,
+          background: 'linear-gradient(180deg, #1C1C1E 0%, #161618 100%)',
         }}
       >
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
           <Box>
-            <Stack direction="row" spacing={1} alignItems="center" mb={1}>
+            <Stack direction="row" spacing={1.5} alignItems="center" mb={1}>
               <Chip
                 label="Check-in Semanal"
                 size="small"
                 sx={{
-                  background: 'rgba(6, 182, 212, 0.2)',
-                  color: '#22d3ee',
+                  background: 'rgba(0, 122, 255, 0.15)',
+                  color: '#007AFF',
                   fontWeight: 700,
-                  border: '1px solid rgba(6, 182, 212, 0.4)',
+                  fontSize: '0.72rem',
+                  border: '0.5px solid rgba(0, 122, 255, 0.3)',
+                  height: 24,
                 }}
               />
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
                 {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </Typography>
             </Stack>
-            <Typography variant="h3" fontWeight="900" sx={{ letterSpacing: '-0.02em', mb: 1 }}>
-              Reporte de Progreso y Biometría
+            <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.02em', mb: 0.5, color: '#FFFFFF' }}>
+              Reporte de Biometría & Fotos
             </Typography>
-            <Typography variant="body1" sx={{ color: 'text.secondary', maxWidth: 700 }}>
-              Hola {userName || 'Atleta'}. Registra tus medidas corporales, fotos y sensaciones de la semana para que tu entrenador ajuste tus calorías y cargas de entrenamiento.
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', maxWidth: 680 }}>
+              Hola {userName || 'Atleta'}. Registra tus medidas y fotos para que tu entrenador ajuste tus calorías y cargas de entrenamiento.
             </Typography>
           </Box>
 
           <Button
             variant="outlined"
             onClick={() => setSilhouetteModalOpen(true)}
-            startIcon={<Iconify icon="solar:camera-bold" />}
+            startIcon={<Camera size={16} />}
             sx={{
-              borderRadius: '24px',
-              borderColor: 'rgba(6, 182, 212, 0.4)',
-              color: '#22d3ee',
-              background: 'rgba(6, 182, 212, 0.08)',
-              fontWeight: 700,
+              borderRadius: '12px',
+              borderColor: 'rgba(255, 255, 255, 0.15)',
+              color: '#FFFFFF',
+              fontWeight: 600,
               textTransform: 'none',
+              fontSize: '0.82rem',
               '&:hover': {
-                background: 'rgba(6, 182, 212, 0.2)',
-                borderColor: '#22d3ee',
-              },
+                borderColor: 'rgba(255, 255, 255, 0.3)',
+                background: 'rgba(255, 255, 255, 0.05)',
+              }
             }}
           >
-            Guía de Postura Fotográfica
+            Guía de Postura
           </Button>
         </Box>
       </Box>
 
-      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: 3 }}>{error}</Alert>}
+      {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>{error}</Alert>}
 
       {/* Embedded Before / After Visual Comparison Slider */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 3 }}>
         <BeforeAfterSlider photos={userPhotos} />
       </Box>
 
       {/* Main Submission Form */}
       <form onSubmit={handleSubmit}>
-        <Stack spacing={3.5}>
+        <Stack spacing={3}>
           {/* Card 1: Peso y Medidas Corporales */}
           <Box
-            className="liquid-glass-card"
+            className="apple-card"
             sx={{
-              p: { xs: 2.5, sm: 3.5 },
-              borderRadius: 4,
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 15px 40px rgba(0,0,0,0.25)',
+              p: { xs: 2.5, sm: 3 },
             }}
           >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Box display="flex" alignItems="center" gap={1.5}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+              <Box display="flex" alignItems="center" gap={1.2}>
                 <Box
                   sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '12px',
-                    background: 'rgba(16, 185, 129, 0.2)',
+                    width: 32,
+                    height: 32,
+                    borderRadius: '8px',
+                    background: 'rgba(52, 199, 89, 0.15)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <Iconify icon="solar:scale-bold" width={20} sx={{ color: '#10b981' }} />
+                  <Scale size={18} color="#34C759" />
                 </Box>
-                <Typography variant="h6" fontWeight="800">
-                  Peso Corporal y Perímetros (cm)
+                <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF' }}>
+                  Peso Corporal & Medidas (cm)
                 </Typography>
               </Box>
 
               {weightDiff !== null && (
                 <Chip
                   label={`Variación: ${weightDiff > 0 ? `+${weightDiff.toFixed(1)}` : weightDiff.toFixed(1)} kg`}
-                  color={weightDiff <= 0 ? 'success' : 'warning'}
                   size="small"
-                  sx={{ fontWeight: 700 }}
+                  sx={{
+                    fontWeight: 700,
+                    height: 22,
+                    fontSize: '0.72rem',
+                    bgcolor: weightDiff <= 0 ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 149, 0, 0.15)',
+                    color: weightDiff <= 0 ? '#34C759' : '#FF9500',
+                  }}
                 />
               )}
             </Box>
 
-            <Divider sx={{ mb: 3, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
+            <Divider sx={{ mb: 2.5, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
 
-            <Grid container spacing={2.5}>
+            <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  label="Peso Actual en Báscula (kg)"
+                  label="Peso en Báscula (kg)"
                   type="number"
                   inputProps={{ step: '0.1' }}
                   value={form.weight}
@@ -375,7 +379,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                   fullWidth
                   required
                   placeholder="ej. 75.4"
-                  helperText={previousWeight ? `Último peso registrado: ${previousWeight} kg` : 'Pésate en ayunas tras levantarte'}
+                  helperText={previousWeight ? `Último peso: ${previousWeight} kg` : 'Pésate en ayunas al levantarte'}
                 />
               </Grid>
 
@@ -453,53 +457,50 @@ export const ClientProgressSubmitPage: React.FC = () => {
 
           {/* Card 2: Hábitos Semanales y Sensaciones */}
           <Box
-            className="liquid-glass-card"
+            className="apple-card"
             sx={{
-              p: { xs: 2.5, sm: 3.5 },
-              borderRadius: 4,
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 15px 40px rgba(0,0,0,0.25)',
+              p: { xs: 2.5, sm: 3 },
             }}
           >
-            <Box display="flex" alignItems="center" gap={1.5} mb={2}>
+            <Box display="flex" alignItems="center" gap={1.2} mb={1.5}>
               <Box
                 sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: '12px',
-                  background: 'rgba(59, 130, 246, 0.2)',
+                  width: 32,
+                  height: 32,
+                  borderRadius: '8px',
+                  background: 'rgba(0, 122, 255, 0.15)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                 }}
               >
-                <Iconify icon="solar:cup-star-bold" width={20} sx={{ color: '#3b82f6' }} />
+                <Activity size={18} color="#007AFF" />
               </Box>
-              <Typography variant="h6" fontWeight="800">
-                Hábitos, Sueño y Adherencia Semanal
+              <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF' }}>
+                Hábitos, Sueño & Adherencia
               </Typography>
             </Box>
 
-            <Divider sx={{ mb: 3, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
+            <Divider sx={{ mb: 2.5, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
 
-            <Grid container spacing={2.5}>
+            <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   select
-                  label="Calidad del Sueño y Descanso"
+                  label="Calidad del Sueño"
                   value={form.sleep_quality}
                   onChange={handleChange('sleep_quality')}
                   fullWidth
                 >
-                  <MenuItem value="good">🌙 Bueno (Sueño profundo y reparador)</MenuItem>
-                  <MenuItem value="regular">⛅ Regular (Interrupciones ocasionales)</MenuItem>
-                  <MenuItem value="bad">⚡ Malo (Insomnio / Cansancio acumulado)</MenuItem>
+                  <MenuItem value="good">🌙 Bueno (Reparador y profundo)</MenuItem>
+                  <MenuItem value="regular">⛅ Regular (Interrupciones leves)</MenuItem>
+                  <MenuItem value="bad">⚡ Malo (Insomnio / Cansancio)</MenuItem>
                 </TextField>
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  label="Días Entrenados de la Semana"
+                  label="Días Entrenados en la Semana"
                   type="number"
                   inputProps={{ min: 0, max: 7 }}
                   value={form.training_days_completed}
@@ -510,7 +511,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
 
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  label="Consumo Medio de Agua (Litros/día)"
+                  label="Agua Diaria (Litros/día)"
                   type="number"
                   inputProps={{ step: '0.25', min: 0 }}
                   value={form.daily_water_intake}
@@ -533,9 +534,9 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 <Box
                   sx={{
                     p: 2,
-                    borderRadius: 2.5,
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '1px solid rgba(255, 255, 255, 0.06)',
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.02)',
+                    border: '0.5px solid rgba(255, 255, 255, 0.06)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
@@ -543,8 +544,8 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     gap: 1.5,
                   }}
                 >
-                  <Typography variant="body2" fontWeight="600">
-                    Autoevaluación de Compromiso y Adherencia (1 - 10)
+                  <Typography variant="body2" fontWeight="600" sx={{ color: '#FFFFFF' }}>
+                    Autoevaluación de Compromiso (1 a 10)
                   </Typography>
                   <Rating
                     max={10}
@@ -563,13 +564,13 @@ export const ClientProgressSubmitPage: React.FC = () => {
                   value={form.diet_difficulties}
                   onChange={handleChange('diet_difficulties')}
                   fullWidth
-                  placeholder="¿Tuviste hambre excesiva, comidas fuera de plan o antojos?"
+                  placeholder="¿Hambre excesiva, comidas fuera de plan o antojos?"
                 />
               </Grid>
 
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label="Molestias Musculares, Articulares o Notas de Entreno"
+                  label="Molestias Musculares o Articulares"
                   multiline
                   rows={2}
                   value={form.exercise_difficulties}
@@ -583,31 +584,28 @@ export const ClientProgressSubmitPage: React.FC = () => {
 
           {/* Card 3: Fotos de Progreso Corporal (3 Ángulos) */}
           <Box
-            className="liquid-glass-card"
+            className="apple-card"
             sx={{
-              p: { xs: 2.5, sm: 3.5 },
-              borderRadius: 4,
-              border: '1px solid rgba(255, 255, 255, 0.08)',
-              boxShadow: '0 15px 40px rgba(0,0,0,0.25)',
+              p: { xs: 2.5, sm: 3 },
             }}
           >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Box display="flex" alignItems="center" gap={1.5}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+              <Box display="flex" alignItems="center" gap={1.2}>
                 <Box
                   sx={{
-                    width: 36,
-                    height: 36,
-                    borderRadius: '12px',
-                    background: 'rgba(244, 63, 94, 0.2)',
+                    width: 32,
+                    height: 32,
+                    borderRadius: '8px',
+                    background: 'rgba(175, 82, 222, 0.15)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <Iconify icon="solar:camera-bold" width={20} sx={{ color: '#f43f5e' }} />
+                  <Camera size={18} color="#AF52DE" />
                 </Box>
-                <Typography variant="h6" fontWeight="800">
-                  Fotos de Progreso (3 Ángulos Clave)
+                <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF' }}>
+                  Fotos de Progreso (3 Ángulos)
                 </Typography>
               </Box>
 
@@ -615,57 +613,58 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 size="small"
                 variant="outlined"
                 onClick={() => setSilhouetteModalOpen(true)}
-                startIcon={<Iconify icon="solar:eye-bold" />}
+                startIcon={<Info size={14} />}
                 sx={{
-                  borderRadius: '16px',
+                  borderRadius: '10px',
                   textTransform: 'none',
-                  fontSize: '0.78rem',
-                  color: 'text.secondary',
+                  fontSize: '0.75rem',
+                  color: 'rgba(255, 255, 255, 0.6)',
                   borderColor: 'rgba(255, 255, 255, 0.15)',
+                  py: 0.4,
                 }}
               >
-                Ver Siluetas Guía
+                Guía de Encuadre
               </Button>
             </Box>
 
-            <Divider sx={{ mb: 3, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
+            <Divider sx={{ mb: 2.5, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
 
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
               {/* Front Photo */}
               <Grid size={{ xs: 12, md: 4 }}>
                 <Box
                   sx={{
                     p: 2,
-                    borderRadius: 3,
-                    background: 'rgba(0, 0, 0, 0.2)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '14px',
+                    background: '#161618',
+                    border: '0.5px solid rgba(255, 255, 255, 0.08)',
                     textAlign: 'center',
                   }}
                 >
-                  <Typography variant="subtitle2" fontWeight="700" gutterBottom>
-                    🥋 Frente (Brazos en Cruz)
+                  <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', mb: 1 }}>
+                    Frente (Brazos en Cruz)
                   </Typography>
 
                   {photoFront ? (
-                    <Box sx={{ position: 'relative', width: '100%', height: 180, mb: 1.5, borderRadius: 2, overflow: 'hidden' }}>
+                    <Box sx={{ position: 'relative', width: '100%', height: 160, mb: 1.5, borderRadius: '10px', overflow: 'hidden' }}>
                       <Box component="img" src={photoFront} alt="Frente" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <IconButton
                         size="small"
                         onClick={() => setPhotoFront('')}
-                        sx={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.6)', color: '#fff' }}
+                        sx={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff' }}
                       >
-                        <Iconify icon="solar:trash-bin-trash-bold" width={16} />
+                        <Trash2 size={16} />
                       </IconButton>
                     </Box>
                   ) : (
                     <Box
                       sx={{
                         width: '100%',
-                        height: 180,
+                        height: 160,
                         mb: 1.5,
-                        borderRadius: 2,
+                        borderRadius: '10px',
                         background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px dashed rgba(255, 255, 255, 0.15)',
+                        border: '0.5px dashed rgba(255, 255, 255, 0.15)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
@@ -673,8 +672,8 @@ export const ClientProgressSubmitPage: React.FC = () => {
                         gap: 1,
                       }}
                     >
-                      <Iconify icon="solar:user-bold" width={36} sx={{ color: 'text.secondary', opacity: 0.5 }} />
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      <User size={32} color="rgba(255, 255, 255, 0.3)" />
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                         Sin foto cargada
                       </Typography>
                     </Box>
@@ -686,10 +685,10 @@ export const ClientProgressSubmitPage: React.FC = () => {
                       variant="outlined"
                       size="small"
                       disabled={uploadingPhoto === 'front'}
-                      startIcon={uploadingPhoto === 'front' ? <CircularProgress size={16} /> : <Iconify icon="solar:upload-minimalistic-bold" />}
-                      sx={{ borderRadius: '16px', textTransform: 'none' }}
+                      startIcon={uploadingPhoto === 'front' ? <CircularProgress size={16} /> : <Upload size={16} />}
+                      sx={{ borderRadius: '10px', textTransform: 'none', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#FFFFFF' }}
                     >
-                      {uploadingPhoto === 'front' ? 'Subiendo...' : 'Subir Archivo'}
+                      {uploadingPhoto === 'front' ? 'Subiendo...' : 'Subir Foto'}
                       <input
                         type="file"
                         hidden
@@ -699,7 +698,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     </Button>
                     <TextField
                       size="small"
-                      placeholder="o pega URL https://..."
+                      placeholder="o URL https://..."
                       value={photoFront}
                       onChange={(e) => setPhotoFront(e.target.value)}
                       fullWidth
@@ -713,36 +712,36 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 <Box
                   sx={{
                     p: 2,
-                    borderRadius: 3,
-                    background: 'rgba(0, 0, 0, 0.2)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '14px',
+                    background: '#161618',
+                    border: '0.5px solid rgba(255, 255, 255, 0.08)',
                     textAlign: 'center',
                   }}
                 >
-                  <Typography variant="subtitle2" fontWeight="700" gutterBottom>
-                    🚶 Perfil (Brazos al Frente)
+                  <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', mb: 1 }}>
+                    Perfil (Brazos al Frente)
                   </Typography>
 
                   {photoSide ? (
-                    <Box sx={{ position: 'relative', width: '100%', height: 180, mb: 1.5, borderRadius: 2, overflow: 'hidden' }}>
+                    <Box sx={{ position: 'relative', width: '100%', height: 160, mb: 1.5, borderRadius: '10px', overflow: 'hidden' }}>
                       <Box component="img" src={photoSide} alt="Perfil" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <IconButton
                         size="small"
                         onClick={() => setPhotoSide('')}
-                        sx={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.6)', color: '#fff' }}
+                        sx={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff' }}
                       >
-                        <Iconify icon="solar:trash-bin-trash-bold" width={16} />
+                        <Trash2 size={16} />
                       </IconButton>
                     </Box>
                   ) : (
                     <Box
                       sx={{
                         width: '100%',
-                        height: 180,
+                        height: 160,
                         mb: 1.5,
-                        borderRadius: 2,
+                        borderRadius: '10px',
                         background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px dashed rgba(255, 255, 255, 0.15)',
+                        border: '0.5px dashed rgba(255, 255, 255, 0.15)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
@@ -750,8 +749,8 @@ export const ClientProgressSubmitPage: React.FC = () => {
                         gap: 1,
                       }}
                     >
-                      <Iconify icon="solar:walking-bold" width={36} sx={{ color: 'text.secondary', opacity: 0.5 }} />
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      <User size={32} color="rgba(255, 255, 255, 0.3)" />
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                         Sin foto cargada
                       </Typography>
                     </Box>
@@ -763,10 +762,10 @@ export const ClientProgressSubmitPage: React.FC = () => {
                       variant="outlined"
                       size="small"
                       disabled={uploadingPhoto === 'side'}
-                      startIcon={uploadingPhoto === 'side' ? <CircularProgress size={16} /> : <Iconify icon="solar:upload-minimalistic-bold" />}
-                      sx={{ borderRadius: '16px', textTransform: 'none' }}
+                      startIcon={uploadingPhoto === 'side' ? <CircularProgress size={16} /> : <Upload size={16} />}
+                      sx={{ borderRadius: '10px', textTransform: 'none', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#FFFFFF' }}
                     >
-                      {uploadingPhoto === 'side' ? 'Subiendo...' : 'Subir Archivo'}
+                      {uploadingPhoto === 'side' ? 'Subiendo...' : 'Subir Foto'}
                       <input
                         type="file"
                         hidden
@@ -776,7 +775,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     </Button>
                     <TextField
                       size="small"
-                      placeholder="o pega URL https://..."
+                      placeholder="o URL https://..."
                       value={photoSide}
                       onChange={(e) => setPhotoSide(e.target.value)}
                       fullWidth
@@ -790,36 +789,36 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 <Box
                   sx={{
                     p: 2,
-                    borderRadius: 3,
-                    background: 'rgba(0, 0, 0, 0.2)',
-                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    borderRadius: '14px',
+                    background: '#161618',
+                    border: '0.5px solid rgba(255, 255, 255, 0.08)',
                     textAlign: 'center',
                   }}
                 >
-                  <Typography variant="subtitle2" fontWeight="700" gutterBottom>
-                    🏋️ Espalda (Brazos en Cruz)
+                  <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', mb: 1 }}>
+                    Espalda (Brazos en Cruz)
                   </Typography>
 
                   {photoBack ? (
-                    <Box sx={{ position: 'relative', width: '100%', height: 180, mb: 1.5, borderRadius: 2, overflow: 'hidden' }}>
+                    <Box sx={{ position: 'relative', width: '100%', height: 160, mb: 1.5, borderRadius: '10px', overflow: 'hidden' }}>
                       <Box component="img" src={photoBack} alt="Espalda" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       <IconButton
                         size="small"
                         onClick={() => setPhotoBack('')}
-                        sx={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.6)', color: '#fff' }}
+                        sx={{ position: 'absolute', top: 6, right: 6, background: 'rgba(0,0,0,0.7)', color: '#fff' }}
                       >
-                        <Iconify icon="solar:trash-bin-trash-bold" width={16} />
+                        <Trash2 size={16} />
                       </IconButton>
                     </Box>
                   ) : (
                     <Box
                       sx={{
                         width: '100%',
-                        height: 180,
+                        height: 160,
                         mb: 1.5,
-                        borderRadius: 2,
+                        borderRadius: '10px',
                         background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px dashed rgba(255, 255, 255, 0.15)',
+                        border: '0.5px dashed rgba(255, 255, 255, 0.15)',
                         display: 'flex',
                         flexDirection: 'column',
                         alignItems: 'center',
@@ -827,8 +826,8 @@ export const ClientProgressSubmitPage: React.FC = () => {
                         gap: 1,
                       }}
                     >
-                      <Iconify icon="solar:dumbbell-large-minimalistic-bold" width={36} sx={{ color: 'text.secondary', opacity: 0.5 }} />
-                      <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                      <User size={32} color="rgba(255, 255, 255, 0.3)" />
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                         Sin foto cargada
                       </Typography>
                     </Box>
@@ -840,10 +839,10 @@ export const ClientProgressSubmitPage: React.FC = () => {
                       variant="outlined"
                       size="small"
                       disabled={uploadingPhoto === 'back'}
-                      startIcon={uploadingPhoto === 'back' ? <CircularProgress size={16} /> : <Iconify icon="solar:upload-minimalistic-bold" />}
-                      sx={{ borderRadius: '16px', textTransform: 'none' }}
+                      startIcon={uploadingPhoto === 'back' ? <CircularProgress size={16} /> : <Upload size={16} />}
+                      sx={{ borderRadius: '10px', textTransform: 'none', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#FFFFFF' }}
                     >
-                      {uploadingPhoto === 'back' ? 'Subiendo...' : 'Subir Archivo'}
+                      {uploadingPhoto === 'back' ? 'Subiendo...' : 'Subir Foto'}
                       <input
                         type="file"
                         hidden
@@ -853,7 +852,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     </Button>
                     <TextField
                       size="small"
-                      placeholder="o pega URL https://..."
+                      placeholder="o URL https://..."
                       value={photoBack}
                       onChange={(e) => setPhotoBack(e.target.value)}
                       fullWidth
@@ -870,22 +869,17 @@ export const ClientProgressSubmitPage: React.FC = () => {
             variant="contained"
             size="large"
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={20} color="inherit" /> : <Iconify icon="solar:plain-bold" />}
+            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <Send size={18} />}
+            className="apple-button-primary"
             sx={{
-              py: 2,
-              borderRadius: '28px',
-              fontSize: '1.1rem',
-              fontWeight: 800,
-              background: 'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)',
-              boxShadow: '0 8px 30px rgba(6, 182, 212, 0.4)',
-              transition: 'all 0.25s ease',
-              '&:hover': {
-                transform: 'translateY(-2px)',
-                boxShadow: '0 12px 35px rgba(6, 182, 212, 0.6)',
-              },
+              py: 1.8,
+              borderRadius: '14px',
+              fontSize: '1rem',
+              fontWeight: 700,
+              textTransform: 'none',
             }}
           >
-            {loading ? 'Enviando Reporte...' : 'Enviar Reporte y Fotos a mi Entrenador'}
+            {loading ? 'Enviando Reporte...' : 'Enviar Reporte al Entrenador'}
           </Button>
         </Stack>
       </form>
@@ -897,48 +891,47 @@ export const ClientProgressSubmitPage: React.FC = () => {
         maxWidth="sm"
         fullWidth
         PaperProps={{
-          className: 'liquid-glass-card',
+          className: 'apple-card',
           sx: {
-            borderRadius: 4,
-            p: 2,
-            border: '1px solid rgba(255, 255, 255, 0.15)',
+            borderRadius: '18px',
+            p: 1.5,
           },
         }}
       >
-        <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Iconify icon="solar:camera-bold" width={24} sx={{ color: '#22d3ee' }} />
-          Guía de Encuadre y Postura Fotográfica
+        <DialogTitle sx={{ fontWeight: 800, display: 'flex', alignItems: 'center', gap: 1.2, color: '#FFFFFF' }}>
+          <Camera size={20} color="#007AFF" />
+          Guía de Encuadre y Postura
         </DialogTitle>
         <DialogContent>
-          <Typography variant="body2" sx={{ color: 'text.secondary', mb: 3 }}>
-            Para que la comparación antes/después sea exacta y milimétrica, sigue estos 4 principios:
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 2 }}>
+            Para una comparación visual exacta y continua:
           </Typography>
 
-          <Stack spacing={2}>
-            <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-              <Typography variant="subtitle2" fontWeight="700" color="#22d3ee" gutterBottom>
+          <Stack spacing={1.5}>
+            <Box sx={{ p: 1.8, borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '0.5px solid rgba(255, 255, 255, 0.06)' }}>
+              <Typography variant="subtitle2" fontWeight="700" color="#007AFF" gutterBottom>
                 1. Misma Iluminación y Distancia
               </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Coloca la cámara siempre a la altura del ombligo (aprox. 1 metro de altura) a unos 2.5 metros de distancia. Evita luces cenitales directas que proyecten sombras artificiales.
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                Coloca la cámara a la altura del ombligo (aprox. 1m de altura) a unos 2.5m de distancia con luz uniforme.
               </Typography>
             </Box>
 
-            <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-              <Typography variant="subtitle2" fontWeight="700" color="#10b981" gutterBottom>
-                2. Misma Ropa y Calzado
+            <Box sx={{ p: 1.8, borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '0.5px solid rgba(255, 255, 255, 0.06)' }}>
+              <Typography variant="subtitle2" fontWeight="700" color="#34C759" gutterBottom>
+                2. Misma Ropa Deportiva
               </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Utiliza ropa ajustada similar en todas las tomas (pantalón corto/bañador o top deportivo) para que el contorno muscular y de cintura sea visible.
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                Usa ropa ajustada similar en cada registro para que el contorno y tono muscular sean comparables.
               </Typography>
             </Box>
 
-            <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
-              <Typography variant="subtitle2" fontWeight="700" color="#f59e0b" gutterBottom>
-                3. Postura Natural sin Forzar
+            <Box sx={{ p: 1.8, borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '0.5px solid rgba(255, 255, 255, 0.06)' }}>
+              <Typography variant="subtitle2" fontWeight="700" color="#FF9500" gutterBottom>
+                3. Postura Neutra
               </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Extiende los brazos horizontalmente a la altura del pecho en la toma frontal y dorsal. No aprietes el abdomen ni metas tripa de forma extrema; mantén una respiración neutra.
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                Brazos en cruz horizontales, respiración natural sin forzar ni meter el abdomen de manera extrema.
               </Typography>
             </Box>
           </Stack>
@@ -947,10 +940,11 @@ export const ClientProgressSubmitPage: React.FC = () => {
           <Button
             variant="contained"
             onClick={() => setSilhouetteModalOpen(false)}
+            className="apple-button-primary"
             sx={{
-              borderRadius: '20px',
-              background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
+              borderRadius: '10px',
               fontWeight: 700,
+              px: 3,
             }}
           >
             Entendido
