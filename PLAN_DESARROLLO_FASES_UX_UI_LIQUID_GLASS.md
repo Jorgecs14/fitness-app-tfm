@@ -270,9 +270,11 @@ graph TD
 
 ---
 
-## 6. Próximo Paso Inmediato
+## 6. Estado de Ejecución de Fases (Completadas al 100%)
 
-Iniciar la **Fase 1 (Entrenamientos, Live Workout & Creador de Rutinas)**:
-1. Modernización de `WorkoutsPage.tsx` y `WorkoutManager.tsx` con tarjetas Liquid Glass y filtros segmentados en cápsula.
-2. Integración de temporizador de descanso háptico, selector de carga rápida y pantalla de resumen de récord personal (PR) en `LiveWorkoutDialog.tsx`.
-3. Verificación de build y pruebas de interactividad.
+- [x] **FASE 1: Entrenamientos, Live Workout & Creador de Rutinas** (Commit `772506c`)
+- [x] **FASE 2: Nutrición, Macrorings & Planificador Dietético** (Commit `aec8868`)
+- [x] **FASE 3: Analítica de Progreso, Biometría y Slider Antes/Después** (Commit `12f4177`)
+- [x] **FASE 4: Cockpit del Entrenador, CRM y Ficha 360° del Alumno** (Commit `4aa9636` + Fix `7c3dea4`)
+- [x] **FASE 5: Arquitectura Global del Layout, Dock Flotante Móvil y Auth Glass** (Commit `3a575f6`)
+
