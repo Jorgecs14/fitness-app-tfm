@@ -9,11 +9,11 @@ import {
   List,
   ListItem,
   ListItemText,
-  Divider,
   CircularProgress,
   Alert,
   Fade,
-  Zoom
+  Zoom,
+  Stack
 } from '@mui/material'
 import { Iconify } from '../../utils/iconify'
 import { chatService, type ChatMessage } from '../../services/chatService'
