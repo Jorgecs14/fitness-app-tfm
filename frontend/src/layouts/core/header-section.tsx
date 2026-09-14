@@ -76,14 +76,16 @@ export function HeaderSection({
 const HeaderRoot = styled(AppBar)(({ theme }) => ({
   zIndex: 'var(--layout-header-zIndex)',
   minHeight: 'var(--layout-header-mobile-height)',
-  backdropFilter: `blur(24px) saturate(190%)`,
-  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.75)' : 'rgba(255, 255, 255, 0.75)',
-  borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'}`,
+  backdropFilter: `blur(28px) saturate(210%)`,
+  WebkitBackdropFilter: `blur(28px) saturate(210%)`,
+  backgroundColor: 'rgba(15, 23, 42, 0.82)',
+  borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
   boxShadow: 'none',
-  color: theme.palette.text.primary,
+  color: '#f8fafc',
   width: '100%',
   left: 0,
   right: 0,
+  paddingTop: 'env(safe-area-inset-top, 0px)',
   [theme.breakpoints.up('lg')]: {
     minHeight: 'var(--layout-header-desktop-height)'
   }
