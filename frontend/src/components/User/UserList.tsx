@@ -1,6 +1,5 @@
 import React, { useState, useMemo } from 'react';
 import {
-  Card,
   Table,
   Button,
   TableBody,
@@ -24,7 +23,18 @@ import {
   Avatar,
   Tooltip
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  UserPlus,
+  FileDown,
+  Search,
+  LayoutGrid,
+  List as ListIcon,
+  Eye,
+  Edit2,
+  Trash2,
+  FileSpreadsheet,
+  FileText,
+} from 'lucide-react';
 import { User } from '../../types/User';
 import { UserCard } from './UserCard';
 import { useNavigate } from 'react-router-dom';
@@ -77,21 +87,6 @@ export const UserList = ({
     return filteredUsers.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   }, [filteredUsers, page, rowsPerPage]);
 
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'admin':
-        return 'error';
-      case 'client':
-      case 'cliente':
-        return 'primary';
-      case 'trainer':
-      case 'entrenador':
-        return 'success';
-      default:
-        return 'default';
-    }
-  };
-
   const getRoleLabel = (role: string) => {
     switch (role) {
       case 'admin':
@@ -113,7 +108,7 @@ export const UserList = ({
   };
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <Box sx={{ width: '100%', pb: 8 }}>
       {/* Header & Main Actions */}
       <Box
         sx={{
@@ -126,25 +121,27 @@ export const UserList = ({
         }}
       >
         <Box>
-          <Typography variant="h4" fontWeight="900" sx={{ letterSpacing: '-0.02em', mb: 0.5 }}>
+          <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.02em', mb: 0.5, color: '#FFFFFF' }}>
             Directorio de Usuarios
           </Typography>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Gestiona la asignación de entrenadores, roles, fichas 360° y accesos del sistema.
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+            Gestión de roles, expedientes 360° y accesos de atletas y entrenadores.
           </Typography>
         </Box>
 
         <Stack direction="row" spacing={1.5} alignItems="center">
           <Button
             variant="outlined"
-            startIcon={<Iconify icon="solar:export-bold" />}
+            startIcon={<FileDown size={16} />}
             onClick={(e) => setExportMenuAnchor(e.currentTarget)}
             sx={{
-              borderRadius: '20px',
-              borderColor: 'rgba(255, 255, 255, 0.2)',
-              color: '#fff',
-              fontWeight: 700,
+              borderRadius: '10px',
+              borderColor: 'rgba(255, 255, 255, 0.15)',
+              color: '#FFFFFF',
+              fontWeight: 600,
               textTransform: 'none',
+              fontSize: '0.82rem',
+              px: 2,
             }}
           >
             Exportar
@@ -152,15 +149,15 @@ export const UserList = ({
 
           <Button
             variant="contained"
-            startIcon={<Iconify icon="solar:user-plus-bold" />}
+            startIcon={<UserPlus size={16} />}
             onClick={onCreateNew}
+            className="apple-button-primary"
             sx={{
-              borderRadius: '20px',
-              background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-              boxShadow: '0 4px 15px rgba(6, 182, 212, 0.4)',
+              borderRadius: '10px',
               fontWeight: 700,
               textTransform: 'none',
-              px: 2.5,
+              fontSize: '0.82rem',
+              px: 2.2,
             }}
           >
             Nuevo Usuario
@@ -174,36 +171,34 @@ export const UserList = ({
         open={Boolean(exportMenuAnchor)}
         onClose={() => setExportMenuAnchor(null)}
         PaperProps={{
-          className: 'liquid-glass-card',
+          className: 'apple-card',
           sx: {
-            borderRadius: 3,
-            border: '1px solid rgba(255, 255, 255, 0.12)',
+            borderRadius: '12px',
             minWidth: 160,
+            p: 0.5,
           },
         }}
       >
         <MenuItem onClick={() => handleExportClick('pdf')}>
-          <Iconify icon="solar:file-text-bold" width={18} sx={{ mr: 1.5, color: '#f43f5e' }} />
-          Exportar PDF
+          <FileText size={16} color="#FF3B30" style={{ marginRight: 8 }} />
+          <Typography variant="body2" fontWeight={600}>Exportar PDF</Typography>
         </MenuItem>
         <MenuItem onClick={() => handleExportClick('excel')}>
-          <Iconify icon="solar:file-smile-bold" width={18} sx={{ mr: 1.5, color: '#10b981' }} />
-          Exportar Excel
+          <FileSpreadsheet size={16} color="#34C759" style={{ marginRight: 8 }} />
+          <Typography variant="body2" fontWeight={600}>Exportar Excel</Typography>
         </MenuItem>
         <MenuItem onClick={() => handleExportClick('csv')}>
-          <Iconify icon="solar:document-text-bold" width={18} sx={{ mr: 1.5, color: '#22d3ee' }} />
-          Exportar CSV
+          <FileText size={16} color="#007AFF" style={{ marginRight: 8 }} />
+          <Typography variant="body2" fontWeight={600}>Exportar CSV</Typography>
         </MenuItem>
       </Menu>
 
       {/* Filters and Controls Card */}
       <Box
-        className="liquid-glass-card"
+        className="apple-card"
         sx={{
-          p: 2.5,
-          borderRadius: 3.5,
+          p: 2,
           mb: 3,
-          border: '1px solid rgba(255, 255, 255, 0.08)',
         }}
       >
         <Stack
@@ -224,54 +219,63 @@ export const UserList = ({
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <Iconify icon="solar:magnifer-bold" sx={{ color: 'text.secondary' }} />
+                  <Search size={16} color="rgba(255, 255, 255, 0.4)" />
                 </InputAdornment>
               ),
             }}
             sx={{
               minWidth: { xs: '100%', md: 320 },
-              background: 'rgba(255, 255, 255, 0.03)',
-              borderRadius: '12px',
+              background: 'rgba(255, 255, 255, 0.04)',
+              borderRadius: '10px',
+              '& fieldset': { border: 'none' },
             }}
           />
 
           {/* Role Filter Chips */}
-          <Stack direction="row" spacing={1} overflow="auto" pb={{ xs: 1, md: 0 }}>
+          <Stack direction="row" spacing={0.8} overflow="auto" pb={{ xs: 1, md: 0 }}>
             <Chip
               label="Todos"
               clickable
               onClick={() => { setRoleFilter('all'); setPage(0); }}
-              color={roleFilter === 'all' ? 'primary' : 'default'}
-              variant={roleFilter === 'all' ? 'filled' : 'outlined'}
-              size="small"
-              sx={{ fontWeight: 700 }}
+              sx={{
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                bgcolor: roleFilter === 'all' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.06)',
+                color: roleFilter === 'all' ? '#000000' : 'rgba(255, 255, 255, 0.6)',
+              }}
             />
             <Chip
               label="Alumnos"
               clickable
               onClick={() => { setRoleFilter('client'); setPage(0); }}
-              color={roleFilter === 'client' ? 'primary' : 'default'}
-              variant={roleFilter === 'client' ? 'filled' : 'outlined'}
-              size="small"
-              sx={{ fontWeight: 700 }}
+              sx={{
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                bgcolor: roleFilter === 'client' ? '#007AFF' : 'rgba(255, 255, 255, 0.06)',
+                color: roleFilter === 'client' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)',
+              }}
             />
             <Chip
               label="Entrenadores"
               clickable
               onClick={() => { setRoleFilter('trainer'); setPage(0); }}
-              color={roleFilter === 'trainer' ? 'success' : 'default'}
-              variant={roleFilter === 'trainer' ? 'filled' : 'outlined'}
-              size="small"
-              sx={{ fontWeight: 700 }}
+              sx={{
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                bgcolor: roleFilter === 'trainer' ? '#34C759' : 'rgba(255, 255, 255, 0.06)',
+                color: roleFilter === 'trainer' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)',
+              }}
             />
             <Chip
               label="Administradores"
               clickable
               onClick={() => { setRoleFilter('admin'); setPage(0); }}
-              color={roleFilter === 'admin' ? 'error' : 'default'}
-              variant={roleFilter === 'admin' ? 'filled' : 'outlined'}
-              size="small"
-              sx={{ fontWeight: 700 }}
+              sx={{
+                fontWeight: 700,
+                fontSize: '0.75rem',
+                bgcolor: roleFilter === 'admin' ? '#FF3B30' : 'rgba(255, 255, 255, 0.06)',
+                color: roleFilter === 'admin' ? '#FFFFFF' : 'rgba(255, 255, 255, 0.6)',
+              }}
             />
           </Stack>
 
@@ -283,55 +287,54 @@ export const UserList = ({
             size="small"
             sx={{
               background: 'rgba(255, 255, 255, 0.04)',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              borderRadius: '20px',
+              border: '0.5px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '10px',
               p: '2px',
               '& .MuiToggleButton-root': {
-                borderRadius: '18px',
-                px: 1.5,
-                py: 0.3,
+                borderRadius: '8px',
+                px: 1.2,
+                py: 0.4,
                 border: 'none',
-                color: 'text.secondary',
+                color: 'rgba(255, 255, 255, 0.5)',
                 '&.Mui-selected': {
-                  background: 'rgba(6, 182, 212, 0.25)',
-                  color: '#22d3ee',
+                  background: '#FFFFFF',
+                  color: '#000000',
                   fontWeight: 700,
                 },
               },
             }}
           >
             <ToggleButton value="grid">
-              <Iconify icon="solar:widget-4-bold" width={16} sx={{ mr: 0.5 }} />
+              <LayoutGrid size={14} style={{ marginRight: 4 }} />
               Tarjetas
             </ToggleButton>
             <ToggleButton value="table">
-              <Iconify icon="solar:list-bold" width={16} sx={{ mr: 0.5 }} />
+              <ListIcon size={14} style={{ marginRight: 4 }} />
               Tabla
             </ToggleButton>
           </ToggleButtonGroup>
         </Stack>
 
-        <Box display="flex" justifyContent="space-between" alignItems="center" mt={2} pt={1.5} borderTop="1px solid rgba(255, 255, 255, 0.06)">
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            Mostrando {paginatedUsers.length} de {filteredUsers.length} usuarios encontrados
+        <Box display="flex" justifyContent="space-between" alignItems="center" mt={1.5} pt={1} borderTop="0.5px solid rgba(255, 255, 255, 0.06)">
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+            Mostrando {paginatedUsers.length} de {filteredUsers.length} usuarios
           </Typography>
         </Box>
       </Box>
 
       {/* Main Content Area */}
       {viewMode === 'grid' ? (
-        /* GRID VIEW */
-        <Grid container spacing={2.5}>
+        <Grid container spacing={2}>
           {loading ? (
             <Grid size={12}>
-              <Box className="liquid-glass-card" sx={{ p: 5, textAlign: 'center', borderRadius: 4 }}>
-                <Typography>Cargando directorio de usuarios...</Typography>
+              <Box className="apple-card" sx={{ p: 5, textAlign: 'center' }}>
+                <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Cargando usuarios...</Typography>
               </Box>
             </Grid>
           ) : filteredUsers.length === 0 ? (
             <Grid size={12}>
-              <Box className="liquid-glass-card" sx={{ p: 5, textAlign: 'center', borderRadius: 4 }}>
-                <Typography color="text.secondary">No se encontraron usuarios con esos criterios.</Typography>
+              <Box className="apple-card" sx={{ p: 5, textAlign: 'center' }}>
+                <Typography color="rgba(255, 255, 255, 0.5)">No se encontraron usuarios con esos criterios.</Typography>
               </Box>
             </Grid>
           ) : (
@@ -343,37 +346,34 @@ export const UserList = ({
           )}
         </Grid>
       ) : (
-        /* TABLE VIEW */
         <Box
-          className="liquid-glass-card"
+          className="apple-card"
           sx={{
-            borderRadius: 4,
             overflow: 'hidden',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
           }}
         >
           <TableContainer>
             <Table>
               <TableHead>
                 <TableRow sx={{ background: 'rgba(255, 255, 255, 0.02)' }}>
-                  <TableCell sx={{ fontWeight: 800 }}>Usuario</TableCell>
-                  <TableCell sx={{ fontWeight: 800 }}>Email</TableCell>
-                  <TableCell sx={{ fontWeight: 800 }}>Rol</TableCell>
-                  <TableCell sx={{ fontWeight: 800 }}>Alta</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 800 }}>Acciones</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.6)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>Usuario</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.6)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>Email</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.6)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>Rol</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.6)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>Alta</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.6)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                      <Typography>Cargando...</Typography>
+                    <TableCell colSpan={5} align="center" sx={{ py: 4, borderBottom: 'none' }}>
+                      <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Cargando...</Typography>
                     </TableCell>
                   </TableRow>
                 ) : filteredUsers.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} align="center" sx={{ py: 4 }}>
-                      <Typography color="text.secondary">No hay usuarios registrados</Typography>
+                    <TableCell colSpan={5} align="center" sx={{ py: 4, borderBottom: 'none' }}>
+                      <Typography color="rgba(255, 255, 255, 0.5)">No hay usuarios registrados</Typography>
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -383,72 +383,79 @@ export const UserList = ({
                       hover
                       sx={{
                         cursor: 'pointer',
-                        '&:hover': { background: 'rgba(6, 182, 212, 0.04)' },
+                        '&:hover': { background: 'rgba(255, 255, 255, 0.03)' },
+                        '& td': { borderBottom: '0.5px solid rgba(255, 255, 255, 0.04)' }
                       }}
                       onClick={() => navigate(`/dashboard/users/${user.id}`)}
                     >
                       <TableCell>
-                        <Box display="flex" alignItems="center" gap={1.5}>
+                        <Box display="flex" alignItems="center" gap={1.2}>
                           <Avatar
                             sx={{
-                              width: 36,
-                              height: 36,
-                              background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-                              fontSize: '0.85rem',
-                              fontWeight: 800,
+                              width: 32,
+                              height: 32,
+                              background: '#2C2C2E',
+                              color: '#FFFFFF',
+                              fontSize: '0.8rem',
+                              fontWeight: 700,
                             }}
                           >
                             {user.name.charAt(0).toUpperCase()}
                           </Avatar>
-                          <Typography variant="subtitle2" fontWeight="700">
+                          <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF' }}>
                             {user.name} {user.surname}
                           </Typography>
                         </Box>
                       </TableCell>
                       <TableCell>
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
                           {user.email}
                         </Typography>
                       </TableCell>
                       <TableCell>
                         <Chip
                           label={getRoleLabel(user.role)}
-                          color={getRoleColor(user.role)}
                           size="small"
-                          sx={{ fontWeight: 700, fontSize: '0.72rem' }}
+                          sx={{
+                            fontWeight: 700,
+                            fontSize: '0.68rem',
+                            height: 22,
+                            bgcolor: user.role === 'admin' ? 'rgba(255, 59, 48, 0.15)' : user.role === 'trainer' ? 'rgba(52, 199, 89, 0.15)' : 'rgba(0, 122, 255, 0.15)',
+                            color: user.role === 'admin' ? '#FF3B30' : user.role === 'trainer' ? '#34C759' : '#007AFF',
+                          }}
                         />
                       </TableCell>
                       <TableCell>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                           {new Date(user.created_at).toLocaleDateString('es-ES')}
                         </Typography>
                       </TableCell>
                       <TableCell align="right" onClick={(e) => e.stopPropagation()}>
-                        <Tooltip title="Ficha 360°">
+                        <Tooltip title="Ficha">
                           <IconButton
                             size="small"
                             onClick={() => navigate(`/dashboard/users/${user.id}`)}
-                            sx={{ color: '#22d3ee' }}
+                            sx={{ color: '#007AFF' }}
                           >
-                            <Iconify icon="solar:eye-bold" width={18} />
+                            <Eye size={16} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Editar">
                           <IconButton
                             size="small"
                             onClick={() => onEdit(user)}
-                            sx={{ color: 'text.secondary' }}
+                            sx={{ color: 'rgba(255, 255, 255, 0.6)' }}
                           >
-                            <Iconify icon="solar:pen-bold" width={18} />
+                            <Edit2 size={16} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Eliminar">
                           <IconButton
                             size="small"
                             onClick={() => onDelete(user.id)}
-                            sx={{ color: '#f43f5e' }}
+                            sx={{ color: '#FF3B30' }}
                           >
-                            <Iconify icon="solar:trash-bin-trash-bold" width={18} />
+                            <Trash2 size={16} />
                           </IconButton>
                         </Tooltip>
                       </TableCell>
@@ -477,6 +484,10 @@ export const UserList = ({
             }}
             labelRowsPerPage="Por página:"
             labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
+            sx={{
+              color: 'rgba(255, 255, 255, 0.6)',
+              '& .MuiSvgIcon-root': { color: '#FFFFFF' }
+            }}
           />
         </Box>
       )}

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import {
   Card,
-  CardContent,
   CardActions,
   Typography,
   Chip,
@@ -16,7 +15,16 @@ import {
   ListItemText,
   Tooltip
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  MoreVertical,
+  Eye,
+  Edit2,
+  Trash2,
+  Shield,
+  User as UserIcon,
+  Activity,
+  HeartPulse,
+} from 'lucide-react';
 import { User } from '../../types/User';
 import { useNavigate } from 'react-router-dom';
 
@@ -45,36 +53,33 @@ export const UserCard = ({ user, onEdit, onDelete, status = 'active', daysAgo }:
   const getRoleBadge = (role: string) => {
     switch (role) {
       case 'admin':
-        return { label: 'Administrador', color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.15)', border: 'rgba(244, 63, 94, 0.35)' };
+        return { label: 'Administrador', color: '#FF3B30', bg: 'rgba(255, 59, 48, 0.15)' };
       case 'client':
       case 'cliente':
-        return { label: 'Alumno', color: '#22d3ee', bg: 'rgba(6, 182, 212, 0.15)', border: 'rgba(6, 182, 212, 0.35)' };
+        return { label: 'Alumno', color: '#007AFF', bg: 'rgba(0, 122, 255, 0.15)' };
       case 'trainer':
       case 'entrenador':
-        return { label: 'Entrenador', color: '#10b981', bg: 'rgba(16, 185, 129, 0.15)', border: 'rgba(16, 185, 129, 0.35)' };
+        return { label: 'Entrenador', color: '#34C759', bg: 'rgba(52, 199, 89, 0.15)' };
       default:
-        return { label: role, color: '#94a3b8', bg: 'rgba(148, 163, 184, 0.15)', border: 'rgba(148, 163, 184, 0.35)' };
+        return { label: role, color: 'rgba(255, 255, 255, 0.6)', bg: 'rgba(255, 255, 255, 0.08)' };
     }
   };
 
   const getStatusIndicator = () => {
     if (status === 'active') {
       return {
-        color: '#10b981',
-        glow: '0 0 14px rgba(16, 185, 129, 0.6)',
-        text: daysAgo !== undefined ? (daysAgo === 0 ? 'Al día (Hoy)' : `Al día (${daysAgo}d)`) : 'Activo',
+        color: '#34C759',
+        text: daysAgo !== undefined ? (daysAgo === 0 ? 'Al día' : `Activo (${daysAgo}d)`) : 'Activo',
       };
     }
     if (status === 'warning') {
       return {
-        color: '#f59e0b',
-        glow: '0 0 14px rgba(245, 158, 11, 0.6)',
+        color: '#FF9500',
         text: daysAgo !== undefined ? `Pendiente (${daysAgo}d)` : 'Atención',
       };
     }
     return {
-      color: '#f43f5e',
-      glow: '0 0 14px rgba(244, 63, 94, 0.6)',
+      color: '#FF3B30',
       text: daysAgo !== undefined ? `Inactivo (${daysAgo}d)` : 'Inactivo',
     };
   };
@@ -90,224 +95,163 @@ export const UserCard = ({ user, onEdit, onDelete, status = 'active', daysAgo }:
 
   return (
     <Card
-      className="liquid-glass-card"
+      className="apple-card"
       sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        borderRadius: 4,
         position: 'relative',
         overflow: 'hidden',
-        border: '1px solid rgba(255, 255, 255, 0.08)',
-        boxShadow: '0 12px 35px rgba(0, 0, 0, 0.25)',
-        transition: 'all 0.25s ease',
+        transition: 'transform 0.2s ease',
         '&:hover': {
-          transform: 'translateY(-4px)',
-          boxShadow: '0 20px 45px rgba(0, 0, 0, 0.4)',
-          borderColor: `${statusInfo.color}60`,
+          transform: 'translateY(-2px)',
+          borderColor: 'rgba(0, 122, 255, 0.3)',
         },
       }}
     >
       <CardActionArea
         onClick={() => navigate(`/dashboard/users/${user.id}`)}
-        sx={{ flexGrow: 1, p: 2.5, pb: 1 }}
+        sx={{ flexGrow: 1, p: 2.2, pb: 1 }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
-          {/* Avatar with Status Glow Ring */}
+        <Box sx={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', mb: 1.5 }}>
+          {/* Avatar with Status Dot */}
           <Box sx={{ position: 'relative' }}>
             <Avatar
               sx={{
-                width: 52,
-                height: 52,
-                background: 'linear-gradient(135deg, #06b6d4, #3b82f6)',
-                fontSize: '1.25rem',
-                fontWeight: 800,
-                border: `2px solid ${statusInfo.color}`,
-                boxShadow: statusInfo.glow,
+                width: 46,
+                height: 46,
+                background: '#2C2C2E',
+                color: '#FFFFFF',
+                fontSize: '1rem',
+                fontWeight: 700,
+                border: '0.5px solid rgba(255, 255, 255, 0.15)',
               }}
             >
               {getInitials(user.name, user.surname)}
             </Avatar>
-            {/* Status dot */}
             <Box
               sx={{
                 position: 'absolute',
                 bottom: 0,
                 right: 0,
-                width: 14,
-                height: 14,
+                width: 12,
+                height: 12,
                 borderRadius: '50%',
                 background: statusInfo.color,
-                border: '2px solid #090d16',
-                boxShadow: `0 0 8px ${statusInfo.color}`,
+                border: '2px solid #1C1C1E',
               }}
             />
           </Box>
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.8 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 0.5 }}>
             <Chip
               label={roleInfo.label}
               size="small"
               sx={{
-                background: roleInfo.bg,
+                bgcolor: roleInfo.bg,
                 color: roleInfo.color,
-                border: `1px solid ${roleInfo.border}`,
                 fontWeight: 700,
-                fontSize: '0.72rem',
+                fontSize: '0.68rem',
+                height: 22,
               }}
             />
-            <Typography variant="caption" sx={{ color: statusInfo.color, fontWeight: 700, fontSize: '0.72rem' }}>
+            <Typography variant="caption" sx={{ color: statusInfo.color, fontWeight: 600, fontSize: '0.68rem' }}>
               {statusInfo.text}
             </Typography>
           </Box>
         </Box>
 
-        {/* Name & Basic Info */}
-        <Box sx={{ mb: 2 }}>
-          <Typography
-            variant="h6"
-            component="h3"
-            noWrap
-            sx={{ fontWeight: 800, letterSpacing: '-0.01em', mb: 0.3 }}
-          >
-            {user.name} {user.surname}
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.6 }} noWrap>
-            <Iconify icon="solar:letter-bold" width={14} sx={{ color: 'text.secondary', opacity: 0.7 }} />
-            {user.email}
-          </Typography>
-        </Box>
+        <Typography variant="subtitle1" fontWeight="700" sx={{ color: '#FFFFFF', mb: 0.2 }}>
+          {user.name} {user.surname}
+        </Typography>
+        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.45)', display: 'block', mb: 1.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {user.email}
+        </Typography>
 
-        {/* Biometrics / Details Summary */}
-        <Stack spacing={1} sx={{ pt: 1, borderTop: '1px solid rgba(255, 255, 255, 0.06)' }}>
+        <Stack direction="row" spacing={0.8} flexWrap="wrap">
           {user.birth_date && (
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Iconify icon="solar:calendar-bold" width={15} sx={{ color: 'text.secondary', opacity: 0.7 }} />
-              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-                Nacimiento: {new Date(user.birth_date).toLocaleDateString('es-ES')}
-              </Typography>
-            </Box>
+            <Chip
+              label={new Date(user.birth_date).toLocaleDateString('es-ES')}
+              size="small"
+              sx={{ height: 20, fontSize: '0.65rem', bgcolor: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 255, 255, 0.6)' }}
+            />
           )}
-
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <Iconify icon="solar:clock-circle-bold" width={15} sx={{ color: 'text.secondary', opacity: 0.7 }} />
-            <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              Alta: {new Date(user.created_at).toLocaleDateString('es-ES')}
-            </Typography>
-          </Box>
         </Stack>
       </CardActionArea>
 
-      {/* Card Actions Footer */}
-      <CardActions sx={{ px: 2, py: 1.5, borderTop: '1px solid rgba(255, 255, 255, 0.05)', justifyContent: 'space-between' }}>
-        <Tooltip title="Ficha 360° del Alumno">
-          <IconButton
-            size="small"
-            onClick={() => navigate(`/dashboard/users/${user.id}`)}
-            sx={{
-              color: '#22d3ee',
-              background: 'rgba(6, 182, 212, 0.1)',
-              '&:hover': { background: 'rgba(6, 182, 212, 0.25)' },
-            }}
-          >
-            <Iconify icon="solar:user-bold" width={18} />
-          </IconButton>
-        </Tooltip>
-
+      <CardActions sx={{ px: 2, py: 1, borderTop: '0.5px solid rgba(255, 255, 255, 0.06)', justifyContent: 'space-between' }}>
         <Stack direction="row" spacing={0.5}>
-          <Tooltip title="Editar Usuario">
+          <Tooltip title="Ficha Médica">
             <IconButton
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
-                onEdit(user);
+                navigate(`/dashboard/users/${user.id}/medical-info`);
               }}
-              sx={{
-                color: 'text.secondary',
-                '&:hover': { color: '#fff', background: 'rgba(255, 255, 255, 0.08)' },
-              }}
+              sx={{ color: 'rgba(255, 255, 255, 0.6)', '&:hover': { color: '#34C759' } }}
             >
-              <Iconify icon="solar:pen-bold" width={18} />
+              <HeartPulse size={16} />
             </IconButton>
           </Tooltip>
 
-          <IconButton
-            size="small"
-            onClick={handleMenuClick}
-            sx={{
-              color: 'text.secondary',
-              '&:hover': { color: '#fff', background: 'rgba(255, 255, 255, 0.08)' },
-            }}
-          >
-            <Iconify icon="solar:menu-dots-bold" width={18} />
-          </IconButton>
+          <Tooltip title="Seguimiento">
+            <IconButton
+              size="small"
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/dashboard/client-tracking`);
+              }}
+              sx={{ color: 'rgba(255, 255, 255, 0.6)', '&:hover': { color: '#AF52DE' } }}
+            >
+              <Activity size={16} />
+            </IconButton>
+          </Tooltip>
         </Stack>
 
-        {/* Dropdown Menu */}
-        <Menu
-          anchorEl={anchorEl}
-          open={menuOpen}
-          onClose={handleMenuClose}
-          PaperProps={{
-            className: 'liquid-glass-card',
-            sx: {
-              borderRadius: 3,
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              boxShadow: '0 15px 40px rgba(0,0,0,0.5)',
-              minWidth: 190,
-            },
+        <IconButton size="small" onClick={handleMenuClick} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+          <MoreVertical size={16} />
+        </IconButton>
+      </CardActions>
+
+      {/* Action Menu */}
+      <Menu
+        anchorEl={anchorEl}
+        open={menuOpen}
+        onClose={handleMenuClose}
+        PaperProps={{
+          className: 'apple-card',
+          sx: { minWidth: 150, borderRadius: '12px', p: 0.5 },
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            handleMenuClose();
+            navigate(`/dashboard/users/${user.id}`);
           }}
         >
-          <MenuItem
-            onClick={() => {
-              handleMenuClose();
-              navigate(`/dashboard/users/${user.id}`);
-            }}
-          >
-            <ListItemIcon>
-              <Iconify icon="solar:eye-bold" width={18} sx={{ color: '#22d3ee' }} />
-            </ListItemIcon>
-            <ListItemText primary="Ver Ficha 360°" />
-          </MenuItem>
-
-          <MenuItem
-            onClick={() => {
-              handleMenuClose();
-              navigate(`/dashboard/workouts`);
-            }}
-          >
-            <ListItemIcon>
-              <Iconify icon="solar:dumbbell-large-bold" width={18} sx={{ color: '#10b981' }} />
-            </ListItemIcon>
-            <ListItemText primary="Asignar Rutina" />
-          </MenuItem>
-
-          <MenuItem
-            onClick={() => {
-              handleMenuClose();
-              navigate(`/dashboard/diets`);
-            }}
-          >
-            <ListItemIcon>
-              <Iconify icon="solar:chef-hat-bold" width={18} sx={{ color: '#f59e0b' }} />
-            </ListItemIcon>
-            <ListItemText primary="Asignar Dieta" />
-          </MenuItem>
-
-          <MenuItem
-            onClick={() => {
-              handleMenuClose();
-              onDelete(user.id);
-            }}
-            sx={{ color: '#f43f5e' }}
-          >
-            <ListItemIcon>
-              <Iconify icon="solar:trash-bin-trash-bold" width={18} sx={{ color: '#f43f5e' }} />
-            </ListItemIcon>
-            <ListItemText primary="Eliminar Alumno" />
-          </MenuItem>
-        </Menu>
-      </CardActions>
+          <ListItemIcon><Eye size={16} color="#007AFF" /></ListItemIcon>
+          <ListItemText primary="Ver Ficha" primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 600 }} />
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleMenuClose();
+            onEdit(user);
+          }}
+        >
+          <ListItemIcon><Edit2 size={16} color="#FF9500" /></ListItemIcon>
+          <ListItemText primary="Editar" primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 600 }} />
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            handleMenuClose();
+            onDelete(user.id);
+          }}
+          sx={{ color: '#FF3B30' }}
+        >
+          <ListItemIcon><Trash2 size={16} color="#FF3B30" /></ListItemIcon>
+          <ListItemText primary="Eliminar" primaryTypographyProps={{ fontSize: '0.85rem', fontWeight: 600, color: '#FF3B30' }} />
+        </MenuItem>
+      </Menu>
     </Card>
   );
 };
