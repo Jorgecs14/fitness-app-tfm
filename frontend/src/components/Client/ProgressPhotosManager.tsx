@@ -121,9 +121,26 @@ const ProgressPhotosManager: React.FC<ProgressPhotosManagerProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
-      <DialogTitle>
-        <Typography variant="h6">
+    <Dialog 
+      open={open} 
+      onClose={handleClose} 
+      maxWidth="lg" 
+      fullWidth
+      PaperProps={{
+        sx: {
+          background: 'rgba(15, 23, 42, 0.92)',
+          backdropFilter: 'blur(32px) saturate(180%)',
+          WebkitBackdropFilter: 'blur(32px) saturate(180%)',
+          border: '1px solid rgba(255, 255, 255, 0.12)',
+          boxShadow: '0 30px 90px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+          borderRadius: 4,
+          color: '#f8fafc',
+        }
+      }}
+    >
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, pb: 1 }}>
+        <Iconify icon="solar:camera-bold" width={24} sx={{ color: '#22d3ee' }} />
+        <Typography variant="h6" fontWeight="800">
           Fotos de Progreso - {new Date(photoDate).toLocaleDateString('es-ES')}
         </Typography>
       </DialogTitle>
@@ -283,23 +300,35 @@ const ProgressPhotosManager: React.FC<ProgressPhotosManagerProps> = ({
           </Grid>
 
           {photos.length > 0 && (
-            <Box sx={{ mt: 3, p: 2, backgroundColor: '#f5f5f5', borderRadius: 1 }}>
-              <Typography variant="body2">
-                <strong>Progreso:</strong> {photos.length} de {PHOTO_TYPES.length} fotos completadas
+            <Box sx={{ mt: 3, p: 2, backgroundColor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 2 }}>
+              <Typography variant="body2" sx={{ color: '#94a3b8' }}>
+                <strong style={{ color: '#10b981' }}>Progreso:</strong> {photos.length} de {PHOTO_TYPES.length} fotos completadas
               </Typography>
             </Box>
           )}
         </Box>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={handleClose} disabled={loading}>
+      <DialogActions sx={{ p: 2.5, borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <Button 
+          onClick={handleClose} 
+          disabled={loading}
+          sx={{ borderRadius: '14px', textTransform: 'none', color: '#94a3b8' }}
+        >
           Cerrar
         </Button>
         <Button 
           onClick={handleSave} 
           variant="contained" 
           disabled={loading}
+          sx={{
+            borderRadius: '14px',
+            textTransform: 'none',
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #10b981 0%, #06b6d4 100%)',
+            boxShadow: '0 4px 15px rgba(16, 185, 129, 0.3)',
+            px: 3,
+          }}
         >
           Guardar
         </Button>
