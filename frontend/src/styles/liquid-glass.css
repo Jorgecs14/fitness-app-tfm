@@ -306,3 +306,108 @@
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
 }
 
+/* ==========================================================================
+   Phase 5: Floating Mobile Dock & Ambient Light Mesh Styles
+   ========================================================================== */
+
+/* Floating Mobile Glass Dock */
+.liquid-floating-dock {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1250;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 8px 14px;
+  border-radius: 36px;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(28px) saturate(210%);
+  -webkit-backdrop-filter: blur(28px) saturate(210%);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 25px rgba(6, 182, 212, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  max-width: 94vw;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.liquid-dock-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 6px 12px;
+  min-width: 54px;
+  text-decoration: none;
+  border-radius: 22px;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  color: #94a3b8;
+}
+
+.liquid-dock-item:active {
+  transform: scale(0.92);
+}
+
+.liquid-dock-item.active {
+  color: #22d3ee;
+  background: rgba(6, 182, 212, 0.15);
+}
+
+.liquid-dock-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  background: #22d3ee;
+  box-shadow: 0 0 8px #22d3ee;
+}
+
+/* Ambient Fluid Light Orbs */
+@keyframes floatOrb1 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(60px, 40px) scale(1.1); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes floatOrb2 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(-50px, -30px) scale(0.92); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+@keyframes floatOrb3 {
+  0% { transform: translate(0px, 0px) scale(1); }
+  50% { transform: translate(30px, -50px) scale(1.08); }
+  100% { transform: translate(0px, 0px) scale(1); }
+}
+
+.ambient-orb-1 {
+  animation: floatOrb1 18s ease-in-out infinite;
+}
+
+.ambient-orb-2 {
+  animation: floatOrb2 22s ease-in-out infinite;
+}
+
+.ambient-orb-3 {
+  animation: floatOrb3 20s ease-in-out infinite;
+}
+
+/* Specular Quick Search Command Input */
+.liquid-command-input {
+  background: rgba(255, 255, 255, 0.06) !important;
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-radius: 16px !important;
+  transition: all 0.25s ease !important;
+}
+
+.liquid-command-input:focus-within {
+  border-color: #22d3ee !important;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.3) !important;
+  background: rgba(255, 255, 255, 0.09) !important;
+}
+

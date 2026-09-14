@@ -1,10 +1,9 @@
-// Layout de autenticación con diseño centrado para páginas de login y registro
-import { styled } from '@mui/material/styles'
+// Layout de autenticación con estética Liquid Glass iOS 26 y malla de luz ambiental fluida
+import React from 'react'
+import { Link } from 'react-router-dom'
 import Box from '@mui/material/Box'
 import Container from '@mui/material/Container'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-
+import Typography from '@mui/material/Typography'
 import { Iconify } from '../../utils/iconify'
 
 type AuthLayoutProps = {
@@ -13,78 +12,167 @@ type AuthLayoutProps = {
 
 export function AuthLayout({ children }: AuthLayoutProps) {
   return (
-    <StyledRoot>
-      <StyledContent>
-        <Container maxWidth='sm'>
-          <Card
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        overflow: 'hidden',
+        background: '#090d16',
+        py: { xs: 4, sm: 6 },
+        px: 2,
+      }}
+    >
+      {/* 3 Mallas de Luz Ambiental Fluida (Orbes Neón Desenfocados) */}
+      <Box
+        className="ambient-orb-1"
+        sx={{
+          position: 'absolute',
+          top: '-10%',
+          left: '10%',
+          width: { xs: 300, sm: 500 },
+          height: { xs: 300, sm: 500 },
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(6, 182, 212, 0.35) 0%, rgba(59, 130, 246, 0.15) 50%, transparent 70%)',
+          filter: 'blur(100px)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+      <Box
+        className="ambient-orb-2"
+        sx={{
+          position: 'absolute',
+          bottom: '-12%',
+          right: '8%',
+          width: { xs: 320, sm: 550 },
+          height: { xs: 320, sm: 550 },
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, rgba(236, 72, 153, 0.12) 50%, transparent 70%)',
+          filter: 'blur(110px)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+      <Box
+        className="ambient-orb-3"
+        sx={{
+          position: 'absolute',
+          top: '40%',
+          right: '-5%',
+          width: { xs: 260, sm: 420 },
+          height: { xs: 260, sm: 420 },
+          borderRadius: '50%',
+          background: 'radial-gradient(circle, rgba(16, 185, 129, 0.22) 0%, transparent 70%)',
+          filter: 'blur(90px)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
+      {/* Trama sutil de cuadrícula tecnológica */}
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundImage:
+            'radial-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px)',
+          backgroundSize: '32px 32px',
+          opacity: 0.5,
+          pointerEvents: 'none',
+          zIndex: 0,
+        }}
+      />
+
+      {/* Contenedor Central Glassmorphic */}
+      <Container maxWidth="sm" sx={{ position: 'relative', zIndex: 1, my: 'auto' }}>
+        <Box
+          className="liquid-glass-card"
+          sx={{
+            p: { xs: 3, sm: 4.5 },
+            width: '100%',
+            maxWidth: 460,
+            mx: 'auto',
+            borderRadius: 5,
+            background: 'linear-gradient(145deg, rgba(15, 23, 42, 0.88) 0%, rgba(30, 41, 59, 0.82) 100%)',
+            backdropFilter: 'blur(32px) saturate(210%)',
+            border: '1px solid rgba(255, 255, 255, 0.16)',
+            boxShadow: '0 30px 80px rgba(0, 0, 0, 0.6), 0 0 35px rgba(6, 182, 212, 0.18)',
+            position: 'relative',
+          }}
+        >
+          {/* Brand Logo & Header */}
+          <Box
+            component={Link}
+            to="/"
             sx={{
-              p: 4,
-              width: 1,
-              maxWidth: 420,
-              mx: 'auto',
-              boxShadow: (theme) => theme.shadows[10]
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              textDecoration: 'none',
+              mb: 3,
             }}
           >
-            {/* Logo */}
-            <Box sx={{ textAlign: 'center', mb: 4 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  mb: 2
-                }}
-              >
-                <Iconify
-                  icon='solar:dumbbell-bold-duotone'
-                  width={48}
-                  sx={{ color: 'primary.main', mr: 1 }}
-                />
-                <Box
-                  component='img'
-                  src='/logo.png'
-                  alt='Logo'
-                  sx={{
-                    height: 48,
-                    objectFit: 'contain'
-                  }}
-                />
-              </Box>
+            <Box
+              sx={{
+                width: 58,
+                height: 58,
+                borderRadius: '18px',
+                background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 0 25px rgba(6, 182, 212, 0.6)',
+                border: '1.5px solid rgba(255, 255, 255, 0.3)',
+                mb: 1.5,
+                transition: 'transform 0.3s ease',
+                '&:hover': {
+                  transform: 'scale(1.06) rotate(-3deg)',
+                },
+              }}
+            >
+              <Iconify icon="solar:dumbbell-large-bold" width={34} sx={{ color: '#fff' }} />
             </Box>
 
-            <CardContent sx={{ p: 0 }}>{children}</CardContent>
-          </Card>
-        </Container>
-      </StyledContent>
-    </StyledRoot>
+            <Typography
+              variant="h5"
+              fontWeight={900}
+              sx={{
+                color: '#fff',
+                letterSpacing: '-0.02em',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.8,
+              }}
+            >
+              FITNESS <span style={{ color: '#22d3ee' }}>PRO</span>
+            </Typography>
+
+            <Typography
+              variant="caption"
+              sx={{
+                color: 'rgba(255, 255, 255, 0.5)',
+                fontWeight: 700,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                mt: 0.2,
+              }}
+            >
+              Arquitectura Liquid Glass iOS 26
+            </Typography>
+          </Box>
+
+          {/* Children (Sign In or Sign Up Form) */}
+          <Box sx={{ width: '100%' }}>{children}</Box>
+        </Box>
+      </Container>
+    </Box>
   )
 }
 
-// ----------------------------------------------------------------------
-
-const StyledRoot = styled('div')(({ theme }) => ({
-  minHeight: '100vh',
-  display: 'flex',
-  alignItems: 'center',
-  background: `linear-gradient(135deg, ${theme.palette.primary.main}14 0%, ${theme.palette.secondary.main}14 100%)`,
-  position: 'relative',
-
-  // Background pattern
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23${theme.palette.primary.main.slice(
-      1
-    )}' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-  }
-}))
-
-const StyledContent = styled('div')({
-  width: '100%',
-  position: 'relative',
-  zIndex: 1
-})
+export default AuthLayout

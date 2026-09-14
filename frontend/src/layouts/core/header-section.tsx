@@ -76,8 +76,10 @@ export function HeaderSection({
 const HeaderRoot = styled(AppBar)(({ theme }) => ({
   zIndex: 'var(--layout-header-zIndex)',
   minHeight: 'var(--layout-header-mobile-height)',
-  backdropFilter: `blur(var(--layout-header-blur))`,
-  backgroundColor: '#ffffff8c',
+  backdropFilter: `blur(24px) saturate(190%)`,
+  backgroundColor: theme.palette.mode === 'dark' ? 'rgba(15, 23, 42, 0.75)' : 'rgba(255, 255, 255, 0.75)',
+  borderBottom: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)'}`,
+  boxShadow: 'none',
   color: theme.palette.text.primary,
   width: '100%',
   left: 0,
