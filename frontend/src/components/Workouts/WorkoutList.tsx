@@ -171,20 +171,20 @@ export const WorkoutList = ({
         <Card className="liquid-glass-card" sx={{ overflow: 'hidden' }}>
           <TableContainer>
             <Table>
-              <TableHead sx={{ bgcolor: 'rgba(241, 245, 249, 0.6)' }}>
+              <TableHead sx={{ bgcolor: 'rgba(255, 255, 255, 0.04)' }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700, color: '#334155' }}>Nombre</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: '#334155' }}>Usuario</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: '#334155' }}>Categoría</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700, color: '#334155' }}>Ejercicios</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700, color: '#334155' }}>Acciones</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#22d3ee' }}>Nombre</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#22d3ee' }}>Usuario</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#22d3ee' }}>Categoría</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 800, color: '#22d3ee' }}>Ejercicios</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 800, color: '#22d3ee' }}>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {paginatedWorkouts.map((workout) => (
-                  <TableRow key={workout.id} hover sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.6)' } }}>
+                  <TableRow key={workout.id} hover sx={{ '&:hover': { bgcolor: 'rgba(6, 182, 212, 0.12) !important' } }}>
                     <TableCell>
-                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#0f172a' }}>
+                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#f8fafc' }}>
                         {workout.name}
                       </Typography>
                       {workout.notes && (
@@ -194,7 +194,7 @@ export const WorkoutList = ({
                       )}
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" sx={{ color: '#475569' }}>
+                      <Typography variant="body2" sx={{ color: '#94a3b8' }}>
                         {getUserName(workout.user_id)}
                       </Typography>
                     </TableCell>

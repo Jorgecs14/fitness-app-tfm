@@ -47,10 +47,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       },
       background: {
         default: '#090d16',
-        paper: 'rgba(15, 23, 42, 0.82)'
+        paper: 'rgba(15, 23, 42, 0.78)'
       },
       text: {
-        primary: '#ffffff',
+        primary: '#f8fafc',
         secondary: 'rgba(255, 255, 255, 0.68)'
       },
       divider: 'rgba(255, 255, 255, 0.08)'
@@ -81,25 +81,27 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
             borderRadius: 14,
             backgroundColor: 'rgba(255, 255, 255, 0.04)',
             backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
             border: '1px solid rgba(255, 255, 255, 0.12)',
-            color: '#ffffff',
+            color: '#f8fafc',
             transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
             '& .MuiOutlinedInput-notchedOutline': {
               border: 'none'
             },
             '&:hover': {
-              backgroundColor: 'rgba(255, 255, 255, 0.07)',
+              backgroundColor: 'rgba(255, 255, 255, 0.08)',
               border: '1px solid rgba(34, 211, 238, 0.45)',
-              boxShadow: '0 0 16px rgba(6, 182, 212, 0.18)'
+              boxShadow: '0 0 16px rgba(6, 182, 212, 0.2)'
             },
             '&.Mui-focused': {
-              backgroundColor: 'rgba(255, 255, 255, 0.09)',
+              backgroundColor: 'rgba(255, 255, 255, 0.12)',
               border: '1px solid #22d3ee',
-              boxShadow: '0 0 25px rgba(6, 182, 212, 0.35)'
+              boxShadow: '0 0 25px rgba(6, 182, 212, 0.38)'
             },
             '&.Mui-error': {
+              backgroundColor: 'rgba(244, 63, 94, 0.06)',
               border: '1px solid #f43f5e',
-              boxShadow: '0 0 16px rgba(244, 63, 94, 0.2)'
+              boxShadow: '0 0 16px rgba(244, 63, 94, 0.25)'
             },
             '&.Mui-disabled': {
               backgroundColor: 'rgba(255, 255, 255, 0.02)',
@@ -108,10 +110,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
             }
           },
           input: {
-            color: '#ffffff',
+            color: '#f8fafc',
             padding: '12px 16px',
             '&::placeholder': {
-              color: 'rgba(255, 255, 255, 0.4)',
+              color: 'rgba(255, 255, 255, 0.45)',
               opacity: 1
             }
           }
@@ -151,6 +153,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
             borderRadius: 18,
             background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.92) 100%)',
             backdropFilter: 'blur(30px)',
+            WebkitBackdropFilter: 'blur(30px)',
             border: '1px solid rgba(255, 255, 255, 0.14)',
             boxShadow: '0 25px 60px rgba(0, 0, 0, 0.65), 0 0 25px rgba(6, 182, 212, 0.15)',
             padding: '6px'
@@ -162,7 +165,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           root: {
             borderRadius: 10,
             margin: '2px 4px',
-            color: '#ffffff',
+            color: '#f8fafc',
             fontSize: '0.9rem',
             fontWeight: 500,
             transition: 'all 0.2s ease',
@@ -190,9 +193,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
             borderRadius: 24,
             background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(30, 41, 59, 0.90) 100%)',
             backdropFilter: 'blur(32px)',
+            WebkitBackdropFilter: 'blur(32px)',
             border: '1px solid rgba(255, 255, 255, 0.15)',
             boxShadow: '0 30px 80px rgba(0, 0, 0, 0.65), 0 0 35px rgba(6, 182, 212, 0.2)',
-            color: '#ffffff'
+            color: '#f8fafc'
           }
         }
       },
@@ -223,7 +227,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           },
           outlined: {
             borderColor: 'rgba(255, 255, 255, 0.18)',
-            color: '#ffffff',
+            color: '#f8fafc',
             backgroundColor: 'rgba(255, 255, 255, 0.04)',
             backdropFilter: 'blur(12px)',
             '&:hover': {
@@ -242,16 +246,28 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
             borderRadius: 24,
             background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.80) 0%, rgba(30, 41, 59, 0.72) 100%)',
             backdropFilter: 'blur(24px) saturate(200%)',
+            WebkitBackdropFilter: 'blur(24px) saturate(200%)',
             border: '1px solid rgba(255, 255, 255, 0.12)',
             boxShadow: '0 16px 40px -8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
-            color: '#ffffff'
+            color: '#f8fafc',
+            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            '&:hover': {
+              borderColor: 'rgba(34, 211, 238, 0.4)',
+              boxShadow: '0 20px 48px -10px rgba(0, 0, 0, 0.5), 0 0 25px rgba(6, 182, 212, 0.18)',
+              transform: 'translateY(-2px)'
+            }
           }
         }
       },
       MuiPaper: {
         styleOverrides: {
           root: {
-            color: '#ffffff',
+            color: '#f8fafc',
+            backgroundColor: 'rgba(15, 23, 42, 0.78)',
+            backdropFilter: 'blur(28px) saturate(210%)',
+            WebkitBackdropFilter: 'blur(28px) saturate(210%)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            boxShadow: '0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2)',
             backgroundImage: 'none'
           }
         }
@@ -304,6 +320,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
           tooltip: {
             background: 'rgba(15, 23, 42, 0.92)',
             backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             border: '1px solid rgba(255, 255, 255, 0.15)',
             boxShadow: '0 10px 25px rgba(0, 0, 0, 0.5)',
             borderRadius: 10,
@@ -350,6 +367,90 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
             borderRadius: 13,
             backgroundColor: 'rgba(255, 255, 255, 0.2)',
             opacity: 1
+          }
+        }
+      },
+
+      // 11. Tablas Liquid Glass
+      MuiTableCell: {
+        styleOverrides: {
+          root: {
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+            color: '#f8fafc'
+          },
+          head: {
+            color: '#22d3ee',
+            fontWeight: 800,
+            backgroundColor: 'rgba(255, 255, 255, 0.04)'
+          }
+        }
+      },
+      MuiTableRow: {
+        styleOverrides: {
+          root: {
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              backgroundColor: 'rgba(6, 182, 212, 0.08) !important'
+            }
+          }
+        }
+      },
+
+      // 12. Tabs Liquid Glass
+      MuiTabs: {
+        styleOverrides: {
+          indicator: {
+            backgroundColor: '#22d3ee',
+            height: 3,
+            borderRadius: '3px 3px 0 0',
+            boxShadow: '0 0 12px #22d3ee'
+          }
+        }
+      },
+      MuiTab: {
+        styleOverrides: {
+          root: {
+            textTransform: 'none',
+            fontWeight: 700,
+            color: 'rgba(255, 255, 255, 0.65)',
+            transition: 'all 0.25s ease',
+            '&:hover': {
+              color: '#22d3ee'
+            },
+            '&.Mui-selected': {
+              color: '#22d3ee',
+              fontWeight: 800
+            }
+          }
+        }
+      },
+
+      // 13. Listas y ListItemButton
+      MuiListItemButton: {
+        styleOverrides: {
+          root: {
+            borderRadius: 12,
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              backgroundColor: 'rgba(6, 182, 212, 0.14)',
+              color: '#22d3ee'
+            }
+          }
+        }
+      },
+
+      // 14. Accordion
+      MuiAccordion: {
+        styleOverrides: {
+          root: {
+            backgroundColor: 'rgba(15, 23, 42, 0.75)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255, 255, 255, 0.12)',
+            borderRadius: '16px !important',
+            color: '#f8fafc',
+            margin: '8px 0 !important',
+            '&::before': { display: 'none' }
           }
         }
       }

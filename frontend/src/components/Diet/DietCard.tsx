@@ -86,7 +86,7 @@ export const DietCard = ({
           sx={{
             fontWeight: 700,
             mb: 0.5,
-            color: '#0f172a',
+            color: '#f8fafc',
             fontSize: '1.15rem',
             lineHeight: 1.3,
           }}
@@ -104,7 +104,7 @@ export const DietCard = ({
           <Typography
             variant="body2"
             sx={{
-              color: '#475569',
+              color: '#94a3b8',
               lineHeight: 1.5,
               fontSize: '0.875rem',
               display: '-webkit-box',
@@ -128,10 +128,11 @@ export const DietCard = ({
               px: 1.5,
               py: 0.5,
               borderRadius: '12px',
-              bgcolor: 'rgba(241, 245, 249, 0.8)',
+              bgcolor: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
               fontSize: '0.8rem',
               fontWeight: 600,
-              color: '#334155',
+              color: '#f8fafc',
             }}
           >
             <Iconify icon="solar:apple-bold" width={16} sx={{ color: '#10b981' }} />
@@ -145,8 +146,8 @@ export const DietCard = ({
         sx={{
           p: 2,
           pt: 1.5,
-          borderTop: '1px solid rgba(226, 232, 240, 0.6)',
-          bgcolor: 'rgba(255, 255, 255, 0.4)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          bgcolor: 'rgba(15, 23, 42, 0.4)',
           backdropFilter: 'blur(12px)',
           justifyContent: 'flex-end',
           alignItems: 'center',
@@ -159,8 +160,8 @@ export const DietCard = ({
                 size="small"
                 onClick={() => onManageFoods(diet)}
                 sx={{
-                  color: '#475569',
-                  '&:hover': { color: '#10b981', bgcolor: 'rgba(16, 185, 129, 0.1)' },
+                  color: '#94a3b8',
+                  '&:hover': { color: '#10b981', bgcolor: 'rgba(16, 185, 129, 0.15)' },
                 }}
               >
                 <Iconify icon="solar:plate-bold" width={16} />
@@ -174,8 +175,8 @@ export const DietCard = ({
                 size="small"
                 onClick={() => onManageUsers(diet)}
                 sx={{
-                  color: '#475569',
-                  '&:hover': { color: '#8b5cf6', bgcolor: 'rgba(139, 92, 246, 0.1)' },
+                  color: '#94a3b8',
+                  '&:hover': { color: '#22d3ee', bgcolor: 'rgba(34, 211, 238, 0.15)' },
                 }}
               >
                 <Iconify icon="solar:users-group-rounded-bold" width={16} />
@@ -188,8 +189,8 @@ export const DietCard = ({
               size="small"
               onClick={() => onEdit(diet)}
               sx={{
-                color: '#475569',
-                '&:hover': { color: '#0284c7', bgcolor: 'rgba(2, 132, 199, 0.1)' },
+                color: '#94a3b8',
+                '&:hover': { color: '#38bdf8', bgcolor: 'rgba(56, 189, 248, 0.15)' },
               }}
             >
               <Iconify icon="solar:pen-bold" width={16} />
@@ -201,8 +202,8 @@ export const DietCard = ({
               size="small"
               onClick={() => onDelete(diet.id)}
               sx={{
-                color: '#475569',
-                '&:hover': { color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.1)' },
+                color: '#94a3b8',
+                '&:hover': { color: '#f43f5e', bgcolor: 'rgba(244, 63, 94, 0.15)' },
               }}
             >
               <Iconify icon="solar:trash-bin-trash-bold" width={16} />

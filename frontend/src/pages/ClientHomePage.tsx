@@ -185,24 +185,24 @@ export const ClientHomePage: React.FC = () => {
         <Stack direction={{ xs: 'column', md: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', md: 'center' }} spacing={3}>
           <Box sx={{ zIndex: 1 }}>
             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mb: 1.5 }} flexWrap="wrap" gap={0.8}>
-              <Box className="liquid-pill" sx={{ bgcolor: 'rgba(2, 132, 199, 0.15)', color: '#0284c7', px: 1.8, py: 0.6, fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 0.8 }}>
+              <Box className="liquid-pill" sx={{ bgcolor: 'rgba(34, 211, 238, 0.15)', color: '#22d3ee', border: '1px solid rgba(34, 211, 238, 0.3)', px: 1.8, py: 0.6, fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 0.8 }}>
                 <Iconify icon="solar:fire-bold" width={18} sx={{ color: '#f59e0b' }} />
                 <span>Racha: {thisWeekSessions.length} sesiones esta semana</span>
               </Box>
 
-              <Box className="liquid-pill" sx={{ bgcolor: 'rgba(15, 23, 42, 0.08)', color: '#475569', px: 1.8, py: 0.6, fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                <Iconify icon="solar:calendar-bold" width={16} />
+              <Box className="liquid-pill" sx={{ bgcolor: 'rgba(255, 255, 255, 0.06)', color: '#94a3b8', border: '1px solid rgba(255, 255, 255, 0.12)', px: 1.8, py: 0.6, fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                <Iconify icon="solar:calendar-bold" width={16} sx={{ color: '#22d3ee' }} />
                 <span style={{ textTransform: 'capitalize' }}>
                   {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}
                 </span>
               </Box>
             </Stack>
 
-            <Typography variant="h3" fontWeight={800} sx={{ letterSpacing: '-0.03em', color: '#0f172a' }}>
+            <Typography variant="h3" fontWeight={800} sx={{ letterSpacing: '-0.03em', color: '#ffffff' }}>
               ¡Hola, {currentUser?.name || 'Atleta'}! 👋
             </Typography>
 
-            <Typography variant="body1" sx={{ mt: 0.8, color: '#475569', maxWidth: 640, lineHeight: 1.6 }}>
+            <Typography variant="body1" sx={{ mt: 0.8, color: '#94a3b8', maxWidth: 640, lineHeight: 1.6 }}>
               Visualiza en tiempo real el estímulo muscular de tu cuerpo, sigue tus rutinas con demostraciones en vídeo y mantén el control de tus macros.
             </Typography>
           </Box>

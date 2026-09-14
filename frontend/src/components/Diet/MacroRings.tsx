@@ -69,10 +69,10 @@ export const MacroRings: React.FC<MacroRingsProps> = ({
       {/* Encabezado */}
       <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} spacing={1.5} sx={{ mb: 3 }}>
         <Box>
-          <Typography variant="h6" fontWeight={800} sx={{ color: '#0f172a', letterSpacing: '-0.01em' }}>
+          <Typography variant="h6" fontWeight={800} sx={{ color: '#f8fafc', letterSpacing: '-0.01em' }}>
             {title}
           </Typography>
-          <Typography variant="body2" sx={{ color: '#64748b' }}>
+          <Typography variant="body2" sx={{ color: '#94a3b8' }}>
             {subtitle}
           </Typography>
         </Box>
@@ -158,10 +158,10 @@ export const MacroRings: React.FC<MacroRingsProps> = ({
           {/* Centro del Anillo: Calorías Totales */}
           <Box sx={{ position: 'absolute', textAlign: 'center', pointerEvents: 'none' }}>
             <Iconify icon="solar:fire-bold" width={22} height={22} sx={{ color: '#f59e0b', mb: 0.2 }} />
-            <Typography variant="h5" fontWeight={800} sx={{ color: '#0f172a', lineHeight: 1.1 }}>
+            <Typography variant="h5" fontWeight={800} sx={{ color: '#f8fafc', lineHeight: 1.1 }}>
               {target.calories.toLocaleString()}
             </Typography>
-            <Typography variant="caption" sx={{ fontWeight: 700, color: '#64748b', fontSize: '0.72rem' }}>
+            <Typography variant="caption" sx={{ fontWeight: 700, color: '#94a3b8', fontSize: '0.72rem' }}>
               Kcal / día
             </Typography>
           </Box>
@@ -185,10 +185,10 @@ export const MacroRings: React.FC<MacroRingsProps> = ({
             <Stack direction="row" alignItems="center" spacing={1.5}>
               <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#f43f5e', boxShadow: '0 0 8px #f43f5e' }} />
               <Box>
-                <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#0f172a' }}>
+                <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#f8fafc' }}>
                   Proteínas
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#64748b' }}>
+                <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                   4 Kcal/g • Construcción muscular
                 </Typography>
               </Box>
@@ -197,7 +197,7 @@ export const MacroRings: React.FC<MacroRingsProps> = ({
               <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#f43f5e' }}>
                 {target.proteins}g
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
                 {Math.round((target.proteins * 4 / (target.calories || 1)) * 100)}% ({target.proteins * 4} Kcal)
               </Typography>
             </Box>
@@ -219,10 +219,10 @@ export const MacroRings: React.FC<MacroRingsProps> = ({
             <Stack direction="row" alignItems="center" spacing={1.5}>
               <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#0284c7', boxShadow: '0 0 8px #0284c7' }} />
               <Box>
-                <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#0f172a' }}>
+                <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#f8fafc' }}>
                   Carbohidratos
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#64748b' }}>
+                <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                   4 Kcal/g • Energía glucolítica
                 </Typography>
               </Box>
@@ -231,7 +231,7 @@ export const MacroRings: React.FC<MacroRingsProps> = ({
               <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#0284c7' }}>
                 {target.carbs}g
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
                 {Math.round((target.carbs * 4 / (target.calories || 1)) * 100)}% ({target.carbs * 4} Kcal)
               </Typography>
             </Box>
@@ -253,10 +253,10 @@ export const MacroRings: React.FC<MacroRingsProps> = ({
             <Stack direction="row" alignItems="center" spacing={1.5}>
               <Box sx={{ width: 12, height: 12, borderRadius: '50%', bgcolor: '#f59e0b', boxShadow: '0 0 8px #f59e0b' }} />
               <Box>
-                <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#0f172a' }}>
+                <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#f8fafc' }}>
                   Grasas Saludables
                 </Typography>
-                <Typography variant="caption" sx={{ color: '#64748b' }}>
+                <Typography variant="caption" sx={{ color: '#94a3b8' }}>
                   9 Kcal/g • Regulación hormonal
                 </Typography>
               </Box>
@@ -265,7 +265,7 @@ export const MacroRings: React.FC<MacroRingsProps> = ({
               <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#f59e0b' }}>
                 {target.fats}g
               </Typography>
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600 }}>
                 {Math.round((target.fats * 9 / (target.calories || 1)) * 100)}% ({target.fats * 9} Kcal)
               </Typography>
             </Box>

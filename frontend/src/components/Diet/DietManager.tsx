@@ -238,13 +238,13 @@ export const DietManager = () => {
                 fontSize: { xs: '1.75rem', sm: '2.25rem' },
                 fontWeight: 800,
                 letterSpacing: '-0.02em',
-                color: '#0f172a',
+                color: '#f8fafc',
                 mb: 1,
               }}
             >
               Gestión de Planes Nutricionales
             </Typography>
-            <Typography variant='body1' sx={{ color: '#475569', maxWidth: 650, lineHeight: 1.6 }}>
+            <Typography variant='body1' sx={{ color: '#94a3b8', maxWidth: 650, lineHeight: 1.6 }}>
               Pauta dietas personalizadas, gestiona macronutrientes, alimentos por comidas y genera reportes editoriales en PDF.
             </Typography>
 
@@ -258,12 +258,12 @@ export const DietManager = () => {
                   px: 2,
                   py: 0.75,
                   borderRadius: '9999px',
-                  bgcolor: 'rgba(255, 255, 255, 0.85)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  bgcolor: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
                 }}
               >
-                <Iconify icon="solar:chef-hat-bold-duotone" width={18} sx={{ color: '#0284c7' }} />
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                <Iconify icon="solar:chef-hat-bold-duotone" width={18} sx={{ color: '#22d3ee' }} />
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#f8fafc' }}>
                   {diets.length} Planes Activos
                 </Typography>
               </Box>
@@ -276,12 +276,12 @@ export const DietManager = () => {
                   px: 2,
                   py: 0.75,
                   borderRadius: '9999px',
-                  bgcolor: 'rgba(255, 255, 255, 0.85)',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  bgcolor: 'rgba(255, 255, 255, 0.06)',
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
                 }}
               >
                 <Iconify icon="solar:plate-bold" width={18} sx={{ color: '#10b981' }} />
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#1e293b' }}>
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#f8fafc' }}>
                   {totalFoodsCount} Alimentos Asignados
                 </Typography>
               </Box>
@@ -298,13 +298,14 @@ export const DietManager = () => {
                 px: 2.5,
                 py: 1,
                 fontWeight: 600,
-                borderColor: 'rgba(15, 23, 42, 0.2)',
-                color: '#0f172a',
-                bgcolor: 'rgba(255, 255, 255, 0.6)',
+                borderColor: 'rgba(255, 255, 255, 0.18)',
+                color: '#f8fafc',
+                bgcolor: 'rgba(255, 255, 255, 0.06)',
                 backdropFilter: 'blur(10px)',
                 '&:hover': {
-                  borderColor: '#0f172a',
-                  bgcolor: 'rgba(255, 255, 255, 0.9)',
+                  borderColor: '#22d3ee',
+                  bgcolor: 'rgba(6, 182, 212, 0.15)',
+                  color: '#22d3ee',
                 },
               }}
             >
@@ -319,12 +320,12 @@ export const DietManager = () => {
                 px: 3,
                 py: 1,
                 fontWeight: 700,
-                bgcolor: '#0f172a',
+                background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
                 color: '#ffffff',
-                boxShadow: '0 6px 20px rgba(15, 23, 42, 0.25)',
+                boxShadow: '0 6px 20px rgba(6, 182, 212, 0.35)',
                 '&:hover': {
-                  bgcolor: '#0284c7',
-                  boxShadow: '0 8px 24px rgba(2, 132, 199, 0.35)',
+                  background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
+                  boxShadow: '0 8px 24px rgba(6, 182, 212, 0.55)',
                 },
               }}
             >

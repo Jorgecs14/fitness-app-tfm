@@ -130,7 +130,7 @@ export const WorkoutCard = ({
           sx={{
             fontWeight: 700,
             mb: 0.5,
-            color: '#0f172a',
+            color: '#f8fafc',
             fontSize: '1.15rem',
             lineHeight: 1.3,
           }}
@@ -172,13 +172,14 @@ export const WorkoutCard = ({
               px: 1.5,
               py: 0.5,
               borderRadius: '12px',
-              bgcolor: 'rgba(241, 245, 249, 0.8)',
+              bgcolor: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
               fontSize: '0.8rem',
               fontWeight: 600,
-              color: '#334155',
+              color: '#f8fafc',
             }}
           >
-            <Iconify icon="solar:dumbbell-bold" width={16} sx={{ color: '#0284c7' }} />
+            <Iconify icon="solar:dumbbell-bold" width={16} sx={{ color: '#22d3ee' }} />
             {exerciseCount} {exerciseCount === 1 ? 'ejercicio' : 'ejercicios'}
           </Box>
 
@@ -190,10 +191,11 @@ export const WorkoutCard = ({
               px: 1.5,
               py: 0.5,
               borderRadius: '12px',
-              bgcolor: 'rgba(241, 245, 249, 0.8)',
+              bgcolor: 'rgba(255, 255, 255, 0.06)',
+              border: '1px solid rgba(255, 255, 255, 0.12)',
               fontSize: '0.8rem',
               fontWeight: 600,
-              color: '#334155',
+              color: '#f8fafc',
             }}
           >
             <Iconify icon="solar:clock-circle-bold" width={16} sx={{ color: '#f59e0b' }} />
@@ -207,8 +209,8 @@ export const WorkoutCard = ({
         sx={{
           p: 2,
           pt: 1.5,
-          borderTop: '1px solid rgba(226, 232, 240, 0.6)',
-          bgcolor: 'rgba(255, 255, 255, 0.4)',
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          bgcolor: 'rgba(15, 23, 42, 0.4)',
           backdropFilter: 'blur(12px)',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -226,12 +228,12 @@ export const WorkoutCard = ({
               py: 0.75,
               fontWeight: 700,
               fontSize: '0.82rem',
-              bgcolor: '#0f172a',
+              background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
               color: '#ffffff',
-              boxShadow: '0 4px 14px rgba(15, 23, 42, 0.25)',
+              boxShadow: '0 4px 14px rgba(6, 182, 212, 0.35)',
               '&:hover': {
-                bgcolor: '#0284c7',
-                boxShadow: '0 6px 18px rgba(2, 132, 199, 0.35)',
+                background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
+                boxShadow: '0 6px 18px rgba(6, 182, 212, 0.55)',
               },
             }}
           >
@@ -248,8 +250,8 @@ export const WorkoutCard = ({
                 size="small"
                 onClick={() => onManageExercises(workout)}
                 sx={{
-                  color: '#475569',
-                  '&:hover': { color: '#0284c7', bgcolor: 'rgba(2, 132, 199, 0.1)' },
+                  color: '#94a3b8',
+                  '&:hover': { color: '#22d3ee', bgcolor: 'rgba(34, 211, 238, 0.15)' },
                 }}
               >
                 <Iconify icon="solar:dumbbell-bold" width={16} />
@@ -263,8 +265,8 @@ export const WorkoutCard = ({
                 size="small"
                 onClick={() => onManageUser(workout)}
                 sx={{
-                  color: '#475569',
-                  '&:hover': { color: '#8b5cf6', bgcolor: 'rgba(139, 92, 246, 0.1)' },
+                  color: '#94a3b8',
+                  '&:hover': { color: '#a855f7', bgcolor: 'rgba(168, 85, 247, 0.15)' },
                 }}
               >
                 <Iconify icon="solar:user-bold" width={16} />
@@ -277,8 +279,8 @@ export const WorkoutCard = ({
               size="small"
               onClick={() => onEdit(workout)}
               sx={{
-                color: '#475569',
-                '&:hover': { color: '#f59e0b', bgcolor: 'rgba(245, 158, 11, 0.1)' },
+                color: '#94a3b8',
+                '&:hover': { color: '#f59e0b', bgcolor: 'rgba(245, 158, 11, 0.15)' },
               }}
             >
               <Iconify icon="solar:pen-bold" width={16} />
@@ -290,8 +292,8 @@ export const WorkoutCard = ({
               size="small"
               onClick={() => onDelete(workout.id)}
               sx={{
-                color: '#475569',
-                '&:hover': { color: '#ef4444', bgcolor: 'rgba(239, 68, 68, 0.1)' },
+                color: '#94a3b8',
+                '&:hover': { color: '#f43f5e', bgcolor: 'rgba(244, 63, 94, 0.15)' },
               }}
             >
               <Iconify icon="solar:trash-bin-trash-bold" width={16} />

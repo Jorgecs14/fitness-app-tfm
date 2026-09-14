@@ -155,25 +155,25 @@ export const DietList = ({
         <Card className="liquid-glass-card" sx={{ overflow: 'hidden' }}>
           <TableContainer>
             <Table>
-              <TableHead sx={{ bgcolor: 'rgba(241, 245, 249, 0.6)' }}>
+              <TableHead sx={{ bgcolor: 'rgba(255, 255, 255, 0.04)' }}>
                 <TableRow>
-                  <TableCell sx={{ fontWeight: 700, color: '#334155' }}>Nombre</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: '#334155' }}>Descripción</TableCell>
-                  <TableCell sx={{ fontWeight: 700, color: '#334155' }}>Calorías</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 700, color: '#334155' }}>Alimentos</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 700, color: '#334155' }}>Acciones</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#22d3ee' }}>Nombre</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#22d3ee' }}>Descripción</TableCell>
+                  <TableCell sx={{ fontWeight: 800, color: '#22d3ee' }}>Calorías</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 800, color: '#22d3ee' }}>Alimentos</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 800, color: '#22d3ee' }}>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {paginatedDiets.map((diet) => (
-                  <TableRow key={diet.id} hover sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.6)' } }}>
+                  <TableRow key={diet.id} hover sx={{ '&:hover': { bgcolor: 'rgba(6, 182, 212, 0.12) !important' } }}>
                     <TableCell>
-                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#0f172a' }}>
+                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#f8fafc' }}>
                         {diet.name}
                       </Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" sx={{ color: '#475569', fontSize: '0.85rem' }}>
+                      <Typography variant="body2" sx={{ color: '#94a3b8', fontSize: '0.85rem' }}>
                         {diet.description}
                       </Typography>
                     </TableCell>
