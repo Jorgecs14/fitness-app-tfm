@@ -6,9 +6,6 @@ import {
   Typography,
   IconButton,
   Stack,
-  Card,
-  CardContent,
-  Checkbox,
   TextField,
   Chip,
   Rating,
@@ -18,7 +15,23 @@ import {
   Tooltip,
   CircularProgress,
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  X,
+  Clock,
+  Dumbbell,
+  CheckCircle2,
+  Circle,
+  Plus,
+  Minus,
+  List,
+  Layers,
+  Sparkles,
+  Award,
+  ChevronLeft,
+  ChevronRight,
+  Flame,
+  Zap,
+} from 'lucide-react';
 import { createLoggedSession, getUserLoggedSessions, LoggedSetData } from '../../services/loggedSessionService';
 import { getWorkoutDetails } from '../../services/workoutService';
 import { BarCalculatorModal } from './BarCalculatorModal';
@@ -70,14 +83,11 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [startedAt] = useState<string>(new Date().toISOString());
 
-  // Modo de visualización: 'stepper' (paso a paso enfocado) o 'list' (ver todos los ejercicios)
   const [viewMode, setViewMode] = useState<'stepper' | 'list'>('stepper');
   const [currentExerciseIndex, setCurrentExerciseIndex] = useState<number>(0);
 
-  // Historial de cargas previas por exercise_id
   const [prevHistory, setPrevHistory] = useState<{ [exId: number]: { weight: number; reps: number; date?: string } }>({});
 
-  // Cargar ejercicios completos y sesiones anteriores cuando se abre el diálogo
   useEffect(() => {
     if (!open) return;
 
@@ -85,7 +95,6 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
       setLoadingWorkout(true);
       try {
         let fullData = workout;
-        // Si no vienen los ejercicios o viene la lista vacía, consultar detalles de la rutina
         if (!fullData?.exercises || fullData.exercises.length === 0) {
           try {
             fullData = await getWorkoutDetails(workout.id);
@@ -95,7 +104,6 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
         }
         setActiveWorkoutData(fullData);
 
-        // Extraer lista de ejercicios
         const exerciseList = fullData?.exercises || fullData?.workout_exercises || [];
         const initialSets: LocalSetState[] = [];
 
@@ -133,7 +141,6 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
         setRestTimer(0);
         setCurrentExerciseIndex(0);
 
-        // Cargar historial previo de sesiones para ver qué pesos levantó antes
         try {
           const sessions = await getUserLoggedSessions(userId);
           const historyMap: { [exId: number]: { weight: number; reps: number; date?: string } } = {};
@@ -151,7 +158,6 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
           });
           setPrevHistory(historyMap);
 
-          // Si hay historial previo, auto-rellenar el peso inicial sugerido
           initialSets.forEach((s) => {
             if (historyMap[s.exerciseId]?.weight) {
               s.weight = historyMap[s.exerciseId].weight;
@@ -170,7 +176,6 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
     initWorkout();
   }, [open, workout, userId]);
 
-  // Cronómetro del entrenamiento en vivo
   useEffect(() => {
     let interval: any = null;
     if (open && !finishModalOpen) {
@@ -181,7 +186,6 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
     return () => clearInterval(interval);
   }, [open, finishModalOpen]);
 
-  // Cronómetro de descanso entre series con haptic y feedback sonoro
   useEffect(() => {
     let interval: any = null;
     if (isResting && restTimer > 0) {
@@ -189,11 +193,9 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
         setRestTimer((prev) => {
           if (prev <= 1) {
             setIsResting(false);
-            // Feedback háptico (vibrador nativo)
             if (typeof window !== 'undefined' && 'vibrate' in navigator) {
               try { navigator.vibrate([200, 100, 200]); } catch (e) {}
             }
-            // Feedback sonoro (Web Audio API)
             try {
               const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
               if (AudioContextClass) {
@@ -201,7 +203,7 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
                 osc.type = 'sine';
-                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Tono A5
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime);
                 gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
                 gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
                 osc.connect(gain);
@@ -219,7 +221,6 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
     return () => clearInterval(interval);
   }, [isResting, restTimer]);
 
-  // Agrupar series por ejercicio
   const exercisesGrouped = useMemo(() => {
     const list: Array<{
       id: number;
@@ -254,209 +255,251 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
   const currentGroup = exercisesGrouped[currentExerciseIndex] || null;
 
   const handleToggleSet = (globalIndex: number) => {
-    const updated = [...setsState];
-    const target = updated[globalIndex];
-    target.completed = !target.completed;
-    setSetsState(updated);
+    setSetsState((prev) => {
+      const copy = [...prev];
+      const target = copy[globalIndex];
+      const willBeCompleted = !target.completed;
+      copy[globalIndex] = { ...target, completed: willBeCompleted };
 
-    if (target.completed) {
-      // Iniciar descanso de 60 segundos por defecto
-      setRestTimer(60);
-      setIsResting(true);
-    }
+      if (willBeCompleted) {
+        setIsResting(true);
+        setRestTimer(90);
+      }
+      return copy;
+    });
   };
 
-  const handleUpdateField = (globalIndex: number, field: 'weight' | 'reps' | 'rpe', value: number) => {
-    const updated = [...setsState];
-    updated[globalIndex][field] = Math.max(0, value);
-    setSetsState(updated);
+  const handleUpdateField = (globalIndex: number, field: keyof LocalSetState, value: any) => {
+    setSetsState((prev) => {
+      const copy = [...prev];
+      copy[globalIndex] = { ...copy[globalIndex], [field]: value };
+      return copy;
+    });
   };
 
   const handleQuickAdjust = (globalIndex: number, field: 'weight' | 'reps', delta: number) => {
-    const updated = [...setsState];
-    const current = updated[globalIndex][field];
-    updated[globalIndex][field] = Math.max(0, Math.round((current + delta) * 2) / 2);
-    setSetsState(updated);
+    setSetsState((prev) => {
+      const copy = [...prev];
+      const cur = Number(copy[globalIndex][field]) || 0;
+      const next = Math.max(0, cur + delta);
+      copy[globalIndex] = { ...copy[globalIndex], [field]: next };
+      return copy;
+    });
   };
 
   const handleAddDropSet = (globalIndex: number) => {
-    const updated = [...setsState];
-    const target = updated[globalIndex];
-    target.type = 'dropset';
-    if (!target.drops) target.drops = [];
-
-    const lastWeight = target.drops.length > 0 ? target.drops[target.drops.length - 1].weight : target.weight;
-    const newWeight = Math.max(2.5, Math.round(lastWeight * 0.8 * 2) / 2);
-
-    target.drops.push({ weight: newWeight, reps: target.reps });
-    setSetsState(updated);
+    setSetsState((prev) => {
+      const copy = [...prev];
+      const curSet = copy[globalIndex];
+      const drops = curSet.drops || [];
+      const lastWeight = drops.length > 0 ? drops[drops.length - 1].weight : curSet.weight;
+      const nextDropWeight = Math.max(5, Math.round(lastWeight * 0.75));
+      copy[globalIndex] = {
+        ...curSet,
+        type: 'dropset',
+        drops: [...drops, { weight: nextDropWeight, reps: 8 }],
+      };
+      return copy;
+    });
   };
 
   const handleAddRestPause = (globalIndex: number) => {
-    const updated = [...setsState];
-    const target = updated[globalIndex];
-    target.type = 'restpause';
-    if (!target.clusters) target.clusters = [];
-
-    target.clusters.push({ reps: Math.max(1, Math.floor(target.reps / 2)), restSec: 15 });
-    setSetsState(updated);
-  };
-
-  const formatTime = (totalSec: number) => {
-    const mins = Math.floor(totalSec / 60);
-    const secs = totalSec % 60;
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    setSetsState((prev) => {
+      const copy = [...prev];
+      const curSet = copy[globalIndex];
+      const clusters = curSet.clusters || [];
+      copy[globalIndex] = {
+        ...curSet,
+        type: 'restpause',
+        clusters: [...clusters, { reps: 4, restSec: 15 }],
+      };
+      return copy;
+    });
   };
 
   const handleOpenBarCalc = (weight: number) => {
-    setTargetWeightCalc(weight);
+    setTargetWeightCalc(weight || 60);
     setBarCalcOpen(true);
   };
 
+  const completedCount = setsState.filter((s) => s.completed).length;
+  const totalCount = setsState.length;
+  const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+  const totalVolumeLifted = useMemo(() => {
+    return setsState
+      .filter((s) => s.completed)
+      .reduce((acc, s) => {
+        let vol = s.weight * s.reps;
+        if (s.drops) {
+          s.drops.forEach((d) => (vol += d.weight * d.reps));
+        }
+        if (s.clusters) {
+          s.clusters.forEach((c) => (vol += s.weight * c.reps));
+        }
+        return acc + vol;
+      }, 0);
+  }, [setsState]);
+
   const handleFinishWorkout = async () => {
-    setIsSubmitting(true);
     try {
-      const completedSets: LoggedSetData[] = setsState
+      setIsSubmitting(true);
+      const payloadSets: LoggedSetData[] = setsState
         .filter((s) => s.completed)
-        .map((s, idx) => ({
+        .map((s) => ({
           exercise_id: s.exerciseId,
-          set_order: idx + 1,
+          set_index: s.setIndex,
           phase: s.phase,
           type: s.type,
           weight: s.weight,
           reps: s.reps,
           rpe: s.rpe,
           completed: true,
-          extra_data: {
-            drops: s.drops,
-            clusters: s.clusters,
-          },
+          drops: s.drops,
+          clusters: s.clusters,
         }));
 
       await createLoggedSession({
         user_id: userId,
-        workout_id: workout.id,
-        name: activeWorkoutData?.name || workout.name || 'Sesión de entrenamiento',
+        workout_id: workout?.id,
+        duration_minutes: Math.max(1, Math.round(duration / 60)),
         started_at: startedAt,
         completed_at: new Date().toISOString(),
-        duration_seconds: duration,
-        notes,
         rating,
-        sets: completedSets.length > 0 ? completedSets : setsState.map((s, idx) => ({
-          exercise_id: s.exerciseId,
-          set_order: idx + 1,
-          phase: s.phase,
-          type: s.type,
-          weight: s.weight,
-          reps: s.reps,
-          rpe: s.rpe,
-          completed: true,
-        })),
+        notes,
+        sets: payloadSets,
       });
 
-      setIsSubmitting(false);
+      if (onSessionSuccess) onSessionSuccess();
       setFinishModalOpen(false);
       onClose();
-      if (onSessionSuccess) onSessionSuccess();
     } catch (err) {
-      console.error('Error finalizando entrenamiento:', err);
+      console.error('Error guardando la sesión de entrenamiento:', err);
+    } finally {
       setIsSubmitting(false);
     }
   };
 
-  // Porcentaje total de series completadas
-  const completedCount = setsState.filter((s) => s.completed).length;
-  const totalCount = setsState.length || 1;
-  const progressPercent = Math.round((completedCount / totalCount) * 100);
-
-  // Métricas avanzadas de sesión para el resumen cinematográfico
-  const totalVolumeLifted = setsState
-    .filter((s) => s.completed)
-    .reduce((sum, s) => sum + s.weight * s.reps, 0);
-
-  const maxWeightLifted = setsState
-    .filter((s) => s.completed)
-    .reduce((max, s) => Math.max(max, s.weight), 0);
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+  };
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} fullScreen>
-        {/* Cabecera del Reproductor de Entrenamiento */}
+      <Dialog
+        open={open}
+        onClose={onClose}
+        fullScreen
+        PaperProps={{
+          sx: {
+            bgcolor: '#000000',
+            color: '#FFFFFF',
+            display: 'flex',
+            flexDirection: 'column',
+          }
+        }}
+      >
+        {/* Cabecera Apple iOS Nav Bar */}
         <Box
           sx={{
-            p: 2,
-            bgcolor: '#0f172a',
-            color: 'white',
+            px: { xs: 2, sm: 3 },
+            py: 1.5,
+            pt: 'calc(env(safe-area-inset-top, 0px) + 12px)',
+            bgcolor: '#161618',
+            borderBottom: '0.5px solid rgba(255, 255, 255, 0.08)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
             zIndex: 10,
-            borderBottom: '1px solid rgba(255,255,255,0.1)',
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton color="inherit" onClick={onClose}>
-              <Iconify icon="eva:close-fill" />
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <IconButton color="inherit" onClick={onClose} sx={{ p: 1, bgcolor: 'rgba(255, 255, 255, 0.06)' }}>
+              <X size={20} />
             </IconButton>
             <Box>
-              <Typography variant="h6" fontWeight="bold" sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                🏋️ {activeWorkoutData?.name || workout?.name || 'Entrenamiento en Vivo'}
+              <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', letterSpacing: '-0.02em', lineHeight: 1.2 }}>
+                {activeWorkoutData?.name || workout?.name || 'Entrenamiento en Vivo'}
               </Typography>
-              <Stack direction="row" spacing={2} alignItems="center" sx={{ mt: 0.5 }}>
+              <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.3 }}>
                 <Chip
-                  icon={<Iconify icon="solar:clock-circle-bold" />}
+                  icon={<Clock size={12} color="#007AFF" />}
                   label={formatTime(duration)}
                   size="small"
-                  sx={{ bgcolor: 'rgba(255,255,255,0.15)', color: 'white', fontWeight: 'bold' }}
+                  sx={{ bgcolor: 'rgba(0, 122, 255, 0.15)', color: '#007AFF', fontWeight: 700, height: 20, fontSize: '0.7rem' }}
                 />
-                <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.8)' }}>
-                  Progreso: {completedCount}/{totalCount} series ({progressPercent}%) • Volumen: {totalVolumeLifted.toLocaleString()} kg
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                  {completedCount}/{totalCount} series • {totalVolumeLifted.toLocaleString()} kg
                 </Typography>
               </Stack>
             </Box>
           </Stack>
 
-          <Stack direction="row" spacing={1.5} alignItems="center">
-            <Button
-              variant="outlined"
-              size="small"
-              sx={{ color: 'white', borderColor: 'rgba(255,255,255,0.4)' }}
-              startIcon={<Iconify icon={viewMode === 'stepper' ? 'solar:list-bold' : 'solar:play-bold'} />}
+          <Stack direction="row" spacing={1} alignItems="center">
+            <IconButton
               onClick={() => setViewMode(viewMode === 'stepper' ? 'list' : 'stepper')}
+              sx={{ bgcolor: 'rgba(255, 255, 255, 0.06)', color: '#FFFFFF' }}
             >
-              {viewMode === 'stepper' ? 'Ver Todos' : 'Modo Enfoque'}
-            </Button>
+              {viewMode === 'stepper' ? <List size={18} /> : <Layers size={18} />}
+            </IconButton>
 
             <Button
               variant="contained"
-              color="success"
-              size="medium"
+              size="small"
               onClick={() => setFinishModalOpen(true)}
-              sx={{ fontWeight: 'bold', px: 2.5, borderRadius: '9999px' }}
-              startIcon={<Iconify icon="eva:checkmark-circle-2-fill" />}
+              className="apple-button-primary"
+              sx={{ fontWeight: 700, px: 2, borderRadius: '10px' }}
             >
-              Finalizar Sesión
+              Finalizar
             </Button>
           </Stack>
         </Box>
 
-        {/* Barra de progreso global del entrenamiento */}
-        <LinearProgress variant="determinate" value={progressPercent} sx={{ height: 6, bgcolor: '#1e293b' }} color="success" />
+        {/* Barra de progreso global */}
+        <LinearProgress
+          variant="determinate"
+          value={progressPercent}
+          sx={{
+            height: 3,
+            bgcolor: 'rgba(255, 255, 255, 0.05)',
+            '& .MuiLinearProgress-bar': {
+              bgcolor: progressPercent === 100 ? '#34C759' : '#007AFF',
+            }
+          }}
+        />
 
-        {/* Widget Flotante de Temporizador de Descanso (iOS 26 Liquid Glass) */}
+        {/* Widget Flotante de Temporizador de Descanso Apple HIG */}
         {isResting && (
-          <Box className={`liquid-floating-timer ${restTimer <= 10 ? 'warning' : ''}`}>
-            {/* Anillo de Progreso Circular SVG */}
-            <Box sx={{ position: 'relative', width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg width="44" height="44" viewBox="0 0 44 44">
-                <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="3.5" />
+          <Box
+            sx={{
+              position: 'fixed',
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 20px)',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 1000,
+              bgcolor: 'rgba(28, 28, 30, 0.92)',
+              backdropFilter: 'blur(20px)',
+              border: '0.5px solid rgba(255, 255, 255, 0.15)',
+              boxShadow: '0 12px 36px rgba(0, 0, 0, 0.6)',
+              borderRadius: '20px',
+              p: 1.5,
+              px: 2.5,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 2,
+            }}
+          >
+            <Box sx={{ position: 'relative', width: 40, height: 40, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <svg width="40" height="40" viewBox="0 0 44 44">
+                <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="3.5" />
                 <circle
                   cx="22"
                   cy="22"
                   r="18"
                   fill="none"
-                  stroke={restTimer <= 10 ? '#f43f5e' : '#10b981'}
+                  stroke={restTimer <= 10 ? '#FF453A' : '#34C759'}
                   strokeWidth="3.5"
                   strokeDasharray={113.1}
                   strokeDashoffset={113.1 - (113.1 * Math.min(60, restTimer)) / 60}
@@ -465,668 +508,465 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
                   style={{ transition: 'stroke-dashoffset 1s linear' }}
                 />
               </svg>
-              <Typography sx={{ position: 'absolute', fontSize: '0.75rem', fontWeight: 800, color: '#fff' }}>
+              <Typography sx={{ position: 'absolute', fontSize: '0.75rem', fontWeight: 800, color: '#FFFFFF' }}>
                 {restTimer}s
               </Typography>
             </Box>
 
             <Box>
-              <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>
-                Descanso Activo
+              <Typography sx={{ fontSize: '0.85rem', fontWeight: 700, color: '#FFFFFF', lineHeight: 1.2 }}>
+                Descanso
               </Typography>
-              <Typography sx={{ fontSize: '0.75rem', color: restTimer <= 10 ? '#fca5a5' : '#a7f3d0' }}>
-                {restTimer <= 10 ? '¡A por la siguiente serie!' : 'Recupera pulsaciones'}
+              <Typography sx={{ fontSize: '0.7rem', color: restTimer <= 10 ? '#FF453A' : 'rgba(255, 255, 255, 0.5)' }}>
+                {restTimer <= 10 ? '¡Próxima serie!' : 'Recuperando'}
               </Typography>
             </Box>
 
-            <Stack direction="row" spacing={0.75}>
-              <button type="button" className="liquid-quick-chip" onClick={() => setRestTimer((prev) => prev + 15)}>
-                +15s
-              </button>
-              <button type="button" className="liquid-quick-chip" onClick={() => setRestTimer((prev) => prev + 30)}>
+            <Stack direction="row" spacing={0.8}>
+              <Button
+                size="small"
+                onClick={() => setRestTimer((prev) => prev + 30)}
+                sx={{
+                  minWidth: 36,
+                  height: 30,
+                  borderRadius: '8px',
+                  bgcolor: 'rgba(255, 255, 255, 0.08)',
+                  color: '#FFFFFF',
+                  fontWeight: 600,
+                  fontSize: '0.72rem',
+                }}
+              >
                 +30s
-              </button>
-              <button
-                type="button"
-                className="liquid-quick-chip"
-                style={{ background: 'rgba(239, 68, 68, 0.35)', borderColor: 'rgba(239, 68, 68, 0.6)' }}
+              </Button>
+              <Button
+                size="small"
                 onClick={() => setIsResting(false)}
+                sx={{
+                  minWidth: 44,
+                  height: 30,
+                  borderRadius: '8px',
+                  bgcolor: 'rgba(255, 59, 48, 0.15)',
+                  color: '#FF453A',
+                  fontWeight: 600,
+                  fontSize: '0.72rem',
+                }}
               >
                 Saltar
-              </button>
+              </Button>
             </Stack>
           </Box>
         )}
 
         {/* Contenedor Principal */}
-        <Box sx={{ p: { xs: 2, sm: 3 }, bgcolor: 'transparent', flexGrow: 1, overflowY: 'auto' }}>
+        <Box sx={{ p: { xs: 2, sm: 3 }, flexGrow: 1, overflowY: 'auto', pb: 12 }}>
           {loadingWorkout ? (
             <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="300px">
-              <CircularProgress size={50} color="primary" />
-              <Typography sx={{ mt: 2, color: 'text.secondary' }}>Cargando ejercicios de la rutina...</Typography>
+              <CircularProgress size={40} color="primary" />
+              <Typography sx={{ mt: 2, color: 'rgba(255, 255, 255, 0.5)' }}>Cargando ejercicios...</Typography>
             </Box>
           ) : exercisesGrouped.length === 0 ? (
-            <Box sx={{ maxWidth: 600, mx: 'auto', textAlign: 'center', py: 6 }}>
-              <Iconify icon="solar:dumbbell-large-minimalistic-broken" width={64} height={64} sx={{ color: 'text.secondary', mb: 2 }} />
-              <Typography variant="h5" fontWeight="bold" gutterBottom>
+            <Box sx={{ maxWidth: 500, mx: 'auto', textAlign: 'center', py: 6 }}>
+              <Dumbbell size={48} color="rgba(255, 255, 255, 0.3)" style={{ marginBottom: 16 }} />
+              <Typography variant="h6" fontWeight="800" gutterBottom>
                 Esta rutina aún no tiene ejercicios asignados
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-                Añade ejercicios a esta rutina desde el gestor o el creador de rutinas para comenzar a registrar series.
-              </Typography>
-              <Button variant="contained" color="primary" onClick={onClose}>
+              <Button variant="contained" className="apple-button-primary" onClick={onClose} sx={{ mt: 2 }}>
                 Volver al Panel
               </Button>
             </Box>
           ) : viewMode === 'stepper' && currentGroup ? (
-            /* ===== MODO ENFOQUE (PASO A PASO - STEPPER) ===== */
-            <Stack spacing={3} maxWidth="md" sx={{ mx: 'auto' }}>
+            /* ===== MODO ENFOQUE (STEPPER) ===== */
+            <Stack spacing={2.5} maxWidth="md" sx={{ mx: 'auto' }}>
               {/* Barra de Navegación entre Ejercicios */}
-              <Card sx={{ borderRadius: 3, p: 2, boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
+              <Box className="apple-card" sx={{ p: 1.5, px: 2 }}>
                 <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Button
-                    variant="outlined"
-                    startIcon={<Iconify icon="solar:alt-arrow-left-bold" />}
+                  <IconButton
                     disabled={currentExerciseIndex === 0}
                     onClick={() => setCurrentExerciseIndex((prev) => Math.max(0, prev - 1))}
+                    sx={{ color: '#FFFFFF', bgcolor: 'rgba(255, 255, 255, 0.04)' }}
                   >
-                    Anterior
-                  </Button>
+                    <ChevronLeft size={20} />
+                  </IconButton>
 
                   <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="caption" color="text.secondary" fontWeight="bold">
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 600, letterSpacing: '0.04em' }}>
                       EJERCICIO {currentExerciseIndex + 1} DE {exercisesGrouped.length}
                     </Typography>
-                    <Typography variant="h6" fontWeight="bold" color="primary.main">
+                    <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#007AFF' }}>
                       {currentGroup.name}
                     </Typography>
                   </Box>
 
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    endIcon={<Iconify icon="solar:alt-arrow-right-bold" />}
+                  <IconButton
                     disabled={currentExerciseIndex >= exercisesGrouped.length - 1}
                     onClick={() => setCurrentExerciseIndex((prev) => Math.min(exercisesGrouped.length - 1, prev + 1))}
+                    sx={{ color: '#FFFFFF', bgcolor: 'rgba(255, 255, 255, 0.04)' }}
                   >
-                    Siguiente
-                  </Button>
+                    <ChevronRight size={20} />
+                  </IconButton>
                 </Stack>
-              </Card>
+              </Box>
 
               {/* Ficha Detallada del Ejercicio Actual */}
-              <Card sx={{ borderRadius: 3, boxShadow: '0 8px 24px rgba(0,0,0,0.08)' }}>
-                <CardContent sx={{ p: 3 }}>
-                  <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} gap={2} sx={{ mb: 2 }}>
-                    <Box>
-                      <Typography variant="h5" fontWeight="bold" color="text.primary">
-                        {currentGroup.name}
+              <Box className="apple-card" sx={{ p: 2.5 }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} justifyContent="space-between" alignItems={{ xs: 'flex-start', sm: 'center' }} gap={1.5} sx={{ mb: 2 }}>
+                  <Box>
+                    <Typography variant="h5" fontWeight="800" sx={{ color: '#FFFFFF' }}>
+                      {currentGroup.name}
+                    </Typography>
+                    <Stack direction="row" spacing={0.8} sx={{ mt: 0.8 }} flexWrap="wrap">
+                      {currentGroup.bodyPart && (
+                        <Chip label={currentGroup.bodyPart} size="small" sx={{ bgcolor: 'rgba(0, 122, 255, 0.15)', color: '#007AFF', height: 22 }} />
+                      )}
+                      {currentGroup.targetMuscle && (
+                        <Chip label={currentGroup.targetMuscle} size="small" sx={{ bgcolor: 'rgba(255, 255, 255, 0.08)', color: 'rgba(255, 255, 255, 0.7)', height: 22 }} />
+                      )}
+                      {currentGroup.equipment && (
+                        <Chip label={currentGroup.equipment} size="small" sx={{ bgcolor: 'rgba(255, 255, 255, 0.08)', color: 'rgba(255, 255, 255, 0.7)', height: 22 }} />
+                      )}
+                    </Stack>
+                  </Box>
+
+                  {prevHistory[currentGroup.id] ? (
+                    <Box sx={{ p: 1, px: 1.5, borderRadius: '8px', bgcolor: 'rgba(52, 199, 89, 0.12)', border: '0.5px solid rgba(52, 199, 89, 0.25)' }}>
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, display: 'block' }}>
+                        Última Sesión:
                       </Typography>
-                      <Stack direction="row" spacing={1} sx={{ mt: 1 }} flexWrap="wrap" gap={0.5}>
-                        {currentGroup.bodyPart && (
-                          <Chip icon={<Iconify icon="solar:body-bold" />} label={currentGroup.bodyPart} size="small" color="primary" variant="outlined" />
-                        )}
-                        {currentGroup.targetMuscle && (
-                          <Chip label={`Músculo: ${currentGroup.targetMuscle}`} size="small" color="secondary" />
-                        )}
-                        {currentGroup.equipment && (
-                          <Chip icon={<Iconify icon="solar:dumbbell-bold" />} label={currentGroup.equipment} size="small" />
-                        )}
-                      </Stack>
-                    </Box>
-
-                    {/* Referencia de Sobrecarga Progresiva: Historial previo */}
-                    {prevHistory[currentGroup.id] ? (
-                      <Alert severity="success" icon={<Iconify icon="solar:chart-square-bold" />} sx={{ py: 0.5, borderRadius: 2 }}>
-                        <Typography variant="caption" fontWeight="bold" display="block">
-                          ÚLTIMA SESIÓN:
-                        </Typography>
-                        <Typography variant="body2" fontWeight="bold">
-                          {prevHistory[currentGroup.id].weight} kg x {prevHistory[currentGroup.id].reps} reps
-                        </Typography>
-                      </Alert>
-                    ) : (
-                      <Chip label="Primera vez registrando este ejercicio" size="small" variant="outlined" />
-                    )}
-                  </Stack>
-
-                  {/* Animación / Video del Ejercicio */}
-                  {currentGroup.gifUrl ? (
-                    <Box
-                      sx={{
-                        position: 'relative',
-                        borderRadius: 3,
-                        overflow: 'hidden',
-                        bgcolor: '#0a0f1d',
-                        border: '1px solid #1e293b',
-                        my: 2.5,
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minHeight: 220,
-                        maxHeight: 320,
-                        boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-                      }}
-                    >
-                      <img
-                        src={currentGroup.gifUrl}
-                        alt={currentGroup.name}
-                        style={{
-                          maxHeight: 320,
-                          maxWidth: '100%',
-                          objectFit: 'contain',
-                          display: 'block',
-                        }}
-                        loading="eager"
-                      />
-                      <Box
-                        sx={{
-                          position: 'absolute',
-                          bottom: 12,
-                          left: 12,
-                          display: 'flex',
-                          gap: 1,
-                          alignItems: 'center',
-                        }}
-                      >
-                        <Chip
-                          icon={<Iconify icon="solar:play-circle-bold" width={16} sx={{ color: '#22c55e !important' }} />}
-                          label="Demostración Técnica en Video"
-                          size="small"
-                          sx={{
-                            bgcolor: 'rgba(15, 23, 42, 0.85)',
-                            color: 'white',
-                            backdropFilter: 'blur(6px)',
-                            fontWeight: 600,
-                            border: '1px solid rgba(255,255,255,0.15)',
-                          }}
-                        />
-                      </Box>
+                      <Typography variant="body2" fontWeight="700" sx={{ color: '#34C759' }}>
+                        {prevHistory[currentGroup.id].weight} kg x {prevHistory[currentGroup.id].reps} reps
+                      </Typography>
                     </Box>
                   ) : null}
+                </Stack>
 
-                  <Divider sx={{ my: 2 }} />
-
-                  {/* Tabla de Series de este Ejercicio */}
-                  <Stack spacing={2}>
-                    {currentGroup.sets.map(({ setItem, globalIndex }) => (
-                      <Box
-                        key={globalIndex}
-                        sx={{
-                          p: 2,
-                          borderRadius: 2.5,
-                          bgcolor: setItem.completed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.03)',
-                          border: '1.5px solid',
-                          borderColor: setItem.completed ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255, 255, 255, 0.1)',
-                          backdropFilter: 'blur(16px)',
-                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                          boxShadow: setItem.completed ? '0 4px 20px rgba(16, 185, 129, 0.2)' : '0 4px 16px rgba(0, 0, 0, 0.2)',
-                          '&:hover': {
-                            borderColor: setItem.completed ? 'rgba(16, 185, 129, 0.8)' : 'rgba(34, 211, 238, 0.4)',
-                          },
-                        }}
-                      >
-                        <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'stretch', md: 'center' }} justifyContent="space-between" spacing={2}>
-                          {/* Checkbox de serie completada */}
-                          <Stack direction="row" alignItems="center" spacing={1.5}>
-                            <Checkbox
-                              checked={setItem.completed}
-                              onChange={() => handleToggleSet(globalIndex)}
-                              color="success"
-                              sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
-                            />
-                            <Box>
-                              <Typography variant="subtitle1" fontWeight="bold" sx={{ color: '#f8fafc' }}>
-                                Serie #{setItem.setIndex}
-                              </Typography>
-                              <Typography variant="caption" sx={{ color: setItem.completed ? '#34d399' : '#94a3b8' }}>
-                                {setItem.completed ? '✅ Completada' : 'Pendiente'}
-                              </Typography>
-                            </Box>
-                          </Stack>
-
-                          {/* Inputs de Peso y Repeticiones con ajuste rápido */}
-                          <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" gap={1}>
-                            {/* Input de Peso y chips de ajuste rápido */}
-                            <Box>
-                              <Stack direction="row" spacing={0.5} alignItems="center">
-                                <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'weight', -2.5)}>
-                                  <Iconify icon="solar:minus-circle-bold" />
-                                </IconButton>
-                                <TextField
-                                  size="small"
-                                  label="Kg"
-                                  type="number"
-                                  value={setItem.weight}
-                                  onChange={(e) => handleUpdateField(globalIndex, 'weight', Number(e.target.value))}
-                                  sx={{ width: 85 }}
-                                />
-                                <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'weight', 2.5)}>
-                                  <Iconify icon="solar:add-circle-bold" />
-                                </IconButton>
-                                <Tooltip title="Calculadora de Discos en Barra">
-                                  <IconButton size="small" color="primary" onClick={() => handleOpenBarCalc(setItem.weight)}>
-                                    <Iconify icon="mdi:weight-lifter" />
-                                  </IconButton>
-                                </Tooltip>
-                              </Stack>
-
-                              {/* Chips de ajuste instantáneo con un toque */}
-                              <Stack direction="row" spacing={0.5} sx={{ mt: 0.75, justifyContent: 'center' }}>
-                                <button type="button" className="liquid-quick-chip" onClick={() => handleQuickAdjust(globalIndex, 'weight', -2.5)}>-2.5</button>
-                                <button type="button" className="liquid-quick-chip" onClick={() => handleQuickAdjust(globalIndex, 'weight', 1)}>+1</button>
-                                <button type="button" className="liquid-quick-chip" onClick={() => handleQuickAdjust(globalIndex, 'weight', 2.5)}>+2.5</button>
-                                <button type="button" className="liquid-quick-chip" onClick={() => handleQuickAdjust(globalIndex, 'weight', 5)}>+5kg</button>
-                              </Stack>
-                            </Box>
-
-                            {/* Input de Repeticiones */}
-                            <Stack direction="row" spacing={0.5} alignItems="center">
-                              <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'reps', -1)}>
-                                <Iconify icon="solar:minus-circle-bold" />
-                              </IconButton>
-                              <TextField
-                                size="small"
-                                label="Reps"
-                                type="number"
-                                value={setItem.reps}
-                                onChange={(e) => handleUpdateField(globalIndex, 'reps', Number(e.target.value))}
-                                sx={{ width: 75 }}
-                              />
-                              <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'reps', 1)}>
-                                <Iconify icon="solar:add-circle-bold" />
-                              </IconButton>
-                            </Stack>
-
-                            {/* RPE */}
-                            <TextField
-                              size="small"
-                              label="RPE (1-10)"
-                              type="number"
-                              value={setItem.rpe}
-                              onChange={(e) => handleUpdateField(globalIndex, 'rpe', Number(e.target.value))}
-                              sx={{ width: 80 }}
-                            />
-                          </Stack>
-
-                          {/* Botones de Intensificación */}
-                          <Stack direction="row" spacing={1} justifyContent="flex-end">
-                            <Button size="small" variant="outlined" color="secondary" onClick={() => handleAddDropSet(globalIndex)}>
-                              + Drop
-                            </Button>
-                            <Button size="small" variant="outlined" color="warning" onClick={() => handleAddRestPause(globalIndex)}>
-                              + Rest-Pause
-                            </Button>
-                          </Stack>
-                        </Stack>
-
-                        {/* Renders de Sub-filas para DropSets */}
-                        {setItem.drops && setItem.drops.length > 0 && (
-                          <Box sx={{ ml: 4, mt: 1.5, p: 1.5, bgcolor: 'rgba(217, 70, 239, 0.1)', borderRadius: 1.5, borderLeft: '3px solid #d946ef', border: '1px solid rgba(217, 70, 239, 0.2)' }}>
-                            <Typography variant="caption" fontWeight="bold" sx={{ color: '#e879f9' }}>
-                              🔥 Bajadas Drop-Set:
-                            </Typography>
-                            {setItem.drops.map((drop, dIdx) => (
-                              <Typography key={dIdx} variant="body2" sx={{ mt: 0.5, color: '#f1f5f9' }}>
-                                Bajada #{dIdx + 1}: <strong>{drop.weight} kg</strong> x {drop.reps} reps
-                              </Typography>
-                            ))}
-                          </Box>
-                        )}
-
-                        {/* Renders de Sub-filas para Rest-Pause */}
-                        {setItem.clusters && setItem.clusters.length > 0 && (
-                          <Box sx={{ ml: 4, mt: 1.5, p: 1.5, bgcolor: 'rgba(245, 158, 11, 0.1)', borderRadius: 1.5, borderLeft: '3px solid #f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                            <Typography variant="caption" fontWeight="bold" sx={{ color: '#fbbf24' }}>
-                              ⚡ Ráfagas Rest-Pause (15s descanso):
-                            </Typography>
-                            {setItem.clusters.map((cluster, cIdx) => (
-                              <Typography key={cIdx} variant="body2" sx={{ mt: 0.5, color: '#f1f5f9' }}>
-                                Ráfaga #{cIdx + 1}: {cluster.reps} reps
-                              </Typography>
-                            ))}
-                          </Box>
-                        )}
-                      </Box>
-                    ))}
-                  </Stack>
-
-                  {/* Acciones de Navegación del Ejercicio */}
-                  <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Typography variant="body2" color="text.secondary">
-                      {currentGroup.sets.every((s) => s.setItem.completed)
-                        ? '🎉 ¡Todas las series completadas para este ejercicio!'
-                        : 'Marca cada serie conforme la termines para registrar el descanso.'}
-                    </Typography>
-
-                    {currentExerciseIndex < exercisesGrouped.length - 1 ? (
-                      <Button
-                        variant="contained"
-                        color="primary"
-                        size="large"
-                        endIcon={<Iconify icon="solar:arrow-right-bold" />}
-                        onClick={() => setCurrentExerciseIndex((prev) => prev + 1)}
-                        sx={{ fontWeight: 'bold' }}
-                      >
-                        Pasar al Siguiente Ejercicio
-                      </Button>
-                    ) : (
-                      <Button
-                        variant="contained"
-                        color="success"
-                        size="large"
-                        endIcon={<Iconify icon="eva:checkmark-circle-2-fill" />}
-                        onClick={() => setFinishModalOpen(true)}
-                        sx={{ fontWeight: 'bold' }}
-                      >
-                        Terminar Rutina
-                      </Button>
-                    )}
+                {currentGroup.gifUrl && (
+                  <Box
+                    sx={{
+                      position: 'relative',
+                      borderRadius: '14px',
+                      overflow: 'hidden',
+                      bgcolor: '#161618',
+                      my: 2,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      maxHeight: 240,
+                    }}
+                  >
+                    <img
+                      src={currentGroup.gifUrl}
+                      alt={currentGroup.name}
+                      style={{ maxHeight: 240, maxWidth: '100%', objectFit: 'contain' }}
+                      loading="eager"
+                    />
                   </Box>
-                </CardContent>
-              </Card>
-            </Stack>
-          ) : (
-            /* ===== MODO LISTA COMPLETA (OVERVIEW) ===== */
-            <Stack spacing={3} maxWidth="md" sx={{ mx: 'auto' }}>
-              {exercisesGrouped.map((group, gIdx) => (
-                <Card key={group.id} sx={{ borderRadius: 3, boxShadow: '0 4px 16px rgba(0,0,0,0.06)' }}>
-                  <CardContent sx={{ p: 3 }}>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: 2 }}>
-                      {group.gifUrl && (
-                        <Box
-                          component="img"
-                          src={group.gifUrl}
-                          alt={group.name}
-                          sx={{
-                            width: { xs: '100%', sm: 88 },
-                            height: 88,
-                            borderRadius: 2,
-                            objectFit: 'contain',
-                            bgcolor: '#0a0f1d',
-                            border: '1px solid #1e293b',
-                            flexShrink: 0,
-                          }}
-                          loading="lazy"
-                        />
-                      )}
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h6" fontWeight="bold" color="primary.main">
-                          {gIdx + 1}. {group.name}
-                        </Typography>
-                        {prevHistory[group.id] && (
-                          <Typography variant="caption" color="success.main" fontWeight="bold" display="block">
-                            Última sesión: {prevHistory[group.id].weight} kg x {prevHistory[group.id].reps} reps
-                          </Typography>
-                        )}
-                        <Stack direction="row" spacing={0.8} sx={{ mt: 0.5 }} flexWrap="wrap">
-                          {group.bodyPart && (
-                            <Chip label={group.bodyPart} size="small" variant="outlined" />
-                          )}
-                          {group.equipment && (
-                            <Chip label={group.equipment} size="small" />
-                          )}
-                        </Stack>
-                      </Box>
+                )}
 
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          setCurrentExerciseIndex(gIdx);
-                          setViewMode('stepper');
-                        }}
-                      >
-                        Enfocar Ejercicio
-                      </Button>
-                    </Stack>
+                <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
 
-                    <Divider sx={{ mb: 2 }} />
-
-                    <Stack spacing={1.5}>
-                      {group.sets.map(({ setItem, globalIndex }) => (
-                        <Box
-                          key={globalIndex}
-                          sx={{
-                            p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: setItem.completed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.03)',
-                            border: '1px solid',
-                            borderColor: setItem.completed ? 'rgba(16, 185, 129, 0.45)' : 'rgba(255, 255, 255, 0.1)',
-                            backdropFilter: 'blur(12px)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'space-between',
-                            flexWrap: 'wrap',
-                            gap: 1,
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              borderColor: setItem.completed ? 'rgba(16, 185, 129, 0.7)' : 'rgba(34, 211, 238, 0.35)',
-                            },
-                          }}
-                        >
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <Checkbox checked={setItem.completed} onChange={() => handleToggleSet(globalIndex)} color="success" />
-                            <Typography variant="body2" fontWeight="bold">
+                {/* Series del Ejercicio Optimizado para iPhone */}
+                <Stack spacing={1.5}>
+                  {currentGroup.sets.map(({ setItem, globalIndex }) => (
+                    <Box
+                      key={globalIndex}
+                      sx={{
+                        p: 1.8,
+                        borderRadius: '14px',
+                        bgcolor: setItem.completed ? 'rgba(52, 199, 89, 0.1)' : '#161618',
+                        border: '0.5px solid',
+                        borderColor: setItem.completed ? 'rgba(52, 199, 89, 0.35)' : 'rgba(255, 255, 255, 0.08)',
+                        transition: 'all 0.15s ease',
+                      }}
+                    >
+                      <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between" spacing={1.5}>
+                        {/* Checkbox y Serie */}
+                        <Stack direction="row" alignItems="center" spacing={1.2}>
+                          <Box onClick={() => handleToggleSet(globalIndex)} sx={{ cursor: 'pointer', display: 'flex' }}>
+                            {setItem.completed ? (
+                              <CheckCircle2 size={24} color="#34C759" />
+                            ) : (
+                              <Circle size={24} color="rgba(255, 255, 255, 0.25)" />
+                            )}
+                          </Box>
+                          <Box>
+                            <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF' }}>
                               Serie #{setItem.setIndex}
                             </Typography>
-                          </Stack>
+                            <Typography variant="caption" sx={{ color: setItem.completed ? '#34C759' : 'rgba(255, 255, 255, 0.4)' }}>
+                              {setItem.completed ? 'Completada' : 'Pendiente'}
+                            </Typography>
+                          </Box>
+                        </Stack>
 
-                          <Stack direction="row" spacing={1} alignItems="center">
+                        {/* Controles de Peso y Reps */}
+                        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" gap={0.5}>
+                          {/* Peso */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                            <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'weight', -2.5)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                              <Minus size={14} />
+                            </IconButton>
                             <TextField
                               size="small"
                               label="Kg"
                               type="number"
                               value={setItem.weight}
                               onChange={(e) => handleUpdateField(globalIndex, 'weight', Number(e.target.value))}
-                              sx={{ width: 80 }}
+                              sx={{ width: 75 }}
                             />
+                            <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'weight', 2.5)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                              <Plus size={14} />
+                            </IconButton>
+                            <Tooltip title="Calculadora de Discos">
+                              <IconButton size="small" onClick={() => handleOpenBarCalc(setItem.weight)} sx={{ color: '#007AFF' }}>
+                                <Dumbbell size={16} />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+
+                          {/* Reps */}
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                            <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'reps', -1)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                              <Minus size={14} />
+                            </IconButton>
                             <TextField
                               size="small"
                               label="Reps"
                               type="number"
                               value={setItem.reps}
                               onChange={(e) => handleUpdateField(globalIndex, 'reps', Number(e.target.value))}
-                              sx={{ width: 70 }}
-                            />
-                            <TextField
-                              size="small"
-                              label="RPE"
-                              type="number"
-                              value={setItem.rpe}
-                              onChange={(e) => handleUpdateField(globalIndex, 'rpe', Number(e.target.value))}
                               sx={{ width: 65 }}
                             />
-                          </Stack>
-                        </Box>
-                      ))}
-                    </Stack>
-                  </CardContent>
-                </Card>
+                            <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'reps', 1)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                              <Plus size={14} />
+                            </IconButton>
+                          </Box>
+
+                          {/* RPE */}
+                          <TextField
+                            size="small"
+                            label="RPE"
+                            type="number"
+                            value={setItem.rpe}
+                            onChange={(e) => handleUpdateField(globalIndex, 'rpe', Number(e.target.value))}
+                            sx={{ width: 60 }}
+                          />
+                        </Stack>
+                      </Stack>
+                    </Box>
+                  ))}
+                </Stack>
+
+                {/* Acciones de Navegación del Ejercicio */}
+                <Box sx={{ mt: 3, pt: 2, borderTop: '0.5px solid rgba(255, 255, 255, 0.06)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
+                    {currentGroup.sets.every((s) => s.setItem.completed)
+                      ? '¡Todas las series completadas!'
+                      : 'Marca la serie para activar el descanso.'}
+                  </Typography>
+
+                  {currentExerciseIndex < exercisesGrouped.length - 1 ? (
+                    <Button
+                      variant="contained"
+                      onClick={() => setCurrentExerciseIndex((prev) => prev + 1)}
+                      className="apple-button-primary"
+                      endIcon={<ChevronRight size={16} />}
+                      sx={{ fontWeight: 700, borderRadius: '10px' }}
+                    >
+                      Siguiente
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="contained"
+                      onClick={() => setFinishModalOpen(true)}
+                      className="apple-button-primary"
+                      sx={{ fontWeight: 700, borderRadius: '10px' }}
+                    >
+                      Terminar
+                    </Button>
+                  )}
+                </Box>
+              </Box>
+            </Stack>
+          ) : (
+            /* ===== MODO LISTA COMPLETA ===== */
+            <Stack spacing={2.5} maxWidth="md" sx={{ mx: 'auto' }}>
+              {exercisesGrouped.map((group, gIdx) => (
+                <Box key={group.id} className="apple-card" sx={{ p: 2.5 }}>
+                  <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems={{ xs: 'flex-start', sm: 'center' }} sx={{ mb: 2 }}>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF' }}>
+                        {gIdx + 1}. {group.name}
+                      </Typography>
+                      {prevHistory[group.id] && (
+                        <Typography variant="caption" sx={{ color: '#34C759', fontWeight: 600, display: 'block' }}>
+                          Última sesión: {prevHistory[group.id].weight} kg x {prevHistory[group.id].reps} reps
+                        </Typography>
+                      )}
+                    </Box>
+
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => {
+                        setCurrentExerciseIndex(gIdx);
+                        setViewMode('stepper');
+                      }}
+                      sx={{ borderRadius: '8px', color: '#FFFFFF', borderColor: 'rgba(255, 255, 255, 0.15)', textTransform: 'none' }}
+                    >
+                      Enfocar
+                    </Button>
+                  </Stack>
+
+                  <Stack spacing={1}>
+                    {group.sets.map(({ setItem, globalIndex }) => (
+                      <Box
+                        key={globalIndex}
+                        sx={{
+                          p: 1.2,
+                          px: 1.5,
+                          borderRadius: '10px',
+                          bgcolor: setItem.completed ? 'rgba(52, 199, 89, 0.1)' : '#161618',
+                          border: '0.5px solid',
+                          borderColor: setItem.completed ? 'rgba(52, 199, 89, 0.3)' : 'rgba(255, 255, 255, 0.06)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          flexWrap: 'wrap',
+                          gap: 1,
+                        }}
+                      >
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Box onClick={() => handleToggleSet(globalIndex)} sx={{ cursor: 'pointer', display: 'flex' }}>
+                            {setItem.completed ? <CheckCircle2 size={18} color="#34C759" /> : <Circle size={18} color="rgba(255,255,255,0.3)" />}
+                          </Box>
+                          <Typography variant="body2" fontWeight="600" sx={{ color: '#FFFFFF' }}>
+                            Serie #{setItem.setIndex}
+                          </Typography>
+                        </Stack>
+
+                        <Stack direction="row" spacing={1} alignItems="center">
+                          <TextField
+                            size="small"
+                            label="Kg"
+                            type="number"
+                            value={setItem.weight}
+                            onChange={(e) => handleUpdateField(globalIndex, 'weight', Number(e.target.value))}
+                            sx={{ width: 70 }}
+                          />
+                          <TextField
+                            size="small"
+                            label="Reps"
+                            type="number"
+                            value={setItem.reps}
+                            onChange={(e) => handleUpdateField(globalIndex, 'reps', Number(e.target.value))}
+                            sx={{ width: 65 }}
+                          />
+                        </Stack>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Box>
               ))}
             </Stack>
           )}
         </Box>
-      </Dialog>
 
-      {/* Modal de Calculadora de Discos en Barra */}
-      <BarCalculatorModal open={barCalcOpen} onClose={() => setBarCalcOpen(false)} targetWeight={targetWeightCalc} />
-
-      {/* Modal de Finalización y Evaluación Celebratoria (iOS 26 Liquid Glass) */}
-      <Dialog
-        open={finishModalOpen}
-        onClose={() => setFinishModalOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: '28px',
-            bgcolor: 'rgba(15, 23, 42, 0.92)',
-            backdropFilter: 'blur(32px) saturate(190%)',
-            border: '1px solid rgba(255, 255, 255, 0.15)',
-            boxShadow: '0 24px 70px rgba(0, 0, 0, 0.7)',
-            overflow: 'hidden',
-          },
-        }}
-      >
-        {/* Cabecera Celebratoria con Gradiente y Copa */}
-        <Box
-          sx={{
-            p: 4,
-            textAlign: 'center',
-            background: 'radial-gradient(ellipse at top, rgba(16, 185, 129, 0.25) 0%, rgba(15, 23, 42, 0.5) 100%)',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-            position: 'relative',
+        {/* Modal de Finalización */}
+        <Dialog
+          open={finishModalOpen}
+          onClose={() => setFinishModalOpen(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            className: 'apple-card',
+            sx: { borderRadius: '18px', p: 1.5 },
           }}
         >
-          <Box
-            sx={{
-              display: 'inline-flex',
-              p: 2,
-              borderRadius: '50%',
-              bgcolor: 'rgba(16, 185, 129, 0.15)',
-              border: '1px solid rgba(16, 185, 129, 0.4)',
-              boxShadow: '0 0 25px rgba(16, 185, 129, 0.4)',
-              mb: 1.5,
-            }}
-          >
-            <Iconify icon="solar:cup-star-bold" width={48} height={48} sx={{ color: '#34d399' }} />
+          <Box sx={{ p: 2.5, textAlign: 'center' }}>
+            <Box
+              sx={{
+                width: 54,
+                height: 54,
+                borderRadius: '50%',
+                bgcolor: 'rgba(52, 199, 89, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                mx: 'auto',
+                mb: 1.5,
+              }}
+            >
+              <Award size={28} color="#34C759" />
+            </Box>
+
+            <Typography variant="h5" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5 }}>
+              ¡Sesión Finalizada!
+            </Typography>
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 2.5 }}>
+              Buen trabajo. Se registrarán tus marcas y volumen levantado en el historial.
+            </Typography>
+
+            <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1, mb: 3 }}>
+              <Box sx={{ p: 1.5, borderRadius: '12px', bgcolor: 'rgba(255, 255, 255, 0.04)' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>Tiempo</Typography>
+                <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#FFFFFF' }}>{formatTime(duration)}</Typography>
+              </Box>
+              <Box sx={{ p: 1.5, borderRadius: '12px', bgcolor: 'rgba(255, 255, 255, 0.04)' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>Volumen</Typography>
+                <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#007AFF' }}>{totalVolumeLifted.toLocaleString()} kg</Typography>
+              </Box>
+              <Box sx={{ p: 1.5, borderRadius: '12px', bgcolor: 'rgba(255, 255, 255, 0.04)' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>Series</Typography>
+                <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#34C759' }}>{completedCount}/{totalCount}</Typography>
+              </Box>
+            </Box>
+
+            <Stack spacing={2} sx={{ mb: 3, textAlign: 'left' }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mb: 0.5 }}>
+                  Sensaciones y Esfuerzo
+                </Typography>
+                <Rating value={rating} onChange={(_, val) => setRating(val || 5)} size="large" sx={{ color: '#FF9500' }} />
+              </Box>
+
+              <TextField
+                label="Notas de la sesión"
+                multiline
+                rows={2}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                fullWidth
+                placeholder="Ej. Buenas sensaciones en press banca..."
+              />
+            </Stack>
+
+            <Stack direction="row" spacing={1.5} justifyContent="flex-end">
+              <Button onClick={() => setFinishModalOpen(false)} sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                Volver
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleFinishWorkout}
+                disabled={isSubmitting}
+                className="apple-button-primary"
+                sx={{ borderRadius: '10px', fontWeight: 700, px: 3 }}
+              >
+                {isSubmitting ? 'Guardando...' : 'Guardar Sesión'}
+              </Button>
+            </Stack>
           </Box>
-          <Typography variant="h4" fontWeight={800} sx={{ color: '#f8fafc', letterSpacing: '-0.02em', mb: 0.5 }}>
-            ¡Sesión Completada con Éxito!
-          </Typography>
-          <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 500 }}>
-            Excelente trabajo. Cada serie suma a tu adaptación neuromuscular y composición corporal.
-          </Typography>
+        </Dialog>
 
-          {/* Tríada de Métricas de Rendimiento */}
-          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 1.5, mt: 3 }}>
-            <Box
-              sx={{
-                p: 1.5,
-                borderRadius: '18px',
-                bgcolor: 'rgba(255, 255, 255, 0.04)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-              }}
-            >
-              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>
-                ⏱️ Tiempo
-              </Typography>
-              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#f8fafc' }}>
-                {formatTime(duration)}
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                p: 1.5,
-                borderRadius: '18px',
-                bgcolor: 'rgba(255, 255, 255, 0.04)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-              }}
-            >
-              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>
-                🏋️ Volumen Total
-              </Typography>
-              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#38bdf8' }}>
-                {totalVolumeLifted.toLocaleString()} kg
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                p: 1.5,
-                borderRadius: '18px',
-                bgcolor: 'rgba(255, 255, 255, 0.04)',
-                backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-              }}
-            >
-              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>
-                🎯 Series
-              </Typography>
-              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#34d399' }}>
-                {completedCount}/{totalCount}
-              </Typography>
-            </Box>
-          </Box>
-        </Box>
-
-        {/* Cuerpo del Diálogo: Evaluación y Notas */}
-        <Box sx={{ p: 3.5 }}>
-          <Stack spacing={3}>
-            <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#e2e8f0', mb: 1 }}>
-                ¿Cómo calificarías tu esfuerzo y sensaciones hoy?
-              </Typography>
-              <Rating value={rating} onChange={(_, val) => setRating(val || 5)} size="large" sx={{ color: '#f59e0b' }} />
-            </Box>
-
-            <TextField
-              label="Notas del entrenamiento (pesos clave, sensaciones, fatiga o congestión)"
-              multiline
-              rows={3}
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              fullWidth
-              placeholder="Ej: Muy buenas sensaciones en press banca, subí 2.5 kg con respecto a la semana pasada..."
-              sx={{
-                '& .MuiOutlinedInput-root': {
-                  borderRadius: '18px',
-                  bgcolor: 'rgba(255, 255, 255, 0.04)',
-                  backdropFilter: 'blur(10px)',
-                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
-                  '&:hover fieldset': { borderColor: 'rgba(34, 211, 238, 0.5)' },
-                },
-              }}
-            />
-          </Stack>
-        </Box>
-
-        {/* Acciones del Diálogo */}
-        <Box
-          sx={{
-            p: 2.5,
-            px: 3.5,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            bgcolor: 'rgba(15, 23, 42, 0.7)',
-            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-          }}
-        >
-          <Button
-            onClick={() => setFinishModalOpen(false)}
-            sx={{ borderRadius: '9999px', color: '#94a3b8', fontWeight: 600, '&:hover': { color: '#f8fafc' } }}
-          >
-            Volver
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handleFinishWorkout}
-            disabled={isSubmitting}
-            startIcon={<Iconify icon="solar:check-circle-bold" width={20} />}
-            sx={{
-              borderRadius: '9999px',
-              px: 3,
-              py: 1,
-              fontWeight: 700,
-              background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-              color: '#ffffff',
-              boxShadow: '0 6px 20px rgba(6, 182, 212, 0.35)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
-                boxShadow: '0 8px 24px rgba(6, 182, 212, 0.5)',
-              },
-            }}
-          >
-            {isSubmitting ? 'Guardando...' : 'Guardar y Registrar Historial'}
-          </Button>
-        </Box>
+        {barCalcOpen && (
+          <BarCalculatorModal
+            open={barCalcOpen}
+            onClose={() => setBarCalcOpen(false)}
+            initialWeight={targetWeightCalc}
+          />
+        )}
       </Dialog>
     </>
   );
 };
+
+export default LiveWorkoutDialog;
