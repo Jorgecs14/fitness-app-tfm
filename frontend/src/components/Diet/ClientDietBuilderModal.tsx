@@ -1,7 +1,7 @@
+// Creador y selector de pautas nutricionales para el cliente con estética Apple Liquid Glass
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
@@ -9,17 +9,22 @@ import {
   Typography,
   TextField,
   Stack,
-  Card,
-  CardContent,
   IconButton,
   Chip,
   Grid,
-  Divider,
   Alert,
-  Tabs,
-  Tab,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  UtensilsCrossed,
+  Sparkles,
+  X,
+  Flame,
+  FileText,
+  Check,
+  Apple,
+} from 'lucide-react';
 import { createDiet, updateDiet, assignUserToDiet } from '../../services/dietService';
 
 interface ClientDietBuilderModalProps {
@@ -34,20 +39,23 @@ const NUTRITION_TEMPLATES = [
   {
     title: '🔥 Déficit Calórico & Definición',
     calories: 1950,
+    color: '#FF9500',
     description: 'Enfocado en pérdida de grasa manteniendo masa muscular. Alto en proteína y moderado en hidratos.',
-    meals: 'Desayuno: Tortilla de 3 claras y 1 huevo con avena. Almuerzo: Pechuga de pollo con arroz integral y verduras. Merienda: Yogur griego con frutos rojos. Cena: Salmón al horno con ensalada mixta.',
+    meals: 'Desayuno: Tortilla de 3 claras y 1 huevo con avena.\nAlmuerzo: Pechuga de pollo con arroz integral y verduras.\nMerienda: Yogur griego con frutos rojos.\nCena: Salmón al horno con ensalada mixta.',
   },
   {
     title: '💪 Superávit Limpio & Ganancia Muscular',
     calories: 2750,
+    color: '#007AFF',
     description: 'Enfocado en hipertrofia y rendimiento físico. Densidad energética y aporte óptimo de carbohidratos complejos.',
-    meals: 'Desayuno: Bowl de avena con proteína en polvo, plátano y crema de cacahuete. Almuerzo: Ternera magra con patatas al horno y verduras. Merienda: Tostadas con atún y aguacate. Cena: Merluza con boniato y espárragos.',
+    meals: 'Desayuno: Bowl de avena con proteína en polvo, plátano y crema de cacahuete.\nAlmuerzo: Ternera magra con patatas al horno y verduras.\nMerienda: Tostadas con atún y aguacate.\nCena: Merluza con boniato y espárragos.',
   },
   {
     title: '🥑 Mantenimiento & Salud Metabólica',
     calories: 2300,
+    color: '#34C759',
     description: 'Equilibrio de macronutrientes para mantener peso y maximizar energía y vitalidad diaria.',
-    meals: 'Desayuno: Tostada de pan integral con aceite de oliva, tomate y jamón serrano. Almuerzo: Lentejas estofadas con verduras y pollo. Merienda: Fruta fresca con puñado de nueces. Cena: Pechuga de pavo con crema de calabacín.',
+    meals: 'Desayuno: Tostada de pan integral con aceite de oliva, tomate y jamón serrano.\nAlmuerzo: Lentejas estofadas con verduras y pollo.\nMerienda: Fruta fresca con puñado de nueces.\nCena: Pechuga de pavo con crema de calabacín.',
   },
 ];
 
@@ -58,6 +66,9 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
   dietToEdit,
   onSuccess,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [activeTab, setActiveTab] = useState<number>(0);
   const [name, setName] = useState<string>('');
   const [calories, setCalories] = useState<number>(2200);
@@ -102,21 +113,26 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
     setErrorMsg(null);
 
     try {
-      if (dietToEdit?.id) {
-        // Actualizar dieta existente
+      if (dietToEdit) {
         await updateDiet(dietToEdit.id, {
           name: name.trim(),
-          description: description.trim() || 'Plan nutricional personalizado',
-          calories: Number(calories),
+          calories,
+          description: description.trim(),
         });
       } else {
-        // Crear nueva dieta y asignar
         const newDiet = await createDiet({
           name: name.trim(),
-          description: description.trim() || 'Plan nutricional personalizado',
-          calories: Number(calories),
+          calories,
+          description: description.trim(),
         });
-        await assignUserToDiet(newDiet.id, userId);
+
+        if (newDiet && newDiet.id && userId) {
+          try {
+            await assignUserToDiet(newDiet.id, userId);
+          } catch (assignErr) {
+            console.warn('Advertencia al asociar pauta con usuario:', assignErr);
+          }
+        }
       }
 
       setIsSubmitting(false);
@@ -124,7 +140,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
       onClose();
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || 'Error al guardar la dieta.');
+      setErrorMsg(err.message || 'Error al guardar el plan de nutrición.');
       setIsSubmitting(false);
     }
   };
@@ -133,156 +149,278 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
       fullWidth
+      maxWidth="md"
+      fullScreen={isMobile}
       PaperProps={{
         sx: {
-          borderRadius: '28px',
-          bgcolor: 'rgba(15, 23, 42, 0.92)',
-          backdropFilter: 'blur(32px) saturate(190%)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          boxShadow: '0 24px 70px rgba(0, 0, 0, 0.7)',
-          overflow: 'hidden',
+          bgcolor: '#000000',
+          backgroundImage: 'none',
+          color: '#ffffff',
+          borderRadius: { xs: 0, sm: '24px' },
+          border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.12)' },
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.8)',
+          maxHeight: { xs: '100%', sm: '92vh' },
+          display: 'flex',
+          flexDirection: 'column',
         },
       }}
     >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 3, borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+      {/* Header Apple Liquid Glass */}
+      <Box
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)',
+          background: 'rgba(28, 28, 30, 0.8)',
+          backdropFilter: 'blur(20px)',
+          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px)' : 2,
+        }}
+      >
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <Box
             sx={{
-              display: 'inline-flex',
-              p: 1,
-              borderRadius: '12px',
-              bgcolor: 'rgba(6, 182, 212, 0.15)',
-              color: '#22d3ee',
-              border: '1px solid rgba(6, 182, 212, 0.3)',
+              width: 36,
+              height: 36,
+              borderRadius: '10px',
+              bgcolor: 'rgba(52, 199, 89, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#34C759',
+              border: '0.5px solid rgba(52, 199, 89, 0.3)',
             }}
           >
-            <Iconify icon="solar:chef-hat-bold-duotone" width={26} height={26} />
+            <Apple size={20} />
           </Box>
-          <Typography variant="h6" fontWeight={800} sx={{ color: '#f8fafc' }}>
-            Planificador Nutricional Personal
-          </Typography>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.2 }}>
+              {dietToEdit ? 'Editar Mi Pauta' : 'Creador de Plan Nutricional'}
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '0.75rem' }}>
+              Pautas y calorías personalizadas
+            </Typography>
+          </Box>
         </Stack>
-        <IconButton onClick={onClose} size="small" sx={{ color: '#94a3b8', '&:hover': { color: '#f8fafc' } }}>
-          <Iconify icon="eva:close-fill" />
+
+        <IconButton
+          size="small"
+          onClick={onClose}
+          sx={{
+            color: 'rgba(235, 235, 245, 0.8)',
+            bgcolor: 'rgba(255, 255, 255, 0.08)',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+          }}
+        >
+          <X size={18} />
         </IconButton>
-      </DialogTitle>
+      </Box>
 
-      <DialogContent sx={{ p: 3 }}>
-        <Tabs value={activeTab} onChange={(_, val) => setActiveTab(val)} sx={{ mb: 3 }}>
-          <Tab icon={<Iconify icon="solar:pen-new-square-bold" />} label="Crear Mi Plan" />
-          <Tab icon={<Iconify icon="solar:magic-stick-3-bold" />} label="Plantillas Nutricionales Rápidas" />
-        </Tabs>
+      {/* Selector de Pestañas Apple Segmented */}
+      <Box sx={{ p: 2, px: { xs: 2, sm: 3 }, bgcolor: '#000000', borderBottom: '0.5px solid rgba(255, 255, 255, 0.08)' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            bgcolor: '#1C1C1E',
+            p: '4px',
+            borderRadius: '14px',
+            border: '0.5px solid rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          <Box
+            onClick={() => setActiveTab(0)}
+            sx={{
+              flex: 1,
+              py: 1,
+              textAlign: 'center',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              bgcolor: activeTab === 0 ? '#2C2C2E' : 'transparent',
+              color: activeTab === 0 ? '#ffffff' : 'rgba(235, 235, 245, 0.6)',
+              fontWeight: activeTab === 0 ? 700 : 500,
+              fontSize: '0.85rem',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            Personalizar Plan
+          </Box>
+          <Box
+            onClick={() => setActiveTab(1)}
+            sx={{
+              flex: 1,
+              py: 1,
+              textAlign: 'center',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              bgcolor: activeTab === 1 ? '#34C759' : 'transparent',
+              color: activeTab === 1 ? '#000000' : '#ffffff',
+              fontWeight: activeTab === 1 ? 700 : 500,
+              fontSize: '0.85rem',
+              transition: 'all 0.15s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0.5,
+            }}
+          >
+            <Sparkles size={14} /> Plantillas Nutricionales
+          </Box>
+        </Box>
+      </Box>
 
+      {/* Contenido con Scroll */}
+      <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#000000', overflowY: 'auto' }}>
         {errorMsg && (
-          <Alert severity="error" sx={{ mb: 2, borderRadius: 2 }}>
+          <Alert
+            severity="error"
+            sx={{
+              mb: 2,
+              borderRadius: '14px',
+              bgcolor: 'rgba(255, 59, 48, 0.15)',
+              color: '#FF453A',
+              border: '0.5px solid rgba(255, 59, 48, 0.3)',
+            }}
+          >
             {errorMsg}
           </Alert>
         )}
 
         {activeTab === 0 ? (
-          <Stack spacing={3}>
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <TextField
-                  label="Nombre del Plan"
-                  placeholder="Ej: Mi Dieta de Definición 2,000 Kcal"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  fullWidth
-                  required
-                />
-              </Grid>
+          <Stack spacing={2.5}>
+            {/* Formulario Inset Grouped */}
+            <Box
+              sx={{
+                p: 2.5,
+                borderRadius: '20px',
+                bgcolor: '#1C1C1E',
+                border: '0.5px solid rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 7 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                    Nombre del Plan *
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="Ej: Dieta de Definición 2.000 Kcal"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    InputProps={{
+                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px' },
+                    }}
+                  />
+                </Grid>
 
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  label="Calorías Diarias (Kcal)"
-                  type="number"
-                  value={calories}
-                  onChange={(e) => setCalories(Number(e.target.value))}
-                  fullWidth
-                  required
-                />
-              </Grid>
+                <Grid size={{ xs: 12, sm: 5 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                    Calorías Diarias (Kcal) *
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    value={calories}
+                    onChange={(e) => setCalories(Number(e.target.value))}
+                    InputProps={{
+                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px' },
+                    }}
+                  />
+                </Grid>
 
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label="Descripción, Pautas y Distribución de Comidas"
-                  placeholder="Escribe aquí las pautas de tus comidas (Desayuno, Almuerzo, Comida, Merienda, Cena)..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={6}
-                />
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                    Pautas y Descripción de Comidas
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={5}
+                    placeholder="Escribe aquí las pautas de comidas, horarios, alimentos recomendados o suplementos..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    InputProps={{
+                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px' },
+                    }}
+                  />
+                </Grid>
               </Grid>
-            </Grid>
+            </Box>
           </Stack>
         ) : (
-          <Stack spacing={2.5}>
-            <Alert severity="info" sx={{ borderRadius: 2 }}>
-              Escoge una plantilla nutricional contrastada. Podrás editar las calorías o notas antes de guardarla en tu perfil.
+          /* Pestaña: Plantillas Nutricionales */
+          <Stack spacing={2}>
+            <Alert
+              severity="info"
+              sx={{
+                borderRadius: '14px',
+                bgcolor: 'rgba(52, 199, 89, 0.12)',
+                color: '#ffffff',
+                border: '0.5px solid rgba(52, 199, 89, 0.3)',
+              }}
+            >
+              Selecciona una estrategia nutricional. Se cargará de inmediato para que puedas adaptarla a tus gustos.
             </Alert>
 
             <Grid container spacing={2}>
               {NUTRITION_TEMPLATES.map((tmpl, idx) => (
-                <Grid size={{ xs: 12, sm: 4 }} key={idx}>
-                  <Card
+                <Grid size={{ xs: 12, sm: 6 }} key={idx}>
+                  <Box
                     sx={{
-                      borderRadius: 2.5,
+                      p: 2.5,
+                      borderRadius: '20px',
+                      bgcolor: '#1C1C1E',
+                      border: '0.5px solid rgba(255, 255, 255, 0.08)',
                       height: '100%',
-                      bgcolor: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      backdropFilter: 'blur(10px)',
                       display: 'flex',
                       flexDirection: 'column',
-                      transition: 'all 0.25s ease',
+                      transition: 'all 0.2s ease',
                       '&:hover': {
-                        borderColor: 'rgba(34, 211, 238, 0.4)',
+                        borderColor: 'rgba(52, 199, 89, 0.4)',
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
                       },
                     }}
                   >
-                    <CardContent sx={{ p: 2.5, flexGrow: 1 }}>
-                      <Typography variant="subtitle1" fontWeight="bold" sx={{ color: '#f8fafc', mb: 1 }}>
-                        {tmpl.title}
-                      </Typography>
-                      <Chip
-                        icon={<Iconify icon="solar:fire-bold" sx={{ color: '#ff7043 !important' }} />}
-                        label={`${tmpl.calories} Kcal / día`}
-                        size="small"
-                        sx={{
-                          mb: 1.5,
-                          fontWeight: 'bold',
-                          bgcolor: 'rgba(255, 112, 67, 0.15)',
-                          color: '#ff7043',
-                          border: '1px solid rgba(255, 112, 67, 0.3)',
-                        }}
-                      />
-                      <Typography variant="body2" sx={{ color: '#94a3b8', mb: 2, lineHeight: 1.6 }}>
-                        {tmpl.description}
-                      </Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff', mb: 0.5 }}>
+                      {tmpl.title}
+                    </Typography>
+                    <Chip
+                      label={`${tmpl.calories} kcal / día`}
+                      size="small"
+                      sx={{
+                        bgcolor: `${tmpl.color}20`,
+                        color: tmpl.color,
+                        fontWeight: 700,
+                        fontSize: '0.72rem',
+                        width: 'fit-content',
+                        mb: 1.5,
+                      }}
+                    />
+                    <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 2, fontSize: '0.85rem' }}>
+                      {tmpl.description}
+                    </Typography>
 
-                      <Button
-                        variant="contained"
-                        fullWidth
-                        startIcon={<Iconify icon="solar:download-square-bold" />}
-                        onClick={() => handleSelectTemplate(tmpl)}
-                        sx={{
-                          fontWeight: 'bold',
-                          mt: 'auto',
-                          borderRadius: '9999px',
-                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                          color: '#ffffff',
-                          boxShadow: '0 4px 14px rgba(16, 185, 129, 0.35)',
-                        }}
-                      >
-                        Usar Esta Plantilla
-                      </Button>
-                    </CardContent>
-                  </Card>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={() => handleSelectTemplate(tmpl)}
+                      startIcon={<Sparkles size={16} />}
+                      sx={{
+                        mt: 'auto',
+                        bgcolor: '#34C759',
+                        color: '#000000',
+                        fontWeight: 700,
+                        borderRadius: '12px',
+                        textTransform: 'none',
+                        height: 40,
+                        '&:hover': { bgcolor: '#2eb34f' },
+                      }}
+                    >
+                      Cargar Esta Pauta
+                    </Button>
+                  </Box>
                 </Grid>
               ))}
             </Grid>
@@ -290,28 +428,56 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
         )}
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2.5, bgcolor: 'rgba(15, 23, 42, 0.7)', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-        <Button onClick={onClose} disabled={isSubmitting} sx={{ borderRadius: '9999px', color: '#94a3b8', fontWeight: 600 }}>
+      {/* Footer Botones Apple */}
+      <DialogActions
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(28, 28, 30, 0.8)',
+          backdropFilter: 'blur(20px)',
+          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 12px)' : 2,
+          gap: 1.5,
+        }}
+      >
+        <Button
+          onClick={onClose}
+          sx={{
+            flex: 1,
+            height: 44,
+            borderRadius: '12px',
+            color: '#ffffff',
+            bgcolor: 'rgba(255, 255, 255, 0.08)',
+            fontWeight: 600,
+            textTransform: 'none',
+            fontSize: '0.95rem',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+          }}
+        >
           Cancelar
         </Button>
         <Button
-          variant="contained"
           onClick={handleSaveDiet}
-          disabled={isSubmitting || !name.trim() || !calories}
-          startIcon={<Iconify icon="solar:diskette-bold" />}
+          disabled={isSubmitting || !name.trim()}
+          variant="contained"
           sx={{
-            borderRadius: '9999px',
-            px: 3,
-            py: 1,
+            flex: 2,
+            height: 44,
+            borderRadius: '12px',
+            bgcolor: '#34C759',
+            color: '#000000',
             fontWeight: 700,
-            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-            color: '#ffffff',
-            boxShadow: '0 4px 14px rgba(6, 182, 212, 0.35)',
+            textTransform: 'none',
+            fontSize: '0.95rem',
+            boxShadow: '0 4px 14px rgba(52, 199, 89, 0.3)',
+            '&:hover': { bgcolor: '#2eb34f' },
           }}
         >
-          {isSubmitting ? 'Guardando...' : 'Guardar y Activar Mi Plan'}
+          {isSubmitting ? 'Guardando...' : 'Guardar Pauta'}
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
+
+export default ClientDietBuilderModal;

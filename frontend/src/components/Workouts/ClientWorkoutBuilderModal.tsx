@@ -1,7 +1,7 @@
+// Creador avanzado de rutinas para el cliente con estética Apple iOS Liquid Glass
 import React, { useState, useEffect } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
@@ -10,19 +10,27 @@ import {
   TextField,
   MenuItem,
   Stack,
-  Card,
-  CardContent,
   IconButton,
   Chip,
   Grid,
-  InputAdornment,
-  Divider,
   Alert,
   CircularProgress,
-  Tabs,
-  Tab,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  Wand2,
+  Sparkles,
+  X,
+  Search,
+  Plus,
+  Trash2,
+  Check,
+  Dumbbell,
+  ArrowRight,
+  Layers,
+  Flame,
+} from 'lucide-react';
 import { getExercises, getExerciseCategories, ExerciseQueryParams } from '../../services/exerciseService';
 import { createWorkout, addExercisesToWorkout } from '../../services/workoutService';
 import { Exercise } from '../../types/Exercise';
@@ -43,50 +51,53 @@ interface RoutineItem {
   reps: number;
 }
 
-// Plantillas prediseñadas estilo OpenGym
 const STARTER_TEMPLATES = [
   {
     title: '💪 Empuje (Push Day)',
     category: 'Hipertrofia',
     notes: 'Enfocada en pectoral, deltoides anterior y tríceps.',
+    color: '#007AFF',
     exercises: [
-      { name: 'Barbell Bench Press', body_part: 'chest', equipment: 'barbell', sets: 4, reps: 8 },
-      { name: 'Dumbbell Incline Bench Press', body_part: 'chest', equipment: 'dumbbell', sets: 3, reps: 10 },
-      { name: 'Dumbbell Shoulder Press', body_part: 'shoulders', equipment: 'dumbbell', sets: 3, reps: 10 },
-      { name: 'Cable Triceps Pushdown', body_part: 'arms', equipment: 'cable', sets: 3, reps: 12 },
+      { name: 'Barbell Bench Press', sets: 4, reps: 8 },
+      { name: 'Dumbbell Incline Bench Press', sets: 3, reps: 10 },
+      { name: 'Dumbbell Shoulder Press', sets: 3, reps: 10 },
+      { name: 'Cable Triceps Pushdown', sets: 3, reps: 12 },
     ],
   },
   {
     title: '🧗 Tirón (Pull Day)',
     category: 'Hipertrofia',
     notes: 'Enfocada en dorsal, deltoides posterior, trapecios y bíceps.',
+    color: '#AF52DE',
     exercises: [
-      { name: 'Cable Lat Pulldown', body_part: 'back', equipment: 'cable', sets: 4, reps: 10 },
-      { name: 'Barbell Bent Over Row', body_part: 'back', equipment: 'barbell', sets: 4, reps: 8 },
-      { name: 'Cable Face Pull', body_part: 'shoulders', equipment: 'cable', sets: 3, reps: 15 },
-      { name: 'Barbell Biceps Curl', body_part: 'arms', equipment: 'barbell', sets: 3, reps: 10 },
+      { name: 'Cable Lat Pulldown', sets: 4, reps: 10 },
+      { name: 'Barbell Bent Over Row', sets: 4, reps: 8 },
+      { name: 'Cable Face Pull', sets: 3, reps: 15 },
+      { name: 'Barbell Biceps Curl', sets: 3, reps: 10 },
     ],
   },
   {
     title: '🦵 Piernas y Core (Leg Day)',
     category: 'Fuerza',
     notes: 'Enfocada en cuádriceps, isquios, glúteos y pantorrillas.',
+    color: '#FF3B30',
     exercises: [
-      { name: 'Barbell Full Squat', body_part: 'legs', equipment: 'barbell', sets: 4, reps: 8 },
-      { name: 'Barbell Romanian Deadlift', body_part: 'legs', equipment: 'barbell', sets: 4, reps: 10 },
-      { name: 'Leg Press', body_part: 'legs', equipment: 'machine', sets: 3, reps: 12 },
-      { name: 'Standing Calf Raises', body_part: 'calves', equipment: 'bodyweight', sets: 4, reps: 15 },
+      { name: 'Barbell Full Squat', sets: 4, reps: 8 },
+      { name: 'Barbell Romanian Deadlift', sets: 4, reps: 10 },
+      { name: 'Leg Press', sets: 3, reps: 12 },
+      { name: 'Standing Calf Raises', sets: 4, reps: 15 },
     ],
   },
   {
-    title: '⚡ Full Body 3 Días',
-    category: 'Acondicionamiento',
+    title: '⚡ Full Body Integral',
+    category: 'Movilidad',
     notes: 'Rutina integral de cuerpo completo para fuerza y salud metabólica.',
+    color: '#34C759',
     exercises: [
-      { name: 'Barbell Full Squat', body_part: 'legs', equipment: 'barbell', sets: 3, reps: 8 },
-      { name: 'Barbell Bench Press', body_part: 'chest', equipment: 'barbell', sets: 3, reps: 8 },
-      { name: 'Cable Lat Pulldown', body_part: 'back', equipment: 'cable', sets: 3, reps: 10 },
-      { name: 'Dumbbell Shoulder Press', body_part: 'shoulders', equipment: 'dumbbell', sets: 3, reps: 10 },
+      { name: 'Barbell Full Squat', sets: 3, reps: 8 },
+      { name: 'Barbell Bench Press', sets: 3, reps: 8 },
+      { name: 'Cable Lat Pulldown', sets: 3, reps: 10 },
+      { name: 'Dumbbell Shoulder Press', sets: 3, reps: 10 },
     ],
   },
 ];
@@ -97,13 +108,15 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
   userId,
   onSuccess,
 }) => {
-  const [activeTab, setActiveTab] = useState<number>(0); // 0 = Crear personalizado, 1 = Plantillas
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const [activeTab, setActiveTab] = useState<number>(0);
   const [name, setName] = useState<string>('');
   const [category, setCategory] = useState<string>('Hipertrofia');
   const [notes, setNotes] = useState<string>('');
   const [selectedExercises, setSelectedExercises] = useState<RoutineItem[]>([]);
 
-  // Búsqueda de ejercicios
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedBodyPart, setSelectedBodyPart] = useState<string>('');
   const [selectedEquipment, setSelectedEquipment] = useState<string>('');
@@ -116,14 +129,12 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Cargar categorías y ejercicios iniciales
   useEffect(() => {
     if (!open) return;
     loadCategories();
     fetchExercises();
   }, [open]);
 
-  // Buscar ejercicios al cambiar filtros
   useEffect(() => {
     if (!open) return;
     const delayDebounce = setTimeout(() => {
@@ -147,15 +158,13 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
   const fetchExercises = async () => {
     setLoadingExercises(true);
     try {
-      const params: ExerciseQueryParams = {
-        limit: 25,
-      };
+      const params: ExerciseQueryParams = { limit: 25 };
       if (searchQuery) params.search = searchQuery;
       if (selectedBodyPart) params.body_part = selectedBodyPart;
       if (selectedEquipment) params.equipment = selectedEquipment;
 
       const res = await getExercises(params);
-      const list = Array.isArray(res) ? res : res.data || [];
+      const list = Array.isArray(res) ? res : (res as any)?.data || [];
       setAvailableExercises(list);
     } catch (err) {
       console.error(err);
@@ -183,25 +192,23 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
     setSelectedExercises((prev) => prev.filter((item) => item.exercise_id !== exerciseId));
   };
 
-  const handleUpdateItem = (exerciseId: number, field: 'sets' | 'reps', value: number) => {
+  const handleUpdateItem = (exerciseId: number, field: 'sets' | 'reps', val: number) => {
     setSelectedExercises((prev) =>
-      prev.map((item) => (item.exercise_id === exerciseId ? { ...item, [field]: Math.max(1, value) } : item))
+      prev.map((item) => (item.exercise_id === exerciseId ? { ...item, [field]: val } : item))
     );
   };
 
-  // Cargar una plantilla prediseñada
   const handleSelectTemplate = async (template: (typeof STARTER_TEMPLATES)[0]) => {
-    setName(template.title.replace(/^[^\w\s]+/, '').trim());
+    setName(template.title.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑ\s()]/g, '').trim());
     setCategory(template.category);
     setNotes(template.notes);
+    setLoadingExercises(true);
 
     try {
-      setLoadingExercises(true);
-      // Buscar los IDs reales en la base de datos para cada ejercicio de la plantilla
       const loadedItems: RoutineItem[] = [];
       for (const tEx of template.exercises) {
         const res = await getExercises({ search: tEx.name, limit: 1 });
-        const list = Array.isArray(res) ? res : res.data || [];
+        const list = Array.isArray(res) ? res : (res as any)?.data || [];
         if (list.length > 0) {
           loadedItems.push({
             exercise_id: list[0].id,
@@ -214,7 +221,7 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
         }
       }
       setSelectedExercises(loadedItems);
-      setActiveTab(0); // Cambiar a la pestaña de edición para que el usuario pueda afinarla
+      setActiveTab(0);
     } catch (e) {
       console.error('Error cargando plantilla:', e);
     } finally {
@@ -236,7 +243,6 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
     setErrorMsg(null);
 
     try {
-      // 1. Crear el workout en la base de datos
       const newWorkout = await createWorkout({
         user_id: userId,
         name: name.trim(),
@@ -244,7 +250,6 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
         notes: notes.trim(),
       });
 
-      // 2. Asociar los ejercicios seleccionados
       const exercisesPayload = selectedExercises.map((item) => ({
         exercise_id: item.exercise_id,
         sets: item.sets,
@@ -264,205 +269,326 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography variant="h6" fontWeight="bold">
-          🛠️ Creador de Rutinas Personalizadas
-        </Typography>
-        <IconButton onClick={onClose} size="small">
-          <Iconify icon="eva:close-fill" />
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      fullScreen={isMobile}
+      PaperProps={{
+        sx: {
+          bgcolor: '#000000',
+          backgroundImage: 'none',
+          color: '#ffffff',
+          borderRadius: { xs: 0, sm: '24px' },
+          border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.12)' },
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.8)',
+          maxHeight: { xs: '100%', sm: '92vh' },
+          display: 'flex',
+          flexDirection: 'column',
+        },
+      }}
+    >
+      {/* Header Apple Liquid Glass */}
+      <Box
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)',
+          background: 'rgba(28, 28, 30, 0.8)',
+          backdropFilter: 'blur(20px)',
+          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px)' : 2,
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1.5}>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '10px',
+              bgcolor: 'rgba(0, 122, 255, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#007AFF',
+              border: '0.5px solid rgba(0, 122, 255, 0.3)',
+            }}
+          >
+            <Wand2 size={20} />
+          </Box>
+          <Box>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.2 }}>
+              Creador de Rutinas
+            </Typography>
+            <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '0.75rem' }}>
+              Personalizadas o con plantillas Pro
+            </Typography>
+          </Box>
+        </Stack>
+
+        <IconButton
+          size="small"
+          onClick={onClose}
+          sx={{
+            color: 'rgba(235, 235, 245, 0.8)',
+            bgcolor: 'rgba(255, 255, 255, 0.08)',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+          }}
+        >
+          <X size={18} />
         </IconButton>
-      </DialogTitle>
+      </Box>
 
-      <DialogContent dividers sx={{ p: 3 }}>
-        <Tabs value={activeTab} onChange={(_, val) => setActiveTab(val)} sx={{ mb: 3 }}>
-          <Tab icon={<Iconify icon="solar:pen-new-square-bold" />} label="Diseñar Mi Rutina" />
-          <Tab icon={<Iconify icon="solar:magic-stick-3-bold" />} label="Plantillas Rápidas (OpenGym)" />
-        </Tabs>
+      {/* Selector de Pestañas Apple Segmented */}
+      <Box sx={{ p: 2, px: { xs: 2, sm: 3 }, bgcolor: '#000000', borderBottom: '0.5px solid rgba(255, 255, 255, 0.08)' }}>
+        <Box
+          sx={{
+            display: 'flex',
+            bgcolor: '#1C1C1E',
+            p: '4px',
+            borderRadius: '14px',
+            border: '0.5px solid rgba(255, 255, 255, 0.08)',
+          }}
+        >
+          <Box
+            onClick={() => setActiveTab(0)}
+            sx={{
+              flex: 1,
+              py: 1,
+              textAlign: 'center',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              bgcolor: activeTab === 0 ? '#2C2C2E' : 'transparent',
+              color: activeTab === 0 ? '#ffffff' : 'rgba(235, 235, 245, 0.6)',
+              fontWeight: activeTab === 0 ? 700 : 500,
+              fontSize: '0.85rem',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            Diseñar Mi Rutina
+          </Box>
+          <Box
+            onClick={() => setActiveTab(1)}
+            sx={{
+              flex: 1,
+              py: 1,
+              textAlign: 'center',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              bgcolor: activeTab === 1 ? '#007AFF' : 'transparent',
+              color: '#ffffff',
+              fontWeight: activeTab === 1 ? 700 : 500,
+              fontSize: '0.85rem',
+              transition: 'all 0.15s ease',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 0.5,
+            }}
+          >
+            <Sparkles size={14} /> Plantillas Pro
+          </Box>
+        </Box>
+      </Box>
 
+      {/* Contenido con Scroll */}
+      <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#000000', overflowY: 'auto' }}>
         {errorMsg && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+          <Alert
+            severity="error"
+            sx={{
+              mb: 2,
+              borderRadius: '14px',
+              bgcolor: 'rgba(255, 59, 48, 0.15)',
+              color: '#FF453A',
+              border: '0.5px solid rgba(255, 59, 48, 0.3)',
+            }}
+          >
             {errorMsg}
           </Alert>
         )}
 
         {activeTab === 0 ? (
-          /* Pestaña: Diseñar Rutina */
-          <Stack spacing={3}>
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 8 }}>
-                <TextField
-                  label="Nombre de la Rutina"
-                  placeholder="Ej: Empuje e Hipertrofia de Pectoral"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  fullWidth
-                  required
-                />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
-                  select
-                  label="Categoría"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  fullWidth
-                >
-                  <MenuItem value="Hipertrofia">Hipertrofia</MenuItem>
-                  <MenuItem value="Fuerza">Fuerza</MenuItem>
-                  <MenuItem value="Pérdida de Grasa">Pérdida de Grasa</MenuItem>
-                  <MenuItem value="Acondicionamiento">Acondicionamiento</MenuItem>
-                  <MenuItem value="Calistenia / Casa">Calistenia / Casa</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label="Notas u Objetivo de la Sesión"
-                  placeholder="Ej: Realizar 2 min de descanso en básicos y 90s en accesorios..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={2}
-                />
-              </Grid>
-            </Grid>
+          <Stack spacing={2.5}>
+            {/* Información Básica */}
+            <Box
+              sx={{
+                p: 2.5,
+                borderRadius: '20px',
+                bgcolor: '#1C1C1E',
+                border: '0.5px solid rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 7 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                    Nombre de la Rutina *
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    placeholder="Ej: Empuje y Tríceps Avanzado"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    InputProps={{
+                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px' },
+                    }}
+                  />
+                </Grid>
 
-            <Divider />
+                <Grid size={{ xs: 12, sm: 5 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                    Categoría
+                  </Typography>
+                  <TextField
+                    select
+                    fullWidth
+                    value={category}
+                    onChange={(e) => setCategory(e.target.value)}
+                    InputProps={{
+                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px' },
+                    }}
+                  >
+                    <MenuItem value="Hipertrofia">Hipertrofia</MenuItem>
+                    <MenuItem value="Fuerza">Fuerza</MenuItem>
+                    <MenuItem value="Cardio">Cardio</MenuItem>
+                    <MenuItem value="Movilidad">Movilidad</MenuItem>
+                    <MenuItem value="Resistencia">Resistencia</MenuItem>
+                  </TextField>
+                </Grid>
 
-            {/* Distribución Muscular en Vivo (Anatomical Heat Preview) */}
-            {selectedExercises.length > 0 && (
-              <Box
-                sx={{
-                  p: 2,
-                  borderRadius: '18px',
-                  bgcolor: 'rgba(2, 132, 199, 0.06)',
-                  backdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(2, 132, 199, 0.2)',
-                }}
-              >
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#0284c7', display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                  <Iconify icon="solar:body-bold" width={16} />
-                  Estímulo Muscular Estimado ({selectedExercises.reduce((acc, i) => acc + i.sets, 0)} series totales):
-                </Typography>
-                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                  {Object.entries(
-                    selectedExercises.reduce<{ [k: string]: number }>((acc, item) => {
-                      const p = item.body_part || 'general';
-                      acc[p] = (acc[p] || 0) + (Number(item.sets) || 1);
-                      return acc;
-                    }, {})
-                  ).map(([part, count]) => (
-                    <Chip
-                      key={part}
-                      label={`${part.toUpperCase()}: ${count} series`}
-                      size="small"
-                      sx={{
-                        fontWeight: 700,
-                        fontSize: '0.75rem',
-                        bgcolor: 'rgba(2, 132, 199, 0.15)',
-                        color: '#38bdf8',
-                        border: '1px solid rgba(2, 132, 199, 0.35)',
-                        borderRadius: '9999px',
-                      }}
-                    />
-                  ))}
-                </Box>
-              </Box>
-            )}
+                <Grid size={{ xs: 12 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                    Notas personales
+                  </Typography>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={2}
+                    placeholder="Consejos de descanso, sensaciones o tempos..."
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    InputProps={{
+                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px' },
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
 
-            {/* Ejercicios seleccionados en la rutina */}
-            <Box>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1.5 }}>
-                <Typography variant="subtitle1" fontWeight="bold">
-                  📋 Ejercicios en esta Rutina ({selectedExercises.length})
-                </Typography>
-                {selectedExercises.length > 0 && (
-                  <Button size="small" color="error" onClick={() => setSelectedExercises([])}>
-                    Limpiar lista
-                  </Button>
-                )}
-              </Stack>
+            {/* Ejercicios Seleccionados */}
+            <Box
+              sx={{
+                p: 2.5,
+                borderRadius: '20px',
+                bgcolor: '#1C1C1E',
+                border: '0.5px solid rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Layers size={16} color="#34C759" /> Ejercicios en mi Rutina ({selectedExercises.length})
+              </Typography>
 
               {selectedExercises.length === 0 ? (
-                <Alert severity="info" sx={{ borderRadius: 2 }}>
-                  Aún no has añadido ejercicios. Búscalos abajo entre los 1,300+ ejercicios de la biblioteca y pulsa "+ Añadir".
-                </Alert>
+                <Box
+                  sx={{
+                    p: 3,
+                    textAlign: 'center',
+                    bgcolor: '#2C2C2E',
+                    borderRadius: '14px',
+                    border: '1px dashed rgba(255, 255, 255, 0.15)',
+                  }}
+                >
+                  <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                    Añade ejercicios utilizando el buscador inferior.
+                  </Typography>
+                </Box>
               ) : (
                 <Stack spacing={1.5}>
                   {selectedExercises.map((item, idx) => (
-                    <Card
+                    <Box
                       key={item.exercise_id}
-                      variant="outlined"
                       sx={{
-                        borderRadius: 2,
-                        p: 1.5,
-                        bgcolor: 'rgba(255, 255, 255, 0.03)',
-                        border: '1px solid rgba(255, 255, 255, 0.08)',
-                        backdropFilter: 'blur(10px)',
+                        p: 2,
+                        borderRadius: '14px',
+                        bgcolor: '#2C2C2E',
+                        border: '0.5px solid rgba(255, 255, 255, 0.08)',
                       }}
                     >
-                      <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between" spacing={1.5}>
-                        <Box sx={{ flexGrow: 1 }}>
-                          <Typography variant="subtitle2" fontWeight="bold">
-                            {idx + 1}. {item.name}
-                          </Typography>
-                          <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                            {item.body_part && <Chip label={item.body_part} size="small" variant="outlined" />}
-                            {item.equipment && <Chip label={item.equipment} size="small" />}
-                          </Stack>
-                        </Box>
+                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff' }}>
+                          {idx + 1}. {item.name}
+                        </Typography>
+                        <IconButton
+                          size="small"
+                          onClick={() => handleRemoveExercise(item.exercise_id)}
+                          sx={{ color: '#FF453A', '&:hover': { bgcolor: 'rgba(255, 69, 58, 0.15)' } }}
+                        >
+                          <Trash2 size={16} />
+                        </IconButton>
+                      </Box>
 
-                        <Stack direction="row" spacing={1.5} alignItems="center">
+                      <Grid container spacing={1.5}>
+                        <Grid size={{ xs: 6 }}>
                           <TextField
+                            fullWidth
                             size="small"
+                            type="number"
                             label="Series"
-                            type="number"
                             value={item.sets}
-                            onChange={(e) => handleUpdateItem(item.exercise_id, 'sets', Number(e.target.value))}
-                            sx={{ width: 80 }}
+                            onChange={(e) => handleUpdateItem(item.exercise_id, 'sets', Number(e.target.value) || 1)}
+                            InputProps={{
+                              sx: { color: '#ffffff', bgcolor: '#1C1C1E', borderRadius: '10px', fontSize: '16px' },
+                            }}
+                            InputLabelProps={{ sx: { color: 'rgba(235, 235, 245, 0.6)' } }}
                           />
+                        </Grid>
+                        <Grid size={{ xs: 6 }}>
                           <TextField
+                            fullWidth
                             size="small"
-                            label="Reps"
                             type="number"
+                            label="Reps"
                             value={item.reps}
-                            onChange={(e) => handleUpdateItem(item.exercise_id, 'reps', Number(e.target.value))}
-                            sx={{ width: 80 }}
+                            onChange={(e) => handleUpdateItem(item.exercise_id, 'reps', Number(e.target.value) || 1)}
+                            InputProps={{
+                              sx: { color: '#ffffff', bgcolor: '#1C1C1E', borderRadius: '10px', fontSize: '16px' },
+                            }}
+                            InputLabelProps={{ sx: { color: 'rgba(235, 235, 245, 0.6)' } }}
                           />
-                          <IconButton color="error" size="small" onClick={() => handleRemoveExercise(item.exercise_id)}>
-                            <Iconify icon="solar:trash-bin-trash-bold" />
-                          </IconButton>
-                        </Stack>
-                      </Stack>
-                    </Card>
+                        </Grid>
+                      </Grid>
+                    </Box>
                   ))}
                 </Stack>
               )}
             </Box>
 
-            <Divider />
-
-            {/* Explorador y Buscador de Ejercicios */}
-            <Box>
-              <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                🔍 Buscar en la Biblioteca de Ejercicios (1,300+ disponibles)
+            {/* Buscador de Ejercicios */}
+            <Box
+              sx={{
+                p: 2.5,
+                borderRadius: '20px',
+                bgcolor: '#1C1C1E',
+                border: '0.5px solid rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Search size={16} color="#007AFF" /> Biblioteca de Ejercicios
               </Typography>
 
               <Grid container spacing={1.5} sx={{ mb: 2 }}>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
+                    fullWidth
                     size="small"
-                    placeholder="Buscar ejercicio por nombre..."
+                    placeholder="Buscar ejercicio..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    fullWidth
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Iconify icon="solar:magnifer-linear" />
-                        </InputAdornment>
-                      ),
+                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px' },
                     }}
                   />
                 </Grid>
@@ -470,13 +596,15 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <TextField
                     select
+                    fullWidth
                     size="small"
-                    label="Grupo Muscular"
                     value={selectedBodyPart}
                     onChange={(e) => setSelectedBodyPart(e.target.value)}
-                    fullWidth
+                    InputProps={{
+                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px' },
+                    }}
                   >
-                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="">Todos los músculos</MenuItem>
                     {categories.bodyParts.map((bp) => (
                       <MenuItem key={bp} value={bp}>
                         {bp}
@@ -488,13 +616,15 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
                 <Grid size={{ xs: 6, sm: 3 }}>
                   <TextField
                     select
+                    fullWidth
                     size="small"
-                    label="Equipamiento"
                     value={selectedEquipment}
                     onChange={(e) => setSelectedEquipment(e.target.value)}
-                    fullWidth
+                    InputProps={{
+                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px' },
+                    }}
                   >
-                    <MenuItem value="">Todos</MenuItem>
+                    <MenuItem value="">Cualquier equipo</MenuItem>
                     {categories.equipments.map((eq) => (
                       <MenuItem key={eq} value={eq}>
                         {eq}
@@ -507,14 +637,14 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
               {/* Lista de Resultados */}
               {loadingExercises ? (
                 <Box display="flex" justifyContent="center" py={3}>
-                  <CircularProgress size={32} />
+                  <CircularProgress size={28} sx={{ color: '#007AFF' }} />
                 </Box>
               ) : availableExercises.length === 0 ? (
-                <Typography variant="body2" color="text.secondary" textAlign="center" py={2}>
+                <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.5)', textAlign: 'center', py: 2 }}>
                   No se encontraron ejercicios con estos filtros.
                 </Typography>
               ) : (
-                <Box sx={{ maxHeight: 280, overflowY: 'auto', pr: 0.5 }}>
+                <Box sx={{ maxHeight: 260, overflowY: 'auto', pr: 0.5 }}>
                   <Stack spacing={1}>
                     {availableExercises.map((ex) => {
                       const isAdded = selectedExercises.some((item) => item.exercise_id === ex.id);
@@ -523,56 +653,40 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
                           key={ex.id}
                           sx={{
                             p: 1.5,
-                            borderRadius: 2,
-                            bgcolor: 'rgba(255, 255, 255, 0.02)',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
+                            borderRadius: '12px',
+                            bgcolor: '#2C2C2E',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             gap: 1.5,
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              bgcolor: 'rgba(34, 211, 238, 0.06)',
-                              borderColor: 'rgba(34, 211, 238, 0.35)',
-                            },
                           }}
                         >
-                          <Stack direction="row" spacing={1.5} alignItems="center">
-                            {(ex.gif_url || ex.image_url) && (
-                              <Box
-                                component="img"
-                                src={ex.gif_url || ex.image_url}
-                                alt={ex.name}
-                                sx={{
-                                  width: 52,
-                                  height: 52,
-                                  borderRadius: 1.5,
-                                  objectFit: 'contain',
-                                  bgcolor: '#0a0f1d',
-                                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                                  flexShrink: 0,
-                                }}
-                                loading="lazy"
-                              />
-                            )}
-                            <Box>
-                              <Typography variant="subtitle2" fontWeight="bold">
-                                {ex.name}
+                          <Box sx={{ minWidth: 0, flex: 1 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: '#ffffff' }} noWrap>
+                              {ex.name}
+                            </Typography>
+                            {ex.body_part && (
+                              <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.5)' }}>
+                                {ex.body_part} {ex.equipment ? `• ${ex.equipment}` : ''}
                               </Typography>
-                              <Stack direction="row" spacing={1} sx={{ mt: 0.5 }}>
-                                {ex.body_part && <Chip label={ex.body_part} size="small" variant="outlined" />}
-                                {ex.equipment && <Chip label={ex.equipment} size="small" />}
-                              </Stack>
-                            </Box>
-                          </Stack>
+                            )}
+                          </Box>
 
                           <Button
                             size="small"
-                            variant={isAdded ? 'outlined' : 'contained'}
-                            color={isAdded ? 'success' : 'primary'}
+                            variant="contained"
                             disabled={isAdded}
-                            startIcon={<Iconify icon={isAdded ? 'eva:checkmark-fill' : 'eva:plus-fill'} />}
                             onClick={() => handleAddExercise(ex)}
+                            sx={{
+                              bgcolor: isAdded ? 'rgba(52, 199, 89, 0.2)' : '#007AFF',
+                              color: isAdded ? '#34C759' : '#ffffff',
+                              borderRadius: '8px',
+                              fontWeight: 600,
+                              textTransform: 'none',
+                              fontSize: '0.8rem',
+                              height: 32,
+                              '&:hover': { bgcolor: '#0062cc' },
+                            }}
                           >
                             {isAdded ? 'Añadido' : 'Añadir'}
                           </Button>
@@ -585,64 +699,84 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
             </Box>
           </Stack>
         ) : (
-          /* Pestaña: Plantillas Rápidas */
-          <Stack spacing={2.5}>
-            <Alert severity="info" sx={{ borderRadius: 2 }}>
-              Selecciona una rutina prediseñada probada por entrenadores. Se cargará en tu creador para que puedas usarla de inmediato o personalizarla.
+          /* Pestaña: Plantillas Pro */
+          <Stack spacing={2}>
+            <Alert
+              severity="info"
+              sx={{
+                borderRadius: '14px',
+                bgcolor: 'rgba(0, 122, 255, 0.12)',
+                color: '#ffffff',
+                border: '0.5px solid rgba(0, 122, 255, 0.3)',
+              }}
+            >
+              Selecciona una rutina probada. Se cargará de inmediato en tu creador para que puedas afinarla.
             </Alert>
 
             <Grid container spacing={2}>
               {STARTER_TEMPLATES.map((tmpl, idx) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={idx}>
-                  <Card
+                  <Box
                     sx={{
-                      borderRadius: 2.5,
+                      p: 2.5,
+                      borderRadius: '20px',
+                      bgcolor: '#1C1C1E',
+                      border: '0.5px solid rgba(255, 255, 255, 0.08)',
                       height: '100%',
-                      bgcolor: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.08)',
-                      backdropFilter: 'blur(10px)',
                       display: 'flex',
                       flexDirection: 'column',
-                      transition: 'all 0.25s ease',
+                      transition: 'all 0.2s ease',
                       '&:hover': {
-                        borderColor: 'rgba(34, 211, 238, 0.4)',
+                        borderColor: 'rgba(0, 122, 255, 0.4)',
                         transform: 'translateY(-2px)',
-                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
                       },
                     }}
                   >
-                    <CardContent sx={{ p: 2.5, flexGrow: 1 }}>
-                      <Typography variant="h6" fontWeight="bold" gutterBottom>
-                        {tmpl.title}
-                      </Typography>
-                      <Chip label={tmpl.category} size="small" color="primary" sx={{ mb: 1.5 }} />
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {tmpl.notes}
-                      </Typography>
+                    <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff', mb: 0.5 }}>
+                      {tmpl.title}
+                    </Typography>
+                    <Chip
+                      label={tmpl.category}
+                      size="small"
+                      sx={{
+                        bgcolor: `${tmpl.color}20`,
+                        color: tmpl.color,
+                        fontWeight: 700,
+                        fontSize: '0.72rem',
+                        width: 'fit-content',
+                        mb: 1.5,
+                      }}
+                    />
+                    <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 2, fontSize: '0.85rem' }}>
+                      {tmpl.notes}
+                    </Typography>
 
-                      <Typography variant="caption" fontWeight="bold" color="text.secondary" display="block" sx={{ mb: 1 }}>
-                        EJERCICIOS INCLUIDOS:
-                      </Typography>
-                      <Stack spacing={0.5} sx={{ mb: 2 }}>
-                        {tmpl.exercises.map((e, eIdx) => (
-                          <Typography key={eIdx} variant="caption" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                            • {e.name} ({e.sets}x{e.reps})
-                          </Typography>
-                        ))}
-                      </Stack>
+                    <Stack spacing={0.5} sx={{ mb: 2.5, flexGrow: 1 }}>
+                      {tmpl.exercises.map((e, eIdx) => (
+                        <Typography key={eIdx} variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.8)' }}>
+                          • {e.name} ({e.sets}×{e.reps})
+                        </Typography>
+                      ))}
+                    </Stack>
 
-                      <Button
-                        variant="contained"
-                        fullWidth
-                        color="success"
-                        startIcon={<Iconify icon="solar:download-square-bold" />}
-                        onClick={() => handleSelectTemplate(tmpl)}
-                        sx={{ fontWeight: 'bold' }}
-                      >
-                        Cargar Esta Rutina
-                      </Button>
-                    </CardContent>
-                  </Card>
+                    <Button
+                      variant="contained"
+                      fullWidth
+                      onClick={() => handleSelectTemplate(tmpl)}
+                      startIcon={<Sparkles size={16} />}
+                      sx={{
+                        bgcolor: '#007AFF',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        borderRadius: '12px',
+                        textTransform: 'none',
+                        height: 40,
+                        '&:hover': { bgcolor: '#0062cc' },
+                      }}
+                    >
+                      Cargar Rutina
+                    </Button>
+                  </Box>
                 </Grid>
               ))}
             </Grid>
@@ -650,21 +784,56 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
         )}
       </DialogContent>
 
-      <DialogActions sx={{ p: 2.5, px: 3 }}>
-        <Button onClick={onClose} disabled={isSubmitting}>
+      {/* Footer Botones Apple */}
+      <DialogActions
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(28, 28, 30, 0.8)',
+          backdropFilter: 'blur(20px)',
+          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 12px)' : 2,
+          gap: 1.5,
+        }}
+      >
+        <Button
+          onClick={onClose}
+          sx={{
+            flex: 1,
+            height: 44,
+            borderRadius: '12px',
+            color: '#ffffff',
+            bgcolor: 'rgba(255, 255, 255, 0.08)',
+            fontWeight: 600,
+            textTransform: 'none',
+            fontSize: '0.95rem',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+          }}
+        >
           Cancelar
         </Button>
         <Button
-          variant="contained"
-          color="primary"
           onClick={handleSaveRoutine}
           disabled={isSubmitting || selectedExercises.length === 0 || !name.trim()}
-          startIcon={<Iconify icon="solar:diskette-bold" />}
-          sx={{ fontWeight: 'bold' }}
+          variant="contained"
+          sx={{
+            flex: 2,
+            height: 44,
+            borderRadius: '12px',
+            bgcolor: '#007AFF',
+            color: '#ffffff',
+            fontWeight: 700,
+            textTransform: 'none',
+            fontSize: '0.95rem',
+            boxShadow: '0 4px 14px rgba(0, 122, 255, 0.3)',
+            '&:hover': { bgcolor: '#0062cc' },
+          }}
         >
-          {isSubmitting ? 'Guardando...' : 'Guardar y Añadir a Mis Rutinas'}
+          {isSubmitting ? 'Guardando...' : 'Guardar en Mis Rutinas'}
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
+
+export default ClientWorkoutBuilderModal;

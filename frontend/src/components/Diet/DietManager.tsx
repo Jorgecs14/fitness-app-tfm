@@ -220,50 +220,50 @@ export const DietManager = () => {
         </Alert>
       )}
 
-      {/* Hero Glass Banner Nutricional */}
-      <Box className="liquid-hero-banner" sx={{ p: { xs: 3, sm: 4 }, mb: 4 }}>
+      {/* Hero Banner Apple Liquid Glass */}
+      <Box className="apple-card" sx={{ p: { xs: 2.5, sm: 3.5 }, mb: 3.5 }}>
         <Box
           sx={{
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             justifyContent: 'space-between',
             alignItems: { xs: 'flex-start', md: 'center' },
-            gap: 3,
+            gap: 2.5,
           }}
         >
           <Box>
             <Typography
-              variant='h3'
+              variant="h3"
               sx={{
-                fontSize: { xs: '1.75rem', sm: '2.25rem' },
+                fontSize: { xs: '1.6rem', sm: '2.1rem' },
                 fontWeight: 800,
-                letterSpacing: '-0.02em',
-                color: '#f8fafc',
-                mb: 1,
+                letterSpacing: '-0.03em',
+                color: '#ffffff',
+                mb: 0.75,
               }}
             >
               Gestión de Planes Nutricionales
             </Typography>
-            <Typography variant='body1' sx={{ color: '#94a3b8', maxWidth: 650, lineHeight: 1.6 }}>
-              Pauta dietas personalizadas, gestiona macronutrientes, alimentos por comidas y genera reportes editoriales en PDF.
+            <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', maxWidth: 620, lineHeight: 1.5 }}>
+              Pauta dietas personalizadas, gestiona macronutrientes, alimentos por comidas y asigna planes a tus alumnos.
             </Typography>
 
             {/* Micro-Badges de Métricas */}
-            <Stack direction="row" spacing={2} sx={{ mt: 2.5 }} flexWrap="wrap" useFlexGap>
+            <Stack direction="row" spacing={1.5} sx={{ mt: 2 }} flexWrap="wrap" useFlexGap>
               <Box
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 1,
-                  px: 2,
-                  py: 0.75,
+                  px: 1.75,
+                  py: 0.5,
                   borderRadius: '9999px',
                   bgcolor: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  border: '0.5px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <Iconify icon="solar:chef-hat-bold-duotone" width={18} sx={{ color: '#22d3ee' }} />
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#f8fafc' }}>
+                <Iconify icon="solar:chef-hat-bold-duotone" width={16} sx={{ color: '#007AFF' }} />
+                <Typography variant="caption" sx={{ fontWeight: 600, color: '#ffffff' }}>
                   {diets.length} Planes Activos
                 </Typography>
               </Box>
@@ -273,59 +273,60 @@ export const DietManager = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 1,
-                  px: 2,
-                  py: 0.75,
+                  px: 1.75,
+                  py: 0.5,
                   borderRadius: '9999px',
                   bgcolor: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  border: '0.5px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <Iconify icon="solar:plate-bold" width={18} sx={{ color: '#10b981' }} />
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#f8fafc' }}>
+                <Iconify icon="solar:plate-bold" width={16} sx={{ color: '#34C759' }} />
+                <Typography variant="caption" sx={{ fontWeight: 600, color: '#ffffff' }}>
                   {totalFoodsCount} Alimentos Asignados
                 </Typography>
               </Box>
             </Stack>
           </Box>
 
-          <Stack direction={{ xs: 'row' }} spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+          <Stack direction="row" spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Button
-              variant='outlined'
-              startIcon={<Iconify icon='eva:download-fill' />}
+              variant="outlined"
+              startIcon={<Iconify icon="eva:download-fill" />}
               onClick={(e) => setExportMenuAnchor(e.currentTarget)}
               sx={{
-                borderRadius: '9999px',
-                px: 2.5,
+                flex: { xs: 1, sm: 'initial' },
+                borderRadius: '12px',
+                px: 2,
                 py: 1,
                 fontWeight: 600,
-                borderColor: 'rgba(255, 255, 255, 0.18)',
-                color: '#f8fafc',
+                borderColor: 'rgba(255, 255, 255, 0.15)',
+                color: '#ffffff',
                 bgcolor: 'rgba(255, 255, 255, 0.06)',
-                backdropFilter: 'blur(10px)',
+                textTransform: 'none',
                 '&:hover': {
-                  borderColor: '#22d3ee',
-                  bgcolor: 'rgba(6, 182, 212, 0.15)',
-                  color: '#22d3ee',
+                  borderColor: '#007AFF',
+                  bgcolor: 'rgba(0, 122, 255, 0.12)',
                 },
               }}
             >
               Exportar
             </Button>
             <Button
-              variant='contained'
-              startIcon={<Iconify icon='mingcute:add-line' />}
+              variant="contained"
+              startIcon={<Iconify icon="mingcute:add-line" />}
               onClick={handleAdd}
               sx={{
-                borderRadius: '9999px',
-                px: 3,
+                flex: { xs: 2, sm: 'initial' },
+                borderRadius: '12px',
+                px: 2.5,
                 py: 1,
                 fontWeight: 700,
-                background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-                color: '#ffffff',
-                boxShadow: '0 6px 20px rgba(6, 182, 212, 0.35)',
+                bgcolor: '#34C759',
+                color: '#000000',
+                textTransform: 'none',
+                boxShadow: '0 4px 14px rgba(52, 199, 89, 0.3)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
-                  boxShadow: '0 8px 24px rgba(6, 182, 212, 0.55)',
+                  bgcolor: '#2eb34f',
                 },
               }}
             >
@@ -335,29 +336,28 @@ export const DietManager = () => {
         </Box>
       </Box>
 
-      {/* Buscador de Dietas Glass */}
-      <Box sx={{ mb: 3.5, maxWidth: 420 }}>
+      {/* Buscador de Dietas Inset Dark */}
+      <Box sx={{ mb: 3, maxWidth: 420 }}>
         <TextField
           fullWidth
-          placeholder='Buscar plan nutricional...'
+          placeholder="Buscar plan nutricional..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           size="small"
           InputProps={{
             startAdornment: (
-              <InputAdornment position='start'>
-                <Iconify icon='eva:search-fill' sx={{ color: '#64748b' }} />
+              <InputAdornment position="start">
+                <Iconify icon="eva:search-fill" sx={{ color: 'rgba(235, 235, 245, 0.5)' }} />
               </InputAdornment>
             ),
-          }}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '9999px',
-              bgcolor: 'rgba(255, 255, 255, 0.7)',
-              backdropFilter: 'blur(16px)',
-              '& fieldset': { borderColor: 'rgba(226, 232, 240, 0.8)' },
-              '&:hover fieldset': { borderColor: '#0284c7' },
-              '&.Mui-focused fieldset': { borderColor: '#0284c7' },
+            sx: {
+              color: '#ffffff',
+              bgcolor: '#1C1C1E',
+              borderRadius: '12px',
+              fontSize: '16px', // Previene auto-zoom en Safari iOS
+              '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+              '&:hover fieldset': { borderColor: 'rgba(52, 199, 89, 0.4)' },
+              '&.Mui-focused fieldset': { borderColor: '#34C759' },
             },
           }}
         />

@@ -1,10 +1,41 @@
-import { useState, useEffect } from 'react';
+// Gestor de alimentos por dieta y calculadora de equivalencias calóricas (Apple Liquid Glass)
+import React, { useState, useEffect } from 'react';
 import {
-  Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, Autocomplete,
-  Table, TableHead, TableRow, TableCell, TableBody, IconButton, Stack, Typography,
-  Box, Grid, MenuItem
+  Dialog,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Autocomplete,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  IconButton,
+  Stack,
+  Typography,
+  Box,
+  Grid,
+  MenuItem,
+  Chip,
+  Collapse,
+  TableContainer,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  UtensilsCrossed,
+  Plus,
+  Trash2,
+  X,
+  Scale,
+  Calculator,
+  Flame,
+  Check,
+  Sparkles,
+  Layers,
+} from 'lucide-react';
 import * as foodService from '../../services/foodService';
 import * as dietFoodService from '../../services/dietFoodService';
 import { Food } from '../../types/Food';
@@ -18,20 +49,30 @@ export interface DietFoodsManagerProps {
   onSave: () => Promise<void>;
 }
 
-export const DietFoodsManager = ({
+export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
   open,
   diet,
   onClose,
   onSave,
-}: DietFoodsManagerProps) => {
+}) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [availableFoods, setAvailableFoods] = useState<Food[]>([]);
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [quantity, setQuantity] = useState('');
+  const [selectedMealType, setSelectedMealType] = useState<string>('lunch');
   const [dietFoods, setDietFoods] = useState<DietFood[]>([]);
+
   const [newFoodName, setNewFoodName] = useState('');
   const [newFoodDescription, setNewFoodDescription] = useState('');
   const [newFoodCalories, setNewFoodCalories] = useState('');
   const [showNewFoodForm, setShowNewFoodForm] = useState(false);
+
+  // Equivalencias
+  const [altSourceFood, setAltSourceFood] = useState<Food | null>(null);
+  const [altTargetFood, setAltTargetFood] = useState<Food | null>(null);
+  const [altSourceGrams, setAltSourceGrams] = useState<number>(100);
 
   useEffect(() => {
     if (open && diet) {
@@ -41,17 +82,26 @@ export const DietFoodsManager = ({
   }, [open, diet]);
 
   const loadFoods = async () => {
-    const foods = await foodService.getFoods();
-    setAvailableFoods(foods);
+    try {
+      const foods = await foodService.getFoods();
+      setAvailableFoods(Array.isArray(foods) ? foods : (foods as any)?.data || []);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const loadDietFoods = async () => {
-    const foods = await dietFoodService.getDietFoods(diet.id);
-    setDietFoods(foods);
+    if (!diet?.id) return;
+    try {
+      const foods = await dietFoodService.getDietFoods(diet.id);
+      setDietFoods(Array.isArray(foods) ? foods : []);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleAddFood = async () => {
-    if (!selectedFood || !quantity) return;
+    if (!selectedFood || !quantity || !diet?.id) return;
     try {
       await dietFoodService.addFoodToDiet(diet.id, selectedFood.id, Number(quantity));
       setSelectedFood(null);
@@ -64,43 +114,33 @@ export const DietFoodsManager = ({
 
   const handleCreateNewFood = async () => {
     if (!newFoodName || !newFoodCalories) return;
-    
+
     try {
       const newFood = await foodService.createFood({
         name: newFoodName,
         description: newFoodDescription,
-        calories: Number(newFoodCalories)
+        calories: Number(newFoodCalories),
       });
-      
-      setAvailableFoods(prev => [...prev, newFood]);
-      
+
+      setAvailableFoods((prev) => [...prev, newFood]);
       setSelectedFood(newFood);
-      
       setNewFoodName('');
       setNewFoodDescription('');
       setNewFoodCalories('');
       setShowNewFoodForm(false);
-      
-      console.log('Nuevo alimento creado:', newFood);
     } catch (error) {
       console.error('Error creating new food:', error);
-      alert('Error al crear el nuevo alimento. Por favor, intenta de nuevo.');
     }
   };
 
   const handleRemoveFood = async (dietFoodId: number) => {
-    await dietFoodService.removeFoodFromDiet(dietFoodId);
-    loadDietFoods();
+    try {
+      await dietFoodService.removeFoodFromDiet(dietFoodId);
+      loadDietFoods();
+    } catch (e) {
+      console.error(e);
+    }
   };
-
-  const calculateTotalCalories = (food: Food, quantity: number) => {
-    return calculateFoodCalories(food.calories, quantity);
-  };
-
-  const [selectedMealType, setSelectedMealType] = useState<string>('lunch');
-  const [altSourceFood, setAltSourceFood] = useState<Food | null>(null);
-  const [altTargetFood, setAltTargetFood] = useState<Food | null>(null);
-  const [altSourceGrams, setAltSourceGrams] = useState<number>(100);
 
   const calculateEquivalentGrams = () => {
     if (!altSourceFood || !altTargetFood || altSourceFood.calories === 0 || altTargetFood.calories === 0) return 0;
@@ -108,330 +148,494 @@ export const DietFoodsManager = ({
     return Math.round((totalCaloriesSource * 100) / altTargetFood.calories);
   };
 
+  const totalDietCalories = dietFoods.reduce((sum, item) => {
+    const cal = item.food ? (item.food.calories * item.quantity) / 100 : 0;
+    return sum + cal;
+  }, 0);
+
   return (
     <Dialog
       open={open}
       onClose={onClose}
-      maxWidth="md"
       fullWidth
+      maxWidth="md"
+      fullScreen={isMobile}
       PaperProps={{
         sx: {
-          borderRadius: '28px',
-          bgcolor: 'rgba(15, 23, 42, 0.92)',
-          backdropFilter: 'blur(32px) saturate(190%)',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          boxShadow: '0 24px 70px rgba(0, 0, 0, 0.7)',
-          overflow: 'hidden',
+          bgcolor: '#000000',
+          backgroundImage: 'none',
+          color: '#ffffff',
+          borderRadius: { xs: 0, sm: '24px' },
+          border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.12)' },
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.8)',
+          maxHeight: { xs: '100%', sm: '92vh' },
+          display: 'flex',
+          flexDirection: 'column',
         },
       }}
     >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 3, borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+      {/* Header Apple Liquid Glass */}
+      <Box
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)',
+          background: 'rgba(28, 28, 30, 0.8)',
+          backdropFilter: 'blur(20px)',
+          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px)' : 2,
+        }}
+      >
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <Box
             sx={{
-              display: 'inline-flex',
-              p: 1,
-              borderRadius: '12px',
-              bgcolor: 'rgba(6, 182, 212, 0.15)',
-              color: '#22d3ee',
-              border: '1px solid rgba(6, 182, 212, 0.3)',
+              width: 36,
+              height: 36,
+              borderRadius: '10px',
+              bgcolor: 'rgba(52, 199, 89, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#34C759',
+              border: '0.5px solid rgba(52, 199, 89, 0.3)',
             }}
           >
-            <Iconify icon="solar:plate-bold-duotone" width={26} height={26} />
+            <UtensilsCrossed size={20} />
           </Box>
-          <Typography variant="h6" fontWeight={800} sx={{ color: '#f8fafc' }}>
-            Gestionar Alimentos & Equivalencias • {diet?.name}
-          </Typography>
-        </Stack>
-      </DialogTitle>
-
-      <DialogContent sx={{ p: 3 }}>
-        <Stack spacing={3.5} sx={{ mt: 1 }}>
-          {/* Formulario para agregar alimentos existentes */}
-          <Box sx={{ p: 2.5, borderRadius: 3, bgcolor: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#f8fafc', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Iconify icon="solar:add-circle-bold" sx={{ color: '#22d3ee' }} />
-              Añadir Alimento a la Dieta
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.2 }} noWrap>
+              {diet?.name || 'Alimentos del Plan'}
             </Typography>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={4}>
+            <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '0.75rem' }}>
+              Total configurado: {Math.round(totalDietCalories)} kcal
+            </Typography>
+          </Box>
+        </Stack>
+
+        <IconButton
+          size="small"
+          onClick={onClose}
+          sx={{
+            color: 'rgba(235, 235, 245, 0.8)',
+            bgcolor: 'rgba(255, 255, 255, 0.08)',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+          }}
+        >
+          <X size={18} />
+        </IconButton>
+      </Box>
+
+      {/* Contenido con Scroll */}
+      <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#000000', overflowY: 'auto' }}>
+        <Stack spacing={3}>
+          {/* Card Inset para Añadir Alimento */}
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: '20px',
+              bgcolor: '#1C1C1E',
+              border: '0.5px solid rgba(255, 255, 255, 0.08)',
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Plus size={16} color="#34C759" /> Añadir Alimento a la Pauta
+            </Typography>
+
+            <Grid container spacing={1.5} alignItems="center">
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Autocomplete
                   options={availableFoods}
-                  getOptionLabel={(option) => option.name}
+                  getOptionLabel={(option) => `${option.name} (${option.calories} kcal/100g)`}
                   value={selectedFood}
-                  onChange={(_, value) => {
-                    if (typeof value === 'object' && value !== null) {
-                      setSelectedFood(value);
-                    }
-                  }}
-                  renderInput={(params) => <TextField {...params} label="Seleccionar Alimento" size="small" />}
-                  renderOption={(props, option) => (
-                    <Box component="li" {...props}>
-                      <Stack>
-                        <Typography variant="body2" fontWeight="bold">{option.name}</Typography>
-                        <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                          {option.calories} cal/100g
-                        </Typography>
-                      </Stack>
-                    </Box>
+                  onChange={(_, value) => setSelectedFood(value)}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Buscar alimento..."
+                      InputProps={{
+                        ...params.InputProps,
+                        sx: {
+                          color: '#ffffff',
+                          bgcolor: '#2C2C2E',
+                          borderRadius: '12px',
+                          fontSize: '16px',
+                          '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                        },
+                      }}
+                    />
                   )}
                 />
               </Grid>
-              <Grid item xs={6} sm={2.5}>
+
+              <Grid size={{ xs: 6, sm: 3 }}>
                 <TextField
-                  select
-                  size="small"
-                  label="Toma / Comida"
-                  value={selectedMealType}
-                  onChange={(e) => setSelectedMealType(e.target.value)}
                   fullWidth
-                >
-                  <MenuItem value="breakfast">🌅 Desayuno</MenuItem>
-                  <MenuItem value="mid_morning">🍏 Media Mañana</MenuItem>
-                  <MenuItem value="lunch">🍲 Almuerzo</MenuItem>
-                  <MenuItem value="snack">🍇 Merienda</MenuItem>
-                  <MenuItem value="dinner">🌙 Cena</MenuItem>
-                </TextField>
-              </Grid>
-              <Grid item xs={6} sm={2.5}>
-                <TextField
-                  size="small"
-                  label="Cantidad (g)"
                   type="number"
+                  placeholder="Gramos (g)"
                   value={quantity}
-                  onChange={e => setQuantity(e.target.value)}
-                  fullWidth
+                  onChange={(e) => setQuantity(e.target.value)}
+                  InputProps={{
+                    sx: {
+                      color: '#ffffff',
+                      bgcolor: '#2C2C2E',
+                      borderRadius: '12px',
+                      fontSize: '16px',
+                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+                    },
+                  }}
                 />
               </Grid>
-              <Grid item xs={12} sm={3}>
+
+              <Grid size={{ xs: 6, sm: 3 }}>
                 <Button
+                  fullWidth
                   variant="contained"
                   onClick={handleAddFood}
                   disabled={!selectedFood || !quantity}
-                  startIcon={<Iconify icon="eva:plus-fill" />}
-                  fullWidth
+                  startIcon={<Plus size={16} />}
                   sx={{
-                    borderRadius: '9999px',
+                    height: 52,
+                    bgcolor: '#34C759',
+                    color: '#000000',
                     fontWeight: 700,
-                    background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-                    color: '#ffffff',
-                    boxShadow: '0 4px 14px rgba(6, 182, 212, 0.35)',
+                    borderRadius: '12px',
+                    textTransform: 'none',
+                    fontSize: '0.95rem',
+                    '&:hover': { bgcolor: '#2eb34f' },
                   }}
                 >
-                  Agregar
+                  Añadir
                 </Button>
               </Grid>
             </Grid>
+
+            {/* Crear nuevo alimento */}
+            <Box sx={{ mt: 1.5 }}>
+              {!showNewFoodForm ? (
+                <Button
+                  size="small"
+                  startIcon={<Plus size={14} />}
+                  onClick={() => setShowNewFoodForm(true)}
+                  sx={{ color: '#007AFF', textTransform: 'none', fontSize: '0.8rem', p: 0 }}
+                >
+                  ¿No encuentras el alimento? Créalo aquí
+                </Button>
+              ) : (
+                <Collapse in={showNewFoodForm}>
+                  <Box
+                    sx={{
+                      mt: 1.5,
+                      p: 2,
+                      borderRadius: '14px',
+                      bgcolor: '#2C2C2E',
+                      border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#ffffff', mb: 1.5, display: 'block' }}>
+                      Nuevo Alimento en la Base de Datos
+                    </Typography>
+                    <Grid container spacing={1.5}>
+                      <Grid size={{ xs: 12, sm: 5 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          placeholder="Nombre del alimento"
+                          value={newFoodName}
+                          onChange={(e) => setNewFoodName(e.target.value)}
+                          InputProps={{ sx: { color: '#ffffff', bgcolor: '#1C1C1E', borderRadius: '8px', fontSize: '16px' } }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 4 }}>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          type="number"
+                          placeholder="Kcal / 100g"
+                          value={newFoodCalories}
+                          onChange={(e) => setNewFoodCalories(e.target.value)}
+                          InputProps={{ sx: { color: '#ffffff', bgcolor: '#1C1C1E', borderRadius: '8px', fontSize: '16px' } }}
+                        />
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          onClick={handleCreateNewFood}
+                          disabled={!newFoodName || !newFoodCalories}
+                          sx={{
+                            height: 40,
+                            bgcolor: '#007AFF',
+                            color: '#ffffff',
+                            fontWeight: 600,
+                            borderRadius: '8px',
+                            textTransform: 'none',
+                          }}
+                        >
+                          Guardar
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Box>
+                </Collapse>
+              )}
+            </Box>
           </Box>
 
-          {/* Calculadora Inteligente de Equivalencias de Alimentos */}
-          <Box sx={{ p: 2.5, borderRadius: 3, bgcolor: 'rgba(6, 182, 212, 0.05)', border: '1px solid rgba(6, 182, 212, 0.2)' }}>
-            <Typography variant="subtitle2" fontWeight={800} sx={{ color: '#22d3ee', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Iconify icon="solar:calculator-minimalistic-bold-duotone" />
-              💡 Calculadora de Intercambio Inteligente de Alimentos (Equivalencia Calórica)
+          {/* Calculadora de Equivalencias Calóricas */}
+          <Box
+            sx={{
+              p: 2.5,
+              borderRadius: '20px',
+              bgcolor: '#1C1C1E',
+              border: '0.5px solid rgba(255, 255, 255, 0.08)',
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Calculator size={16} color="#007AFF" /> Calculadora de Intercambio de Alimentos
             </Typography>
-            <Grid container spacing={2} alignItems="center">
-              <Grid item xs={12} sm={4}>
+
+            <Grid container spacing={1.5} alignItems="center">
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <Autocomplete
-                  size="small"
                   options={availableFoods}
                   getOptionLabel={(o) => o.name}
                   value={altSourceFood}
                   onChange={(_, v) => setAltSourceFood(v)}
-                  renderInput={(params) => <TextField {...params} label="Alimento Original (Plan)" />}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Alimento original..."
+                      size="small"
+                      InputProps={{
+                        ...params.InputProps,
+                        sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' },
+                      }}
+                    />
+                  )}
                 />
               </Grid>
-              <Grid item xs={4} sm={2}>
+
+              <Grid size={{ xs: 4, sm: 2 }}>
                 <TextField
+                  fullWidth
                   size="small"
                   type="number"
-                  label="Gramos"
                   value={altSourceGrams}
                   onChange={(e) => setAltSourceGrams(Number(e.target.value))}
+                  InputProps={{ sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' } }}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
+
+              <Grid size={{ xs: 8, sm: 4 }}>
                 <Autocomplete
-                  size="small"
                   options={availableFoods}
                   getOptionLabel={(o) => o.name}
                   value={altTargetFood}
                   onChange={(_, v) => setAltTargetFood(v)}
-                  renderInput={(params) => <TextField {...params} label="Sustituir Por..." />}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Sustituir por..."
+                      size="small"
+                      InputProps={{
+                        ...params.InputProps,
+                        sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' },
+                      }}
+                    />
+                  )}
                 />
               </Grid>
-              <Grid item xs={8} sm={2}>
+
+              <Grid size={{ xs: 12, sm: 2 }}>
                 {altSourceFood && altTargetFood ? (
-                  <Box sx={{ textAlign: 'center', p: 1, borderRadius: 2, bgcolor: 'rgba(16, 185, 129, 0.15)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-                    <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>Equivale a:</Typography>
-                    <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#34d399' }}>
+                  <Box
+                    sx={{
+                      textAlign: 'center',
+                      p: 1,
+                      borderRadius: '10px',
+                      bgcolor: 'rgba(52, 199, 89, 0.15)',
+                      border: '0.5px solid rgba(52, 199, 89, 0.3)',
+                    }}
+                  >
+                    <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', display: 'block' }}>
+                      Equivale a:
+                    </Typography>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#34C759' }}>
                       {calculateEquivalentGrams()}g
                     </Typography>
                   </Box>
                 ) : (
-                  <Typography variant="caption" sx={{ color: '#64748b', fontStyle: 'italic', display: 'block', textAlign: 'center' }}>
-                    Selecciona 2 alimentos
+                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.4)', textAlign: 'center', display: 'block' }}>
+                    Elige 2 alimentos
                   </Typography>
                 )}
               </Grid>
             </Grid>
           </Box>
 
-          {/* Botón para mostrar formulario de nuevo alimento */}
-          <Box display="flex" justifyContent="center">
-            <Button
-              variant="outlined"
-              onClick={() => setShowNewFoodForm(!showNewFoodForm)}
-              startIcon={<Iconify icon={showNewFoodForm ? "eva:minus-outline" : "eva:plus-outline"} />}
-              sx={{ borderRadius: '9999px', color: '#94a3b8', borderColor: 'rgba(255, 255, 255, 0.15)' }}
-            >
-              {showNewFoodForm ? "Cancelar nuevo alimento" : "Crear nuevo alimento en base de datos"}
-            </Button>
-          </Box>
-
-          {/* Formulario para crear nuevo alimento */}
-          {showNewFoodForm && (
-            <Box sx={{ p: 2.5, border: '1px solid rgba(255, 255, 255, 0.1)', borderRadius: 3, bgcolor: 'rgba(255, 255, 255, 0.02)' }}>
-              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#f8fafc', mb: 2 }}>
-                Crear Nuevo Alimento Personalizado
-              </Typography>
-              <Stack spacing={2}>
-                <TextField
-                  label="Nombre del alimento"
-                  value={newFoodName}
-                  onChange={e => setNewFoodName(e.target.value)}
-                  fullWidth
-                  required
-                />
-                <TextField
-                  label="Descripción (opcional)"
-                  value={newFoodDescription}
-                  onChange={e => setNewFoodDescription(e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={2}
-                />
-                <TextField
-                  label="Calorías por 100g"
-                  type="number"
-                  value={newFoodCalories}
-                  onChange={e => setNewFoodCalories(e.target.value)}
-                  required
-                  sx={{ width: 200 }}
-                />
-                <Stack direction="row" spacing={2}>
-                  <Button
-                    variant="contained"
-                    onClick={handleCreateNewFood}
-                    disabled={!newFoodName || !newFoodCalories}
-                    sx={{ borderRadius: '9999px', bgcolor: '#06b6d4', color: '#ffffff' }}
-                  >
-                    Crear alimento
-                  </Button>
-                  <Button
-                    variant="outlined"
-                    onClick={() => {
-                      setShowNewFoodForm(false);
-                      setNewFoodName('');
-                      setNewFoodDescription('');
-                      setNewFoodCalories('');
-                    }}
-                    sx={{ borderRadius: '9999px', color: '#94a3b8' }}
-                  >
-                    Cancelar
-                  </Button>
-                </Stack>
-              </Stack>
-            </Box>
-          )}
-
-          {/* Tabla de alimentos en la dieta */}
+          {/* Listado de Alimentos Configurados */}
           <Box>
-            <Typography variant="h6" fontWeight={800} sx={{ color: '#f8fafc', mb: 1.5 }}>
-              Alimentos Configurados en el Plan ({dietFoods.length})
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Layers size={16} color="#34C759" /> Alimentos del Plan ({dietFoods.length})
             </Typography>
-            <Table sx={{ border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 3, overflow: 'hidden' }}>
-              <TableHead sx={{ bgcolor: 'rgba(255, 255, 255, 0.04)' }}>
-                <TableRow>
-                  <TableCell sx={{ color: '#94a3b8', fontWeight: 700 }}>Alimento</TableCell>
-                  <TableCell sx={{ color: '#94a3b8', fontWeight: 700 }}>Cantidad (g)</TableCell>
-                  <TableCell sx={{ color: '#94a3b8', fontWeight: 700 }}>Calorías Totales</TableCell>
-                  <TableCell align="right" sx={{ color: '#94a3b8', fontWeight: 700 }}>Acciones</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {dietFoods.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} align="center" sx={{ color: '#94a3b8', py: 3 }}>
-                      No hay alimentos asignados a esta dieta. Utiliza el formulario superior para agregarlos.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  dietFoods.map(df => (
-                    <TableRow key={df.id} sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
-                      <TableCell>
-                        <Stack>
-                          <Typography variant="body2" fontWeight="bold" sx={{ color: '#f8fafc' }}>
-                            {df.foods?.name || `Alimento ID: ${df.food_id}`}
-                          </Typography>
-                          {df.foods?.description && (
-                            <Typography variant="caption" sx={{ color: '#94a3b8' }}>
-                              {df.foods.description}
-                            </Typography>
-                          )}
-                        </Stack>
-                      </TableCell>
-                      <TableCell sx={{ color: '#f8fafc', fontWeight: 600 }}>{df.quantity}g</TableCell>
-                      <TableCell sx={{ color: '#38bdf8', fontWeight: 700 }}>
-                        {df.foods ? formatCalories(calculateTotalCalories(df.foods, df.quantity)) : formatCalories(0)}
-                        {df.foods && (
-                          <Typography variant="caption" sx={{ color: '#94a3b8', display: 'block' }}>
-                            ({df.foods.calories} cal/100g)
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell align="right">
-                        <IconButton color="error" onClick={() => handleRemoveFood(df.id)}>
-                          <Iconify icon="solar:trash-bin-trash-bold" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-            
-            {/* Resumen de calorías totales */}
-            {dietFoods.length > 0 && (
-              <Box sx={{ mt: 2.5, p: 2, bgcolor: 'rgba(6, 182, 212, 0.12)', borderRadius: 3, border: '1px solid rgba(6, 182, 212, 0.3)', textAlign: 'center' }}>
-                <Typography variant="h6" fontWeight={800} sx={{ color: '#22d3ee' }}>
-                  Total de Calorías en Alimentos: {formatCalories(dietFoods.reduce((total, df) => 
-                    total + (df.foods ? calculateTotalCalories(df.foods, df.quantity) : 0), 0
-                  ))}
+
+            {dietFoods.length === 0 ? (
+              <Box
+                sx={{
+                  p: 4,
+                  textAlign: 'center',
+                  bgcolor: '#1C1C1E',
+                  borderRadius: '20px',
+                  border: '1px dashed rgba(255, 255, 255, 0.15)',
+                }}
+              >
+                <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                  No hay alimentos asignados a este plan.
                 </Typography>
               </Box>
+            ) : isMobile ? (
+              /* Vista Móvil: Apple Inset Cards */
+              <Stack spacing={1.5}>
+                {dietFoods.map((df) => {
+                  const cal = df.food ? Math.round((df.food.calories * df.quantity) / 100) : 0;
+                  return (
+                    <Box
+                      key={df.id}
+                      sx={{
+                        p: 2,
+                        borderRadius: '16px',
+                        bgcolor: '#1C1C1E',
+                        border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <Box>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff' }}>
+                          {df.food?.name}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                          {df.quantity}g • <span style={{ color: '#34C759', fontWeight: 600 }}>{cal} kcal</span>
+                        </Typography>
+                      </Box>
+
+                      <IconButton
+                        size="small"
+                        onClick={() => handleRemoveFood(df.id)}
+                        sx={{ color: '#FF453A', bgcolor: 'rgba(255, 69, 58, 0.1)', '&:hover': { bgcolor: 'rgba(255, 69, 58, 0.2)' } }}
+                      >
+                        <Trash2 size={16} />
+                      </IconButton>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            ) : (
+              /* Vista Desktop: Table Inset */
+              <TableContainer
+                sx={{
+                  borderRadius: '20px',
+                  bgcolor: '#1C1C1E',
+                  border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                }}
+              >
+                <Table>
+                  <TableHead sx={{ bgcolor: 'rgba(255, 255, 255, 0.03)' }}>
+                    <TableRow>
+                      <TableCell sx={{ color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
+                        Alimento
+                      </TableCell>
+                      <TableCell sx={{ color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
+                        Cantidad
+                      </TableCell>
+                      <TableCell sx={{ color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
+                        Calorías
+                      </TableCell>
+                      <TableCell align="right" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
+                        Acciones
+                      </TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {dietFoods.map((df) => {
+                      const cal = df.food ? Math.round((df.food.calories * df.quantity) / 100) : 0;
+                      return (
+                        <TableRow key={df.id} sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.02)' } }}>
+                          <TableCell sx={{ borderBottomColor: 'rgba(255, 255, 255, 0.06)' }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#ffffff' }}>
+                              {df.food?.name}
+                            </Typography>
+                          </TableCell>
+                          <TableCell sx={{ borderBottomColor: 'rgba(255, 255, 255, 0.06)' }}>
+                            <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.8)' }}>
+                              {df.quantity} g
+                            </Typography>
+                          </TableCell>
+                          <TableCell sx={{ borderBottomColor: 'rgba(255, 255, 255, 0.06)' }}>
+                            <Chip
+                              label={`${cal} kcal`}
+                              size="small"
+                              sx={{
+                                bgcolor: 'rgba(52, 199, 89, 0.15)',
+                                color: '#34C759',
+                                fontWeight: 700,
+                                fontSize: '0.72rem',
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="right" sx={{ borderBottomColor: 'rgba(255, 255, 255, 0.06)' }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleRemoveFood(df.id)}
+                              sx={{ color: '#FF453A', '&:hover': { bgcolor: 'rgba(255, 69, 58, 0.15)' } }}
+                            >
+                              <Trash2 size={16} />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
             )}
           </Box>
         </Stack>
       </DialogContent>
-      <DialogActions sx={{ px: 3, py: 2.5, bgcolor: 'rgba(15, 23, 42, 0.7)', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-        <Button onClick={onClose} sx={{ borderRadius: '9999px', color: '#94a3b8', fontWeight: 600, '&:hover': { color: '#f8fafc' } }}>Cerrar</Button>
+
+      {/* Footer Botones Apple */}
+      <DialogActions
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(28, 28, 30, 0.8)',
+          backdropFilter: 'blur(20px)',
+          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 12px)' : 2,
+        }}
+      >
         <Button
-          onClick={() => onSave()}
-          variant="contained"
+          fullWidth
+          onClick={onClose}
           sx={{
-            borderRadius: '9999px',
-            px: 3,
-            py: 1,
-            fontWeight: 700,
-            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+            height: 44,
+            borderRadius: '12px',
+            bgcolor: '#007AFF',
             color: '#ffffff',
-            boxShadow: '0 4px 14px rgba(6, 182, 212, 0.35)',
+            fontWeight: 700,
+            textTransform: 'none',
+            fontSize: '0.95rem',
+            '&:hover': { bgcolor: '#0062cc' },
           }}
         >
-          Guardar Cambios
+          Cerrar
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
+
+export default DietFoodsManager;

@@ -1,12 +1,10 @@
+// Modal de detalle de rutina con diseño Apple Liquid Glass y chips de métricas
 import React, { useEffect, useState } from 'react';
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Typography,
-  Card,
-  CardContent,
   Stack,
   Chip,
   Box,
@@ -14,9 +12,19 @@ import {
   CircularProgress,
   Alert,
   Button,
-  Divider,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  Dumbbell,
+  X,
+  Layers,
+  Repeat,
+  Clock,
+  CheckCircle2,
+  FileText,
+  Tag,
+} from 'lucide-react';
 import { getWorkoutWithExercises } from '../../services/workoutService';
 import { WorkoutWithExercises } from '../../types/WorkoutWithExercises';
 
@@ -27,6 +35,8 @@ interface Props {
 }
 
 export const WorkoutDetail: React.FC<Props> = ({ workoutId, open, onClose }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [workout, setWorkout] = useState<WorkoutWithExercises | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +44,7 @@ export const WorkoutDetail: React.FC<Props> = ({ workoutId, open, onClose }) => 
   useEffect(() => {
     const loadWorkout = async () => {
       if (!open) return;
-      
+
       try {
         setLoading(true);
         setError(null);
@@ -50,191 +60,313 @@ export const WorkoutDetail: React.FC<Props> = ({ workoutId, open, onClose }) => 
     loadWorkout();
   }, [workoutId, open]);
 
-  const getCategoryColor = (category: string) => {
-    switch (category.toLowerCase()) {
+  const getCategoryConfig = (category: string) => {
+    switch ((category || '').toLowerCase()) {
       case 'strength':
       case 'fuerza':
-        return 'error';
+        return { color: '#FF3B30', bg: 'rgba(255, 59, 48, 0.15)' };
+      case 'hipertrofia':
+      case 'hypertrophy':
+        return { color: '#007AFF', bg: 'rgba(0, 122, 255, 0.15)' };
       case 'cardio':
-        return 'info';
+        return { color: '#FF9500', bg: 'rgba(255, 149, 0, 0.15)' };
       case 'flexibility':
-      case 'flexibilidad':
-        return 'success';
-      case 'endurance':
-      case 'resistencia':
-        return 'warning';
+      case 'movilidad':
+        return { color: '#34C759', bg: 'rgba(52, 199, 89, 0.15)' };
       default:
-        return 'primary';
+        return { color: '#007AFF', bg: 'rgba(0, 122, 255, 0.15)' };
     }
   };
 
+  const cat = getCategoryConfig(workout?.category || '');
+  const exerciseList = workout?.exercises || workout?.workout_exercises || [];
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
-      <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          {loading ? (
-            <Typography variant="h6">Cargando...</Typography>
-          ) : workout ? (
-            <Box>
-              <Typography variant="h6" component="h2" sx={{ fontWeight: 600 }}>
-                {workout.name}
-              </Typography>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      fullScreen={isMobile}
+      PaperProps={{
+        sx: {
+          bgcolor: '#000000',
+          backgroundImage: 'none',
+          color: '#ffffff',
+          borderRadius: { xs: 0, sm: '24px' },
+          border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.12)' },
+          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.8)',
+          maxHeight: { xs: '100%', sm: '90vh' },
+          display: 'flex',
+          flexDirection: 'column',
+        },
+      }}
+    >
+      {/* Header Apple Liquid Glass */}
+      <Box
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)',
+          background: 'rgba(28, 28, 30, 0.8)',
+          backdropFilter: 'blur(20px)',
+          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px)' : 2,
+        }}
+      >
+        <Stack direction="row" alignItems="center" spacing={1.5}>
+          <Box
+            sx={{
+              width: 36,
+              height: 36,
+              borderRadius: '10px',
+              bgcolor: cat.bg,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: cat.color,
+              border: `0.5px solid ${cat.color}40`,
+            }}
+          >
+            <Dumbbell size={20} />
+          </Box>
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.2 }} noWrap>
+              {workout ? workout.name : 'Detalle del Entrenamiento'}
+            </Typography>
+            {workout?.category && (
               <Chip
                 label={workout.category}
-                color={getCategoryColor(workout.category)}
                 size="small"
-                sx={{ mt: 1 }}
+                sx={{
+                  bgcolor: cat.bg,
+                  color: cat.color,
+                  fontWeight: 700,
+                  fontSize: '0.7rem',
+                  height: 20,
+                  mt: 0.25,
+                }}
               />
-            </Box>
-          ) : (
-            <Typography variant="h6">Entrenamiento</Typography>
-          )}
-          
-          <IconButton onClick={onClose} size="small">
-            <Iconify icon="eva:close-outline" />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-
-      <DialogContent>
-        {loading && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress />
+            )}
           </Box>
-        )}
+        </Stack>
 
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
+        <IconButton
+          size="small"
+          onClick={onClose}
+          sx={{
+            color: 'rgba(235, 235, 245, 0.8)',
+            bgcolor: 'rgba(255, 255, 255, 0.08)',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+          }}
+        >
+          <X size={18} />
+        </IconButton>
+      </Box>
+
+      {/* Contenido con Scroll */}
+      <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#000000', overflowY: 'auto' }}>
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
+            <CircularProgress sx={{ color: '#007AFF' }} />
+          </Box>
+        ) : error ? (
+          <Alert
+            severity="error"
+            sx={{
+              borderRadius: '14px',
+              bgcolor: 'rgba(255, 59, 48, 0.15)',
+              color: '#FF453A',
+              border: '0.5px solid rgba(255, 59, 48, 0.3)',
+            }}
+          >
             {error}
           </Alert>
-        )}
-
-        {workout && (
+        ) : workout ? (
           <Stack spacing={3}>
+            {/* Notas Inset Grouped */}
             {workout.notes && (
-              <Box>
-                <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 600 }}>
-                  Notas
+              <Box
+                sx={{
+                  p: 2.5,
+                  borderRadius: '20px',
+                  bgcolor: '#1C1C1E',
+                  border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                }}
+              >
+                <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <FileText size={16} color="#007AFF" /> Indicaciones y Pautas
                 </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.8)', lineHeight: 1.6 }}>
                   {workout.notes}
                 </Typography>
               </Box>
             )}
 
-            <Divider />
-
+            {/* Listado de Ejercicios */}
             <Box>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                Ejercicios ({workout.exercises?.length || 0})
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Layers size={16} color="#34C759" /> Ejercicios ({exerciseList.length})
               </Typography>
-              
-              {!workout.exercises || workout.exercises.length === 0 ? (
+
+              {exerciseList.length === 0 ? (
                 <Box
                   sx={{
+                    p: 4,
                     textAlign: 'center',
-                    py: 4,
-                    color: 'text.secondary',
+                    bgcolor: '#1C1C1E',
+                    borderRadius: '20px',
+                    border: '1px dashed rgba(255, 255, 255, 0.15)',
                   }}
                 >
-                  <Iconify icon="eva:info-outline" sx={{ width: 48, height: 48, mb: 2 }} />
-                  <Typography variant="body2">
-                    No hay ejercicios asignados a este entrenamiento
+                  <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)' }}>
+                    No hay ejercicios configurados en esta rutina
                   </Typography>
                 </Box>
               ) : (
-                <Stack spacing={2}>
-                  {workout.exercises.map((ex, index) => (
-                    <Card key={ex.link_id} variant="outlined">
-                      <CardContent>
-                        <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
-                          <Box
-                            sx={{
-                              minWidth: 32,
-                              height: 32,
-                              borderRadius: '50%',
-                              bgcolor: 'primary.main',
-                              color: 'white',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              fontSize: '0.875rem',
-                              fontWeight: 600,
-                              flexShrink: 0,
-                            }}
-                          >
-                            {index + 1}
-                          </Box>
+                <Stack spacing={1.5}>
+                  {exerciseList.map((ex: any, index: number) => (
+                    <Box
+                      key={ex.link_id || index}
+                      sx={{
+                        p: 2,
+                        borderRadius: '16px',
+                        bgcolor: '#1C1C1E',
+                        border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 2,
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          bgcolor: 'rgba(0, 122, 255, 0.15)',
+                          color: '#007AFF',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          fontSize: '0.85rem',
+                          fontWeight: 700,
+                          flexShrink: 0,
+                          border: '0.5px solid rgba(0, 122, 255, 0.3)',
+                        }}
+                      >
+                        {index + 1}
+                      </Box>
 
-                          {ex.gif_url && (
-                            <Box
-                              component="img"
-                              src={ex.gif_url}
-                              alt={ex.name}
+                      {ex.gif_url && (
+                        <Box
+                          component="img"
+                          src={ex.gif_url}
+                          alt={ex.name}
+                          sx={{
+                            width: 60,
+                            height: 60,
+                            borderRadius: '12px',
+                            objectFit: 'contain',
+                            bgcolor: '#000000',
+                            border: '0.5px solid rgba(255, 255, 255, 0.1)',
+                            flexShrink: 0,
+                          }}
+                          loading="lazy"
+                        />
+                      )}
+
+                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 0.5 }} noWrap>
+                          {ex.name}
+                        </Typography>
+                        {ex.description && (
+                          <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.5)', display: 'block', mb: 1 }} noWrap>
+                            {ex.description}
+                          </Typography>
+                        )}
+
+                        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                          <Chip
+                            icon={<Repeat size={12} color="#007AFF" />}
+                            label={`${ex.sets || 3} series`}
+                            size="small"
+                            sx={{
+                              bgcolor: 'rgba(0, 122, 255, 0.15)',
+                              color: '#007AFF',
+                              fontWeight: 600,
+                              fontSize: '0.72rem',
+                              height: 22,
+                            }}
+                          />
+                          <Chip
+                            icon={<CheckCircle2 size={12} color="#34C759" />}
+                            label={`${ex.reps || 10} reps`}
+                            size="small"
+                            sx={{
+                              bgcolor: 'rgba(52, 199, 89, 0.15)',
+                              color: '#34C759',
+                              fontWeight: 600,
+                              fontSize: '0.72rem',
+                              height: 22,
+                            }}
+                          />
+                          {ex.execution_time > 0 && (
+                            <Chip
+                              icon={<Clock size={12} color="#FF9500" />}
+                              label={`${ex.execution_time}s`}
+                              size="small"
                               sx={{
-                                width: { xs: 70, sm: 90 },
-                                height: { xs: 70, sm: 90 },
-                                borderRadius: 2,
-                                objectFit: 'contain',
-                                bgcolor: '#0a0f1d',
-                                border: '1px solid #1e293b',
-                                flexShrink: 0,
+                                bgcolor: 'rgba(255, 149, 0, 0.15)',
+                                color: '#FF9500',
+                                fontWeight: 600,
+                                fontSize: '0.72rem',
+                                height: 22,
                               }}
-                              loading="lazy"
                             />
                           )}
-                          
-                          <Box sx={{ flexGrow: 1 }}>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
-                              {ex.name}
-                            </Typography>
-                            
-                            {ex.description && (
-                              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                                {ex.description}
-                              </Typography>
-                            )}
-                            
-                            <Stack direction="row" spacing={1} flexWrap="wrap">
-                              <Chip
-                                icon={<Iconify icon="eva:repeat-outline" sx={{ width: 16, height: 16 }} />}
-                                label={`${ex.sets} series`}
-                                size="small"
-                                variant="outlined"
-                                color="primary"
-                              />
-                              <Chip
-                                icon={<Iconify icon="eva:checkmark-circle-2-outline" sx={{ width: 16, height: 16 }} />}
-                                label={`${ex.reps} reps`}
-                                size="small"
-                                variant="outlined"
-                                color="success"
-                              />
-                              <Chip
-                                icon={<Iconify icon="eva:clock-outline" sx={{ width: 16, height: 16 }} />}
-                                label={`${ex.execution_time}s`}
-                                size="small"
-                                variant="outlined"
-                                color="warning"
-                              />
-                            </Stack>
-                          </Box>
-                        </Box>
-                      </CardContent>
-                    </Card>
+                        </Stack>
+                      </Box>
+                    </Box>
                   ))}
                 </Stack>
               )}
             </Box>
           </Stack>
-        )}
+        ) : null}
       </DialogContent>
 
-      <DialogActions sx={{ p: 3 }}>
-        <Button onClick={onClose} variant="outlined">
+      {/* Footer */}
+      <DialogActions
+        sx={{
+          px: { xs: 2, sm: 3 },
+          py: 2,
+          borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
+          bgcolor: 'rgba(28, 28, 30, 0.8)',
+          backdropFilter: 'blur(20px)',
+          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 12px)' : 2,
+        }}
+      >
+        <Button
+          fullWidth
+          onClick={onClose}
+          sx={{
+            height: 44,
+            borderRadius: '12px',
+            bgcolor: '#007AFF',
+            color: '#ffffff',
+            fontWeight: 700,
+            textTransform: 'none',
+            fontSize: '0.95rem',
+            '&:hover': { bgcolor: '#0062cc' },
+          }}
+        >
           Cerrar
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
+
+export default WorkoutDetail;

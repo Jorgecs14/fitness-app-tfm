@@ -297,49 +297,50 @@ export const WorkoutManager = () => {
       )}
 
       {/* Hero Glass Banner con Métricas y Botones de Acción */}
-      <Box className="liquid-hero-banner" sx={{ p: { xs: 3, sm: 4 }, mb: 4 }}>
+      {/* Hero Banner Apple Liquid Glass */}
+      <Box className="apple-card" sx={{ p: { xs: 2.5, sm: 3.5 }, mb: 3.5 }}>
         <Box
           sx={{
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             justifyContent: 'space-between',
             alignItems: { xs: 'flex-start', md: 'center' },
-            gap: 3,
+            gap: 2.5,
           }}
         >
           <Box>
             <Typography
-              variant='h3'
+              variant="h3"
               sx={{
-                fontSize: { xs: '1.75rem', sm: '2.25rem' },
+                fontSize: { xs: '1.6rem', sm: '2.1rem' },
                 fontWeight: 800,
-                letterSpacing: '-0.02em',
-                color: '#f8fafc',
-                mb: 1,
+                letterSpacing: '-0.03em',
+                color: '#ffffff',
+                mb: 0.75,
               }}
             >
               Catálogo de Entrenamientos
             </Typography>
-            <Typography variant='body1' sx={{ color: '#94a3b8', maxWidth: 650, lineHeight: 1.6 }}>
-              Diseña, personaliza y ejecuta rutinas de entrenamiento optimizadas con seguimiento biométrico y biblioteca de 1.320 ejercicios.
+            <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', maxWidth: 620, lineHeight: 1.5 }}>
+              Diseña, personaliza y ejecuta rutinas de entrenamiento optimizadas con seguimiento de series y biblioteca de ejercicios.
             </Typography>
 
             {/* Micro-Badges de Métricas */}
-            <Stack direction="row" spacing={2} sx={{ mt: 2.5 }} flexWrap="wrap" useFlexGap>
+            <Stack direction="row" spacing={1.5} sx={{ mt: 2 }} flexWrap="wrap" useFlexGap>
               <Box
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 1,
-                  px: 2,
-                  py: 0.75,
+                  px: 1.75,
+                  py: 0.5,
                   borderRadius: '9999px',
                   bgcolor: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  border: '0.5px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <Iconify icon="solar:folder-with-files-bold" width={18} sx={{ color: '#22d3ee' }} />
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#f8fafc' }}>
+                <Iconify icon="solar:folder-with-files-bold" width={16} sx={{ color: '#007AFF' }} />
+                <Typography variant="caption" sx={{ fontWeight: 600, color: '#ffffff' }}>
                   {workouts.length} Rutinas Totales
                 </Typography>
               </Box>
@@ -349,59 +350,60 @@ export const WorkoutManager = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 1,
-                  px: 2,
-                  py: 0.75,
+                  px: 1.75,
+                  py: 0.5,
                   borderRadius: '9999px',
                   bgcolor: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  border: '0.5px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <Iconify icon="solar:dumbbell-bold" width={18} sx={{ color: '#10b981' }} />
-                <Typography variant="caption" sx={{ fontWeight: 700, color: '#f8fafc' }}>
+                <Iconify icon="solar:dumbbell-bold" width={16} sx={{ color: '#34C759' }} />
+                <Typography variant="caption" sx={{ fontWeight: 600, color: '#ffffff' }}>
                   {totalExercisesCount} Ejercicios Asignados
                 </Typography>
               </Box>
             </Stack>
           </Box>
 
-          <Stack direction={{ xs: 'row' }} spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+          <Stack direction="row" spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Button
-              variant='outlined'
-              startIcon={<Iconify icon='eva:download-fill' />}
+              variant="outlined"
+              startIcon={<Iconify icon="eva:download-fill" />}
               onClick={(e) => setExportMenuAnchor(e.currentTarget)}
               sx={{
-                borderRadius: '9999px',
-                px: 2.5,
+                flex: { xs: 1, sm: 'initial' },
+                borderRadius: '12px',
+                px: 2,
                 py: 1,
                 fontWeight: 600,
-                borderColor: 'rgba(255, 255, 255, 0.18)',
-                color: '#f8fafc',
+                borderColor: 'rgba(255, 255, 255, 0.15)',
+                color: '#ffffff',
                 bgcolor: 'rgba(255, 255, 255, 0.06)',
-                backdropFilter: 'blur(10px)',
+                textTransform: 'none',
                 '&:hover': {
-                  borderColor: '#22d3ee',
-                  bgcolor: 'rgba(6, 182, 212, 0.15)',
-                  color: '#22d3ee',
+                  borderColor: '#007AFF',
+                  bgcolor: 'rgba(0, 122, 255, 0.12)',
                 },
               }}
             >
               Exportar
             </Button>
             <Button
-              variant='contained'
-              startIcon={<Iconify icon='mingcute:add-line' />}
+              variant="contained"
+              startIcon={<Iconify icon="mingcute:add-line" />}
               onClick={handleAdd}
               sx={{
-                borderRadius: '9999px',
-                px: 3,
+                flex: { xs: 2, sm: 'initial' },
+                borderRadius: '12px',
+                px: 2.5,
                 py: 1,
                 fontWeight: 700,
-                background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+                bgcolor: '#007AFF',
                 color: '#ffffff',
-                boxShadow: '0 6px 20px rgba(6, 182, 212, 0.35)',
+                textTransform: 'none',
+                boxShadow: '0 4px 14px rgba(0, 122, 255, 0.3)',
                 '&:hover': {
-                  background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
-                  boxShadow: '0 8px 24px rgba(6, 182, 212, 0.55)',
+                  bgcolor: '#0062cc',
                 },
               }}
             >
@@ -411,63 +413,75 @@ export const WorkoutManager = () => {
         </Box>
       </Box>
 
-      {/* Barra de Filtros: Cápsula de Categorías y Buscador Glass */}
+      {/* Barra de Filtros: Categorías y Buscador Apple */}
       <Box
         sx={{
           display: 'flex',
-          flexDirection: { xs: 'column', lg: 'row' },
+          flexDirection: { xs: 'column', md: 'row' },
           justifyContent: 'space-between',
-          alignItems: { xs: 'stretch', lg: 'center' },
+          alignItems: { xs: 'stretch', md: 'center' },
           gap: 2,
-          mb: 3.5,
+          mb: 3,
         }}
       >
-        {/* Selector de Categorías en Cápsula Deslizante */}
+        {/* Selector de Categorías */}
         <Box
           sx={{
             overflowX: 'auto',
-            pb: { xs: 1, lg: 0 },
+            pb: { xs: 1, md: 0 },
             '&::-webkit-scrollbar': { display: 'none' },
           }}
         >
-          <Box className="liquid-segment-bar">
+          <Box className="apple-tab-bar" sx={{ position: 'static', borderRadius: '14px', p: '4px', display: 'inline-flex', width: 'auto' }}>
             {categoriesList.map((cat) => (
-              <button
+              <Box
                 key={cat.id}
-                type="button"
-                className={`liquid-segment-tab ${selectedCategory === cat.id ? 'active' : ''}`}
+                component="button"
                 onClick={() => setSelectedCategory(cat.id)}
+                sx={{
+                  border: 'none',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  px: 2,
+                  py: 0.75,
+                  borderRadius: '10px',
+                  bgcolor: selectedCategory === cat.id ? '#007AFF' : 'transparent',
+                  color: selectedCategory === cat.id ? '#ffffff' : 'rgba(235, 235, 245, 0.6)',
+                  fontWeight: selectedCategory === cat.id ? 700 : 500,
+                  fontSize: '0.82rem',
+                  whiteSpace: 'nowrap',
+                  transition: 'all 0.15s ease',
+                }}
               >
                 {cat.label}
-              </button>
+              </Box>
             ))}
           </Box>
         </Box>
 
-        {/* Buscador de Rutinas Glass */}
+        {/* Buscador de Rutinas Inset Dark */}
         <TextField
-          placeholder='Buscar por nombre o nota...'
+          placeholder="Buscar rutina por nombre o nota..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           size="small"
           InputProps={{
             startAdornment: (
-              <InputAdornment position='start'>
-                <Iconify icon='eva:search-fill' sx={{ color: '#64748b' }} />
+              <InputAdornment position="start">
+                <Iconify icon="eva:search-fill" sx={{ color: 'rgba(235, 235, 245, 0.5)' }} />
               </InputAdornment>
             ),
-          }}
-          sx={{
-            minWidth: { xs: '100%', sm: 300 },
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '9999px',
-              bgcolor: 'rgba(255, 255, 255, 0.7)',
-              backdropFilter: 'blur(16px)',
-              '& fieldset': { borderColor: 'rgba(226, 232, 240, 0.8)' },
-              '&:hover fieldset': { borderColor: '#0284c7' },
-              '&.Mui-focused fieldset': { borderColor: '#0284c7' },
+            sx: {
+              color: '#ffffff',
+              bgcolor: '#1C1C1E',
+              borderRadius: '12px',
+              fontSize: '16px', // Previene auto-zoom en Safari iOS
+              '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
+              '&:hover fieldset': { borderColor: 'rgba(0, 122, 255, 0.4)' },
+              '&.Mui-focused fieldset': { borderColor: '#007AFF' },
             },
           }}
+          sx={{ minWidth: { xs: '100%', sm: 300 } }}
         />
       </Box>
 

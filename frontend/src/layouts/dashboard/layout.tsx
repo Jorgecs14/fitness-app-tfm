@@ -60,6 +60,7 @@ export function DashboardLayout({
   const { unreadCount } = useNotifications()
   const [navOpen, setNavOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [chatOpen, setChatOpen] = useState(false)
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [notificationsAnchorEl, setNotificationsAnchorEl] = useState<null | HTMLElement>(null)
@@ -212,8 +213,8 @@ export function DashboardLayout({
               {/* Botón de Búsqueda Rápida Móvil */}
               <IconButton
                 onClick={() => setSearchOpen(true)}
+                title="Búsqueda Rápida (Cmd+K)"
                 sx={{
-                  display: { xs: 'flex', md: 'none' },
                   width: 36,
                   height: 36,
                   color: '#ffffff',
@@ -222,6 +223,26 @@ export function DashboardLayout({
                 }}
               >
                 <Iconify icon="solar:magnifer-bold" width={18} sx={{ color: '#ffffff' }} />
+              </IconButton>
+
+              <IconButton
+                onClick={() => setChatOpen(true)}
+                title="Asistente Fitness IA"
+                sx={{
+                  width: 36,
+                  height: 36,
+                  color: '#007AFF',
+                  borderRadius: 2,
+                  background: 'rgba(0, 122, 255, 0.15)',
+                  border: '0.5px solid rgba(0, 122, 255, 0.3)',
+                  transition: 'all 0.15s ease',
+                  '&:hover': {
+                    background: 'rgba(0, 122, 255, 0.25)',
+                    transform: 'scale(1.05)',
+                  },
+                }}
+              >
+                <Iconify icon="solar:magic-stick-3-bold" width={18} />
               </IconButton>
 
               <IconButton
@@ -373,13 +394,13 @@ export function DashboardLayout({
       </MainSection>
 
       {/* Dock Flotante Móvil Liquid Glass */}
-      <FloatingMobileDock userRole={currentUser?.role} />
+      <FloatingMobileDock userRole={currentUser?.role} onOpenChat={() => setChatOpen(true)} />
 
       {/* Modal de Búsqueda Rápida Global Cmd+K */}
       <GlobalQuickSearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      {/* Floating Chat */}
-      <FloatingChat />
+      {/* Modal de Asistente de IA Apple Intelligence */}
+      <FloatingChat open={chatOpen} onClose={() => setChatOpen(false)} />
     </LayoutSection>
   )
 }
