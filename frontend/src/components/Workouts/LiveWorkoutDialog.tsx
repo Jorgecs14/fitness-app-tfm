@@ -181,7 +181,7 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
     return () => clearInterval(interval);
   }, [open, finishModalOpen]);
 
-  // Cronómetro de descanso entre series
+  // Cronómetro de descanso entre series con haptic y feedback sonoro
   useEffect(() => {
     let interval: any = null;
     if (isResting && restTimer > 0) {
@@ -189,6 +189,27 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
         setRestTimer((prev) => {
           if (prev <= 1) {
             setIsResting(false);
+            // Feedback háptico (vibrador nativo)
+            if (typeof window !== 'undefined' && 'vibrate' in navigator) {
+              try { navigator.vibrate([200, 100, 200]); } catch (e) {}
+            }
+            // Feedback sonoro (Web Audio API)
+            try {
+              const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+              if (AudioContextClass) {
+                const audioCtx = new AudioContextClass();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Tono A5
+                gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+              }
+            } catch (e) {}
             return 0;
           }
           return prev - 1;
