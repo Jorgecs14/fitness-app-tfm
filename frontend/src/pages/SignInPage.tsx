@@ -50,11 +50,13 @@ export const SignInPage = () => {
           navigate('/dashboard/home')
         }
       } else {
-        setError('Error al obtener token de autenticación del servidor.')
+        setError('No se pudo iniciar sesión. Verifica que tu correo y contraseña sean correctos o prueba con las cuentas demo.')
       }
     } catch (err: any) {
       const errData = err.response?.data?.error || err.response?.data?.details || err.message
-      const errorMsg = typeof errData === 'string' ? errData : errData?.message || 'Error al iniciar sesión. Comprueba tus credenciales.'
+      const errorMsg = typeof errData === 'string' && errData.length < 100
+        ? errData
+        : 'Correo o contraseña incorrectos. Verifica que el correo esté bien escrito o pulsa en Usar Demo para acceder al instante.'
       setError(errorMsg)
     } finally {
       setLoading(false)
@@ -85,12 +87,23 @@ export const SignInPage = () => {
       {error && (
         <Alert
           severity="error"
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              onClick={() => handleQuickFill('cliente@gym.com')}
+              sx={{ fontWeight: 700, textTransform: 'none', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.3)' }}
+            >
+              Usar Demo
+            </Button>
+          }
           sx={{
             mb: 2.5,
             borderRadius: 3,
             background: 'rgba(244, 63, 94, 0.15)',
             border: '1px solid rgba(244, 63, 94, 0.4)',
-            color: '#fecdd3'
+            color: '#fecdd3',
+            alignItems: 'center',
           }}
         >
           {error}
