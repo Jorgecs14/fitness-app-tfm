@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import {
-  Card,
   Table,
   TableBody,
   TableCell,
@@ -14,10 +13,20 @@ import {
   TablePagination,
   Grid,
   Stack,
-  Button,
   Tooltip,
+  ToggleButtonGroup,
+  ToggleButton,
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  Dumbbell,
+  Play,
+  QrCode,
+  Eye,
+  Edit2,
+  Trash2,
+  LayoutGrid,
+  List as ListIcon,
+} from 'lucide-react';
 import { WorkoutWithExercises } from '../../types/WorkoutWithExercises';
 import { User } from '../../types/User';
 import { WorkoutCard } from './WorkoutCard';
@@ -51,7 +60,6 @@ export const WorkoutList = ({
   const [rowsPerPage, setRowsPerPage] = useState(9);
   const [displayMode, setDisplayMode] = useState<'grid' | 'table'>('grid');
 
-  // Function to get user name by ID
   const getUserName = (userId: number) => {
     const user = users.find(u => u.id === userId);
     return user ? `${user.name} ${user.surname}` : `Usuario #${userId}`;
@@ -69,7 +77,7 @@ export const WorkoutList = ({
   if (loading) {
     return (
       <Box sx={{ textAlign: 'center', py: 8 }}>
-        <Typography sx={{ color: 'text.secondary', fontWeight: 600 }}>Cargando entrenamientos...</Typography>
+        <Typography sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Cargando entrenamientos...</Typography>
       </Box>
     );
   }
@@ -77,22 +85,22 @@ export const WorkoutList = ({
   if (workouts.length === 0) {
     return (
       <Box
-        className="liquid-glass-card"
+        className="apple-card"
         sx={{
           textAlign: 'center',
-          py: 8,
+          py: 6,
           px: 3,
-          maxWidth: 500,
+          maxWidth: 480,
           mx: 'auto',
           my: 4,
         }}
       >
-        <Iconify icon="solar:dumbbell-large-minimalistic-broken" width={54} height={54} sx={{ color: '#94a3b8', mb: 2 }} />
-        <Typography variant="h6" fontWeight="bold" sx={{ color: '#1e293b', mb: 1 }}>
-          No hay entrenamientos que coincidan
+        <Dumbbell size={48} color="rgba(255, 255, 255, 0.3)" style={{ marginBottom: 16 }} />
+        <Typography variant="h6" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5 }}>
+          No hay entrenamientos
         </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Prueba a cambiar el término de búsqueda o añade una nueva rutina haciendo clic en "Nuevo Entrenamiento".
+        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+          Prueba a cambiar el filtro de búsqueda o crea una nueva rutina.
         </Typography>
       </Box>
     );
@@ -101,56 +109,47 @@ export const WorkoutList = ({
   const paginatedWorkouts = workouts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
 
   return (
-    <Box>
+    <Box sx={{ pb: 8 }}>
       {/* Selector de Modo de Visualización (Grid vs Tabla) */}
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mb: 2.5 }}>
-        <Box
+        <ToggleButtonGroup
+          value={displayMode}
+          exclusive
+          onChange={(_, val) => val && setDisplayMode(val)}
+          size="small"
           sx={{
-            display: 'inline-flex',
-            bgcolor: 'rgba(255,255,255,0.7)',
-            backdropFilter: 'blur(12px)',
-            border: '1px solid rgba(226, 232, 240, 0.8)',
-            borderRadius: '9999px',
-            p: 0.5,
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '0.5px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '10px',
+            p: '2px',
+            '& .MuiToggleButton-root': {
+              borderRadius: '8px',
+              px: 1.2,
+              py: 0.4,
+              border: 'none',
+              color: 'rgba(255, 255, 255, 0.5)',
+              '&.Mui-selected': {
+                background: '#FFFFFF',
+                color: '#000000',
+                fontWeight: 700,
+              },
+            },
           }}
         >
-          <Tooltip title="Vista en Cuadrícula">
-            <IconButton
-              size="small"
-              onClick={() => setDisplayMode('grid')}
-              sx={{
-                bgcolor: displayMode === 'grid' ? '#0f172a' : 'transparent',
-                color: displayMode === 'grid' ? '#ffffff' : '#64748b',
-                '&:hover': {
-                  bgcolor: displayMode === 'grid' ? '#0f172a' : 'rgba(0,0,0,0.05)',
-                },
-              }}
-            >
-              <Iconify icon="solar:widget-2-bold" width={18} />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title="Vista en Tabla">
-            <IconButton
-              size="small"
-              onClick={() => setDisplayMode('table')}
-              sx={{
-                bgcolor: displayMode === 'table' ? '#0f172a' : 'transparent',
-                color: displayMode === 'table' ? '#ffffff' : '#64748b',
-                '&:hover': {
-                  bgcolor: displayMode === 'table' ? '#0f172a' : 'rgba(0,0,0,0.05)',
-                },
-              }}
-            >
-              <Iconify icon="solar:list-bold" width={18} />
-            </IconButton>
-          </Tooltip>
-        </Box>
+          <ToggleButton value="grid">
+            <LayoutGrid size={14} style={{ marginRight: 4 }} />
+            Cuadrícula
+          </ToggleButton>
+          <ToggleButton value="table">
+            <ListIcon size={14} style={{ marginRight: 4 }} />
+            Tabla
+          </ToggleButton>
+        </ToggleButtonGroup>
       </Box>
 
-      {/* Renderizado Condicional: Cuadrícula Liquid Glass o Tabla */}
+      {/* Renderizado Condicional */}
       {displayMode === 'grid' ? (
-        <Grid container spacing={3}>
+        <Grid container spacing={2.5}>
           {paginatedWorkouts.map((workout) => (
             <Grid key={workout.id} size={{ xs: 12, sm: 6, md: 4 }}>
               <WorkoutCard
@@ -168,66 +167,74 @@ export const WorkoutList = ({
           ))}
         </Grid>
       ) : (
-        <Card className="liquid-glass-card" sx={{ overflow: 'hidden' }}>
+        <Box className="apple-card" sx={{ overflow: 'hidden' }}>
           <TableContainer>
             <Table>
-              <TableHead sx={{ bgcolor: 'rgba(255, 255, 255, 0.04)' }}>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 800, color: '#22d3ee' }}>Nombre</TableCell>
-                  <TableCell sx={{ fontWeight: 800, color: '#22d3ee' }}>Usuario</TableCell>
-                  <TableCell sx={{ fontWeight: 800, color: '#22d3ee' }}>Categoría</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 800, color: '#22d3ee' }}>Ejercicios</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 800, color: '#22d3ee' }}>Acciones</TableCell>
+              <TableHead>
+                <TableRow sx={{ background: 'rgba(255, 255, 255, 0.02)' }}>
+                  <TableCell sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.6)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>Nombre</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.6)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>Usuario</TableCell>
+                  <TableCell sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.6)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>Categoría</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.6)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>Ejercicios</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 700, color: 'rgba(255, 255, 255, 0.6)', borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>Acciones</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {paginatedWorkouts.map((workout) => (
-                  <TableRow key={workout.id} hover sx={{ '&:hover': { bgcolor: 'rgba(6, 182, 212, 0.12) !important' } }}>
+                  <TableRow
+                    key={workout.id}
+                    hover
+                    sx={{
+                      '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' },
+                      '& td': { borderBottom: '0.5px solid rgba(255, 255, 255, 0.04)' }
+                    }}
+                  >
                     <TableCell>
-                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#f8fafc' }}>
+                      <Typography variant="subtitle2" fontWeight={700} sx={{ color: '#FFFFFF' }}>
                         {workout.name}
                       </Typography>
                       {workout.notes && (
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.45)' }}>
                           {workout.notes}
                         </Typography>
                       )}
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" sx={{ color: '#94a3b8' }}>
+                      <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
                         {getUserName(workout.user_id)}
                       </Typography>
                     </TableCell>
                     <TableCell>
                       <Chip
-                        label={workout.category}
+                        label={workout.category || 'General'}
                         size="small"
                         sx={{
-                          fontWeight: 600,
-                          borderRadius: '9999px',
-                          bgcolor: 'rgba(2, 132, 199, 0.1)',
-                          color: '#0284c7',
+                          fontWeight: 700,
+                          fontSize: '0.7rem',
+                          height: 22,
+                          bgcolor: 'rgba(0, 122, 255, 0.15)',
+                          color: '#007AFF',
                         }}
                       />
                     </TableCell>
                     <TableCell align="center">
                       <Chip
-                        icon={<Iconify icon="solar:dumbbell-bold" width={14} />}
+                        icon={<Dumbbell size={12} color="#FFFFFF" />}
                         label={workout.workout_exercises?.length || workout.exercises?.length || 0}
                         size="small"
-                        sx={{ fontWeight: 600, borderRadius: '9999px' }}
+                        sx={{ fontWeight: 600, height: 22, bgcolor: 'rgba(255, 255, 255, 0.06)', color: '#FFFFFF' }}
                       />
                     </TableCell>
                     <TableCell align="right">
                       <Stack direction="row" spacing={0.5} justifyContent="flex-end" alignItems="center">
                         {onStartLiveWorkout && (
-                          <Tooltip title="Iniciar en Vivo">
+                          <Tooltip title="Iniciar">
                             <IconButton
                               size="small"
                               onClick={() => onStartLiveWorkout(workout)}
-                              sx={{ color: '#10b981', bgcolor: 'rgba(16, 185, 129, 0.1)' }}
+                              sx={{ color: '#34C759', bgcolor: 'rgba(52, 199, 89, 0.15)' }}
                             >
-                              <Iconify icon="solar:play-circle-bold" width={18} />
+                              <Play size={14} />
                             </IconButton>
                           </Tooltip>
                         )}
@@ -236,25 +243,25 @@ export const WorkoutList = ({
                             <IconButton
                               size="small"
                               onClick={() => onShareQr(workout)}
-                              sx={{ color: '#f59e0b' }}
+                              sx={{ color: '#FF9500' }}
                             >
-                              <Iconify icon="eva:qr-code-fill" width={18} />
+                              <QrCode size={16} />
                             </IconButton>
                           </Tooltip>
                         )}
-                        <Tooltip title="Ver detalles">
-                          <IconButton size="small" onClick={() => onViewDetails(workout)} sx={{ color: '#0284c7' }}>
-                            <Iconify icon="solar:eye-bold" width={16} />
+                        <Tooltip title="Ver">
+                          <IconButton size="small" onClick={() => onViewDetails(workout)} sx={{ color: '#007AFF' }}>
+                            <Eye size={16} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Editar">
-                          <IconButton size="small" onClick={() => onEdit(workout)} sx={{ color: '#475569' }}>
-                            <Iconify icon="solar:pen-bold" width={16} />
+                          <IconButton size="small" onClick={() => onEdit(workout)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                            <Edit2 size={16} />
                           </IconButton>
                         </Tooltip>
                         <Tooltip title="Eliminar">
-                          <IconButton size="small" onClick={() => onDelete(workout.id)} sx={{ color: '#ef4444' }}>
-                            <Iconify icon="solar:trash-bin-trash-bold" width={16} />
+                          <IconButton size="small" onClick={() => onDelete(workout.id)} sx={{ color: '#FF3B30' }}>
+                            <Trash2 size={16} />
                           </IconButton>
                         </Tooltip>
                       </Stack>
@@ -264,10 +271,10 @@ export const WorkoutList = ({
               </TableBody>
             </Table>
           </TableContainer>
-        </Card>
+        </Box>
       )}
 
-      {/* Paginación Liquid Glass */}
+      {/* Paginación */}
       <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center' }}>
         <TablePagination
           component="div"
@@ -278,11 +285,10 @@ export const WorkoutList = ({
           onRowsPerPageChange={handleChangeRowsPerPage}
           rowsPerPageOptions={[6, 9, 18, 36]}
           labelRowsPerPage="Por página:"
+          labelDisplayedRows={({ from, to, count }) => `${from}-${to} de ${count}`}
           sx={{
-            bgcolor: 'rgba(255,255,255,0.7)',
-            backdropFilter: 'blur(16px)',
-            borderRadius: '16px',
-            border: '1px solid rgba(226, 232, 240, 0.8)',
+            color: 'rgba(255, 255, 255, 0.6)',
+            '& .MuiSvgIcon-root': { color: '#FFFFFF' }
           }}
         />
       </Box>
@@ -290,4 +296,4 @@ export const WorkoutList = ({
   );
 };
 
-
+export default WorkoutList;

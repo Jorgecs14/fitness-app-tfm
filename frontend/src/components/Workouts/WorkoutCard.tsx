@@ -10,7 +10,17 @@ import {
   Stack,
   Tooltip,
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  Play,
+  QrCode,
+  Eye,
+  Dumbbell,
+  Clock,
+  User,
+  Edit2,
+  Trash2,
+  Sliders,
+} from 'lucide-react';
 import { WorkoutWithExercises } from '../../types/WorkoutWithExercises';
 
 interface WorkoutCardProps {
@@ -40,21 +50,21 @@ export const WorkoutCard = ({
     switch (category.toLowerCase()) {
       case 'strength':
       case 'fuerza':
-        return { color: '#f43f5e', bg: 'rgba(244, 63, 94, 0.12)', label: 'Fuerza' };
+        return { color: '#FF3B30', bg: 'rgba(255, 59, 48, 0.15)', label: 'Fuerza' };
       case 'hipertrofia':
       case 'hypertrophy':
-        return { color: '#0284c7', bg: 'rgba(2, 132, 199, 0.12)', label: 'Hipertrofia' };
+        return { color: '#007AFF', bg: 'rgba(0, 122, 255, 0.15)', label: 'Hipertrofia' };
       case 'cardio':
-        return { color: '#06b6d4', bg: 'rgba(6, 182, 212, 0.12)', label: 'Cardio' };
+        return { color: '#FF9500', bg: 'rgba(255, 149, 0, 0.15)', label: 'Cardio' };
       case 'flexibility':
       case 'flexibilidad':
       case 'movilidad':
-        return { color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)', label: 'Movilidad' };
+        return { color: '#34C759', bg: 'rgba(52, 199, 89, 0.15)', label: 'Movilidad' };
       case 'endurance':
       case 'resistencia':
-        return { color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)', label: 'Resistencia' };
+        return { color: '#AF52DE', bg: 'rgba(175, 82, 222, 0.15)', label: 'Resistencia' };
       default:
-        return { color: '#8b5cf6', bg: 'rgba(139, 92, 246, 0.12)', label: category || 'Rutina' };
+        return { color: 'rgba(255, 255, 255, 0.7)', bg: 'rgba(255, 255, 255, 0.08)', label: category || 'Rutina' };
     }
   };
 
@@ -63,18 +73,22 @@ export const WorkoutCard = ({
 
   return (
     <Card
-      className="liquid-glass-card"
+      className="apple-card"
       sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        p: 0,
         position: 'relative',
+        transition: 'transform 0.2s ease',
+        '&:hover': {
+          transform: 'translateY(-2px)',
+          borderColor: 'rgba(0, 122, 255, 0.3)',
+        },
       }}
     >
-      <CardContent sx={{ flexGrow: 1, p: 3 }}>
+      <CardContent sx={{ flexGrow: 1, p: 2.5 }}>
         {/* Encabezado: Categoría y Acceso Rápido QR */}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
           <Chip
             label={cat.label}
             size="small"
@@ -82,9 +96,8 @@ export const WorkoutCard = ({
               bgcolor: cat.bg,
               color: cat.color,
               fontWeight: 700,
-              fontSize: '0.75rem',
-              border: `1px solid ${cat.color}40`,
-              borderRadius: '9999px',
+              fontSize: '0.72rem',
+              height: 22,
             }}
           />
 
@@ -95,29 +108,27 @@ export const WorkoutCard = ({
                   size="small"
                   onClick={() => onShareQr(workout)}
                   sx={{
-                    color: 'text.secondary',
-                    bgcolor: 'rgba(255,255,255,0.6)',
-                    backdropFilter: 'blur(8px)',
-                    '&:hover': { color: 'warning.main', bgcolor: 'rgba(245, 158, 11, 0.15)' },
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    bgcolor: 'rgba(255, 255, 255, 0.04)',
+                    '&:hover': { color: '#FF9500', bgcolor: 'rgba(255, 149, 0, 0.15)' },
                   }}
                 >
-                  <Iconify icon="eva:qr-code-fill" width={16} />
+                  <QrCode size={16} />
                 </IconButton>
               </Tooltip>
             )}
 
-            <Tooltip title="Ver detalles completos">
+            <Tooltip title="Ver Detalles">
               <IconButton
                 size="small"
                 onClick={() => onViewDetails(workout)}
                 sx={{
-                  color: 'text.secondary',
-                  bgcolor: 'rgba(255,255,255,0.6)',
-                  backdropFilter: 'blur(8px)',
-                  '&:hover': { color: 'primary.main', bgcolor: 'rgba(2, 132, 199, 0.15)' },
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  bgcolor: 'rgba(255, 255, 255, 0.04)',
+                  '&:hover': { color: '#007AFF', bgcolor: 'rgba(0, 122, 255, 0.15)' },
                 }}
               >
-                <Iconify icon="solar:eye-bold" width={16} />
+                <Eye size={16} />
               </IconButton>
             </Tooltip>
           </Stack>
@@ -125,22 +136,20 @@ export const WorkoutCard = ({
 
         {/* Título de la Rutina */}
         <Typography
-          variant="h6"
-          component="h3"
+          variant="subtitle1"
+          fontWeight="800"
           sx={{
-            fontWeight: 700,
-            mb: 0.5,
-            color: '#f8fafc',
-            fontSize: '1.15rem',
+            color: '#FFFFFF',
             lineHeight: 1.3,
+            mb: 0.5,
           }}
         >
           {workout.name}
         </Typography>
 
         {userName && (
-          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', mb: 1.5 }}>
-            👤 Asignado a: <strong>{userName}</strong>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', mb: 1 }}>
+            Asignado a: <strong style={{ color: 'rgba(255, 255, 255, 0.8)' }}>{userName}</strong>
           </Typography>
         )}
 
@@ -148,9 +157,9 @@ export const WorkoutCard = ({
           <Typography
             variant="body2"
             sx={{
-              color: '#475569',
-              lineHeight: 1.5,
-              fontSize: '0.875rem',
+              color: 'rgba(255, 255, 255, 0.5)',
+              lineHeight: 1.4,
+              fontSize: '0.8rem',
               display: '-webkit-box',
               WebkitLineClamp: 2,
               WebkitBoxOrient: 'vertical',
@@ -163,23 +172,23 @@ export const WorkoutCard = ({
         )}
 
         {/* Métricas de la Rutina */}
-        <Box sx={{ display: 'flex', gap: 1.5, alignItems: 'center', mt: 2, flexWrap: 'wrap' }}>
+        <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', mt: 'auto', flexWrap: 'wrap' }}>
           <Box
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 0.75,
-              px: 1.5,
-              py: 0.5,
-              borderRadius: '12px',
-              bgcolor: 'rgba(255, 255, 255, 0.06)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              fontSize: '0.8rem',
+              gap: 0.6,
+              px: 1.2,
+              py: 0.4,
+              borderRadius: '8px',
+              bgcolor: 'rgba(255, 255, 255, 0.04)',
+              border: '0.5px solid rgba(255, 255, 255, 0.08)',
+              fontSize: '0.75rem',
               fontWeight: 600,
-              color: '#f8fafc',
+              color: 'rgba(255, 255, 255, 0.8)',
             }}
           >
-            <Iconify icon="solar:dumbbell-bold" width={16} sx={{ color: '#22d3ee' }} />
+            <Dumbbell size={14} color="#007AFF" />
             {exerciseCount} {exerciseCount === 1 ? 'ejercicio' : 'ejercicios'}
           </Box>
 
@@ -187,18 +196,18 @@ export const WorkoutCard = ({
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 0.75,
-              px: 1.5,
-              py: 0.5,
-              borderRadius: '12px',
-              bgcolor: 'rgba(255, 255, 255, 0.06)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              fontSize: '0.8rem',
+              gap: 0.6,
+              px: 1.2,
+              py: 0.4,
+              borderRadius: '8px',
+              bgcolor: 'rgba(255, 255, 255, 0.04)',
+              border: '0.5px solid rgba(255, 255, 255, 0.08)',
+              fontSize: '0.75rem',
               fontWeight: 600,
-              color: '#f8fafc',
+              color: 'rgba(255, 255, 255, 0.8)',
             }}
           >
-            <Iconify icon="solar:clock-circle-bold" width={16} sx={{ color: '#f59e0b' }} />
+            <Clock size={14} color="#FF9500" />
             ~{Math.max(30, exerciseCount * 9)} min
           </Box>
         </Box>
@@ -207,11 +216,10 @@ export const WorkoutCard = ({
       {/* Acciones de la Tarjeta */}
       <CardActions
         sx={{
-          p: 2,
-          pt: 1.5,
-          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-          bgcolor: 'rgba(15, 23, 42, 0.4)',
-          backdropFilter: 'blur(12px)',
+          p: 1.5,
+          px: 2,
+          borderTop: '0.5px solid rgba(255, 255, 255, 0.06)',
+          bgcolor: 'rgba(22, 22, 24, 0.6)',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
@@ -221,20 +229,15 @@ export const WorkoutCard = ({
             variant="contained"
             size="small"
             onClick={() => onStartLiveWorkout(workout)}
-            startIcon={<Iconify icon="solar:play-circle-bold" width={18} />}
+            startIcon={<Play size={14} />}
+            className="apple-button-primary"
             sx={{
-              borderRadius: '9999px',
-              px: 2,
-              py: 0.75,
+              borderRadius: '8px',
+              px: 1.8,
+              py: 0.6,
               fontWeight: 700,
-              fontSize: '0.82rem',
-              background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-              color: '#ffffff',
-              boxShadow: '0 4px 14px rgba(6, 182, 212, 0.35)',
-              '&:hover': {
-                background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
-                boxShadow: '0 6px 18px rgba(6, 182, 212, 0.55)',
-              },
+              fontSize: '0.78rem',
+              textTransform: 'none',
             }}
           >
             Iniciar
@@ -250,11 +253,11 @@ export const WorkoutCard = ({
                 size="small"
                 onClick={() => onManageExercises(workout)}
                 sx={{
-                  color: '#94a3b8',
-                  '&:hover': { color: '#22d3ee', bgcolor: 'rgba(34, 211, 238, 0.15)' },
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  '&:hover': { color: '#007AFF' },
                 }}
               >
-                <Iconify icon="solar:dumbbell-bold" width={16} />
+                <Sliders size={16} />
               </IconButton>
             </Tooltip>
           )}
@@ -265,11 +268,11 @@ export const WorkoutCard = ({
                 size="small"
                 onClick={() => onManageUser(workout)}
                 sx={{
-                  color: '#94a3b8',
-                  '&:hover': { color: '#a855f7', bgcolor: 'rgba(168, 85, 247, 0.15)' },
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  '&:hover': { color: '#AF52DE' },
                 }}
               >
-                <Iconify icon="solar:user-bold" width={16} />
+                <User size={16} />
               </IconButton>
             </Tooltip>
           )}
@@ -279,11 +282,11 @@ export const WorkoutCard = ({
               size="small"
               onClick={() => onEdit(workout)}
               sx={{
-                color: '#94a3b8',
-                '&:hover': { color: '#f59e0b', bgcolor: 'rgba(245, 158, 11, 0.15)' },
+                color: 'rgba(255, 255, 255, 0.6)',
+                '&:hover': { color: '#FF9500' },
               }}
             >
-              <Iconify icon="solar:pen-bold" width={16} />
+              <Edit2 size={16} />
             </IconButton>
           </Tooltip>
 
@@ -292,11 +295,11 @@ export const WorkoutCard = ({
               size="small"
               onClick={() => onDelete(workout.id)}
               sx={{
-                color: '#94a3b8',
-                '&:hover': { color: '#f43f5e', bgcolor: 'rgba(244, 63, 94, 0.15)' },
+                color: 'rgba(255, 255, 255, 0.6)',
+                '&:hover': { color: '#FF3B30' },
               }}
             >
-              <Iconify icon="solar:trash-bin-trash-bold" width={16} />
+              <Trash2 size={16} />
             </IconButton>
           </Tooltip>
         </Stack>
@@ -305,4 +308,4 @@ export const WorkoutCard = ({
   );
 };
 
-
+export default WorkoutCard;
