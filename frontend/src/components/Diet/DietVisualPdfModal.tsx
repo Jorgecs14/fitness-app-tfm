@@ -88,20 +88,46 @@ export const DietVisualPdfModal: React.FC<DietVisualPdfModalProps> = ({
   }
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Iconify icon="solar:document-bold-duotone" width={26} style={{ color: '#0284c7' }} />
-          <Typography variant="h6" fontWeight="bold">
-            Plantilla PDF Profesional de Dieta Semanal
+    <Dialog
+      open={open}
+      onClose={onClose}
+      maxWidth="md"
+      fullWidth
+      PaperProps={{
+        sx: {
+          borderRadius: '28px',
+          bgcolor: 'rgba(15, 23, 42, 0.92)',
+          backdropFilter: 'blur(32px) saturate(190%)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          boxShadow: '0 24px 70px rgba(0, 0, 0, 0.7)',
+          overflow: 'hidden',
+        },
+      }}
+    >
+      <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', p: 3, borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <Stack direction="row" spacing={1.5} alignItems="center">
+          <Box
+            sx={{
+              display: 'inline-flex',
+              p: 1,
+              borderRadius: '12px',
+              bgcolor: 'rgba(6, 182, 212, 0.15)',
+              color: '#22d3ee',
+              border: '1px solid rgba(6, 182, 212, 0.3)',
+            }}
+          >
+            <Iconify icon="solar:document-bold-duotone" width={26} height={26} />
+          </Box>
+          <Typography variant="h6" fontWeight={800} sx={{ color: '#f8fafc' }}>
+            Plantilla PDF Editorial de Dieta Semanal
           </Typography>
         </Stack>
-        <Button size="small" onClick={onClose}>
+        <Button size="small" onClick={onClose} sx={{ color: '#94a3b8', '&:hover': { color: '#f8fafc' } }}>
           Cerrar
         </Button>
       </DialogTitle>
 
-      <DialogContent dividers sx={{ p: { xs: 1, sm: 3 }, bgcolor: '#f1f5f9' }}>
+      <DialogContent sx={{ p: { xs: 1, sm: 3 }, bgcolor: 'transparent' }}>
         {/* Plantilla imprimible capturada por html2canvas */}
         <Box
           ref={printRef}
@@ -344,16 +370,28 @@ export const DietVisualPdfModal: React.FC<DietVisualPdfModalProps> = ({
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ p: 2, bgcolor: '#ffffff' }}>
-        <Button onClick={onClose} disabled={downloading}>
+      <DialogActions sx={{ px: 3, py: 2.5, bgcolor: 'rgba(15, 23, 42, 0.7)', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <Button onClick={onClose} disabled={downloading} sx={{ borderRadius: '9999px', color: '#94a3b8', fontWeight: 600 }}>
           Cancelar
         </Button>
         <Button
           variant="contained"
-          color="primary"
           onClick={handleDownloadPdf}
           disabled={downloading}
           startIcon={<Iconify icon="solar:download-minimalistic-bold" width={20} />}
+          sx={{
+            borderRadius: '9999px',
+            px: 3,
+            py: 1,
+            fontWeight: 700,
+            background: 'linear-gradient(135deg, #06b6d4 0%, #10b981 100%)',
+            color: '#ffffff',
+            boxShadow: '0 4px 14px rgba(6, 182, 212, 0.35)',
+            '&:hover': {
+              background: 'linear-gradient(135deg, #0891b2 0%, #059669 100%)',
+              boxShadow: '0 6px 20px rgba(6, 182, 212, 0.5)',
+            },
+          }}
         >
           {downloading ? 'Generando PDF Alta Calidad...' : 'Descargar PDF Profesional'}
         </Button>

@@ -202,20 +202,29 @@ export const ClientMyDietPage: React.FC = () => {
           <Box className="liquid-glass-card" sx={{ p: 3.5 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
               <Box>
-                <Typography variant="h5" fontWeight={800} sx={{ color: '#0f172a', letterSpacing: '-0.01em' }}>
+                <Typography variant="h5" fontWeight={800} sx={{ color: '#f8fafc', letterSpacing: '-0.01em' }}>
                   {diet.name}
                 </Typography>
-                <Typography variant="body2" sx={{ color: '#475569', mt: 0.5, maxWidth: 650, lineHeight: 1.6 }}>
+                <Typography variant="body2" sx={{ color: '#94a3b8', mt: 0.5, maxWidth: 650, lineHeight: 1.6 }}>
                   {diet.description || 'Pautas de nutrición personalizadas para tu objetivo físico.'}
                 </Typography>
               </Box>
 
               <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
                 <Chip
-                  icon={<Iconify icon="solar:fire-bold" width={20} />}
+                  icon={<Iconify icon="solar:fire-bold" width={20} sx={{ color: '#ff7043 !important' }} />}
                   label={`${diet.calories} Kcal / día`}
-                  color="error"
-                  sx={{ fontWeight: 'bold', fontSize: '1rem', py: 2, px: 1.5, borderRadius: '9999px' }}
+                  sx={{
+                    fontWeight: 'bold',
+                    fontSize: '1rem',
+                    py: 2,
+                    px: 1.5,
+                    borderRadius: '9999px',
+                    bgcolor: 'rgba(255, 112, 67, 0.15)',
+                    color: '#ff7043',
+                    border: '1px solid rgba(255, 112, 67, 0.3)',
+                    boxShadow: '0 0 16px rgba(255, 112, 67, 0.25)',
+                  }}
                 />
                 <Button
                   size="small"
@@ -226,7 +235,7 @@ export const ClientMyDietPage: React.FC = () => {
                     setEditingDietTarget(diet)
                     setDietBuilderOpen(true)
                   }}
-                  sx={{ color: '#0f172a', borderColor: 'rgba(15, 23, 42, 0.2)' }}
+                  sx={{ color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.3)', '&:hover': { bgcolor: 'rgba(56, 189, 248, 0.1)' } }}
                 >
                   Editar Plan
                 </Button>
