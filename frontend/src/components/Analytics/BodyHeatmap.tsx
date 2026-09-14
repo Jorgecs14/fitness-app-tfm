@@ -91,10 +91,11 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
             exclusive
             onChange={(_, val) => val && setViewMode(val)}
             sx={{
-              bgcolor: 'rgba(255, 255, 255, 0.6)',
+              bgcolor: 'rgba(255, 255, 255, 0.05)',
               backdropFilter: 'blur(12px)',
               borderRadius: '9999px',
               p: 0.3,
+              border: '1px solid rgba(255, 255, 255, 0.08)',
               '& .MuiToggleButton-root': {
                 border: 'none',
                 borderRadius: '9999px',
@@ -105,9 +106,9 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
                 textTransform: 'none',
                 color: 'text.secondary',
                 '&.Mui-selected': {
-                  bgcolor: 'white',
-                  color: 'primary.main',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  bgcolor: 'rgba(6, 182, 212, 0.25)',
+                  color: '#22d3ee',
+                  boxShadow: '0 0 12px rgba(6, 182, 212, 0.35)',
                 },
               },
             }}
@@ -123,10 +124,11 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
             exclusive
             onChange={(_, val) => val && setGender(val)}
             sx={{
-              bgcolor: 'rgba(255, 255, 255, 0.6)',
+              bgcolor: 'rgba(255, 255, 255, 0.05)',
               backdropFilter: 'blur(12px)',
               borderRadius: '9999px',
               p: 0.3,
+              border: '1px solid rgba(255, 255, 255, 0.08)',
               '& .MuiToggleButton-root': {
                 border: 'none',
                 borderRadius: '9999px',
@@ -136,9 +138,9 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
                 fontWeight: 600,
                 color: 'text.secondary',
                 '&.Mui-selected': {
-                  bgcolor: 'white',
-                  color: 'secondary.main',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  bgcolor: 'rgba(168, 85, 247, 0.25)',
+                  color: '#c084fc',
+                  boxShadow: '0 0 12px rgba(168, 85, 247, 0.35)',
                 },
               },
             }}
@@ -154,10 +156,10 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
         <Grid size={{ xs: 12, md: 7 }}>
           <Box
             sx={{
-              bgcolor: 'rgba(248, 250, 252, 0.6)',
+              bgcolor: 'rgba(255, 255, 255, 0.02)',
               backdropFilter: 'blur(20px)',
               borderRadius: 4,
-              border: '1px solid rgba(226, 232, 240, 0.8)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
               p: 2,
               minHeight: 380,
               display: 'flex',
@@ -215,10 +217,11 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
               sx={{
                 p: 2.5,
                 borderRadius: 3.5,
-                bgcolor: 'white',
+                bgcolor: 'rgba(255, 255, 255, 0.03)',
+                backdropFilter: 'blur(16px)',
                 border: '1.5px solid',
-                borderColor: selectedSets >= 15 ? '#f43f5e' : selectedSets >= 9 ? '#f59e0b' : selectedSets >= 5 ? '#10b981' : selectedSets > 0 ? '#38bdf8' : 'rgba(226, 232, 240, 0.9)',
-                boxShadow: '0 8px 24px -4px rgba(15, 23, 42, 0.06)',
+                borderColor: selectedSets >= 15 ? '#f43f5e' : selectedSets >= 9 ? '#f59e0b' : selectedSets >= 5 ? '#10b981' : selectedSets > 0 ? '#38bdf8' : 'rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 8px 24px -4px rgba(0, 0, 0, 0.4)',
                 transition: 'all 0.25s ease',
               }}
             >
@@ -227,7 +230,7 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
                   <Typography variant="caption" fontWeight="bold" color="text.secondary" textTransform="uppercase" letterSpacing="0.05em">
                     MÚSCULO SELECCIONADO
                   </Typography>
-                  <Typography variant="h5" fontWeight="bold" color="text.primary">
+                  <Typography variant="h5" fontWeight="bold" sx={{ color: '#f8fafc' }}>
                     {selectedDisplayName}
                   </Typography>
                 </Box>
@@ -243,15 +246,21 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
                   sx={{
                     fontWeight: 'bold',
                     bgcolor:
-                      selectedSets >= 15 ? '#ffe4e6' :
-                      selectedSets >= 9 ? '#fef3c7' :
-                      selectedSets >= 4 ? '#d1fae5' :
-                      selectedSets > 0 ? '#e0f2fe' : '#f1f5f9',
+                      selectedSets >= 15 ? 'rgba(244, 63, 94, 0.15)' :
+                      selectedSets >= 9 ? 'rgba(245, 158, 11, 0.15)' :
+                      selectedSets >= 4 ? 'rgba(16, 185, 129, 0.15)' :
+                      selectedSets > 0 ? 'rgba(56, 189, 248, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                     color:
-                      selectedSets >= 15 ? '#e11d48' :
-                      selectedSets >= 9 ? '#d97706' :
-                      selectedSets >= 4 ? '#059669' :
-                      selectedSets > 0 ? '#0284c7' : '#64748b',
+                      selectedSets >= 15 ? '#fb7185' :
+                      selectedSets >= 9 ? '#fbbf24' :
+                      selectedSets >= 4 ? '#34d399' :
+                      selectedSets > 0 ? '#38bdf8' : '#94a3b8',
+                    border: '1px solid',
+                    borderColor:
+                      selectedSets >= 15 ? 'rgba(244, 63, 94, 0.3)' :
+                      selectedSets >= 9 ? 'rgba(245, 158, 11, 0.3)' :
+                      selectedSets >= 4 ? 'rgba(16, 185, 129, 0.3)' :
+                      selectedSets > 0 ? 'rgba(56, 189, 248, 0.3)' : 'rgba(255, 255, 255, 0.1)',
                   }}
                 />
               </Stack>
@@ -271,7 +280,7 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
                   sx={{
                     height: 8,
                     borderRadius: 4,
-                    bgcolor: 'rgba(226, 232, 240, 0.8)',
+                    bgcolor: 'rgba(255, 255, 255, 0.08)',
                     '& .MuiLinearProgress-bar': {
                       borderRadius: 4,
                       bgcolor:
@@ -300,11 +309,13 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
                         sx={{
                           p: 1,
                           borderRadius: 2,
-                          bgcolor: '#f8fafc',
+                          bgcolor: 'rgba(255, 255, 255, 0.03)',
+                          border: '1px solid rgba(255, 255, 255, 0.06)',
                           display: 'flex',
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           fontSize: '0.825rem',
+                          color: '#f8fafc',
                         }}
                       >
                         <span style={{ fontWeight: 600 }}>{ex.name}</span>
@@ -321,9 +332,9 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
               sx={{
                 p: 2,
                 borderRadius: 3,
-                bgcolor: 'rgba(241, 245, 249, 0.6)',
+                bgcolor: 'rgba(255, 255, 255, 0.03)',
                 backdropFilter: 'blur(16px)',
-                border: '1px solid rgba(226, 232, 240, 0.7)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
               <Grid container spacing={2}>
@@ -332,7 +343,7 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
                     GRUPOS ACTIVADOS
                   </Typography>
                   <Typography variant="h5" fontWeight="bold" color="primary.main">
-                    {activeMusclesCount} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>/ 18</span>
+                    {activeMusclesCount} <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>/ 18</span>
                   </Typography>
                 </Grid>
                 <Grid size={{ xs: 6 }}>
@@ -340,7 +351,7 @@ export const BodyHeatmap: React.FC<BodyHeatmapProps> = ({
                     SERIES TOTALES
                   </Typography>
                   <Typography variant="h5" fontWeight="bold" color="success.main">
-                    {totalSetsSum.toFixed(0)} <span style={{ fontSize: '0.85rem', color: '#64748b' }}>series</span>
+                    {totalSetsSum.toFixed(0)} <span style={{ fontSize: '0.85rem', color: '#94a3b8' }}>series</span>
                   </Typography>
                 </Grid>
               </Grid>

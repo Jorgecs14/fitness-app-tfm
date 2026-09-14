@@ -48,8 +48,8 @@ export const DietDetail = ({ open, diet, onClose }: DietDetailProps) => {
           </Button>
         </DialogTitle>
 
-        <DialogContent dividers sx={{ bgcolor: '#f8fafc' }}>
-          <Box sx={{ mb: 3, p: 2.5, bgcolor: '#ffffff', borderRadius: 2.5, border: '1px solid #e2e8f0' }}>
+        <DialogContent dividers sx={{ bgcolor: 'transparent' }}>
+          <Box sx={{ mb: 3, p: 2.5, bgcolor: 'rgba(255, 255, 255, 0.03)', borderRadius: 2.5, border: '1px solid rgba(255, 255, 255, 0.08)', backdropFilter: 'blur(10px)' }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={1}>
               <Box>
                 <Typography variant="h6" fontWeight="bold" color="primary.main">

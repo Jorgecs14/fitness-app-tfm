@@ -219,7 +219,7 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
       </Box>
 
       {/* Days Selector */}
-      <Box sx={{ p: 2, bgcolor: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+      <Box sx={{ p: 2, bgcolor: 'rgba(255, 255, 255, 0.02)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
         <Stack direction="row" spacing={1} justifyContent="center">
           {DAYS_OF_WEEK.map((day) => (
             <Button
@@ -261,11 +261,12 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
                   sx={{
                     p: 2,
                     borderRadius: 2.5,
-                    border: '1px solid #e2e8f0',
-                    transition: 'all 0.2s',
-                    backgroundColor: '#ffffff',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    transition: 'all 0.25s ease',
+                    backgroundColor: 'rgba(255, 255, 255, 0.03)',
+                    backdropFilter: 'blur(12px)',
                     '&:hover': {
-                      boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                      boxShadow: '0 8px 24px rgba(0, 0, 0, 0.3)',
                       borderColor: meal.color
                     }
                   }}
@@ -288,7 +289,7 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
                       </Box>
 
                       <Box>
-                        <Typography variant="subtitle1" fontWeight="bold" sx={{ color: '#0f172a' }}>
+                        <Typography variant="subtitle1" fontWeight="bold" sx={{ color: '#f8fafc' }}>
                           {meal.title}
                         </Typography>
 
@@ -315,7 +316,7 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
                     💡 {meal.suggestedMacro}
                   </Typography>
 
-                  <Divider sx={{ my: 1 }} />
+                  <Divider sx={{ my: 1, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
 
                   {mealFoods.length > 0 ? (
                     <Stack spacing={1}>
@@ -336,9 +337,13 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
                               alignItems: 'center',
                               justifyContent: 'space-between',
                               cursor: readOnly ? 'default' : 'pointer',
-                              backgroundColor: isChecked ? '#f1f5f9' : 'transparent',
+                              backgroundColor: isChecked ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+                              border: '1px solid',
+                              borderColor: isChecked ? 'rgba(16, 185, 129, 0.3)' : 'transparent',
+                              transition: 'all 0.2s ease',
                               '&:hover': {
-                                backgroundColor: isChecked ? '#e2e8f0' : '#f8fafc'
+                                backgroundColor: isChecked ? 'rgba(16, 185, 129, 0.18)' : 'rgba(34, 211, 238, 0.06)',
+                                borderColor: isChecked ? 'rgba(16, 185, 129, 0.5)' : 'rgba(34, 211, 238, 0.25)',
                               }
                             }}
                           >
@@ -384,7 +389,14 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
                         alignItems: 'center',
                         justifyContent: 'space-between',
                         cursor: readOnly ? 'default' : 'pointer',
-                        backgroundColor: isSingleChecked ? '#f1f5f9' : '#f8fafc'
+                        backgroundColor: isSingleChecked ? 'rgba(16, 185, 129, 0.1)' : 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid',
+                        borderColor: isSingleChecked ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.06)',
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          backgroundColor: isSingleChecked ? 'rgba(16, 185, 129, 0.18)' : 'rgba(34, 211, 238, 0.06)',
+                          borderColor: isSingleChecked ? 'rgba(16, 185, 129, 0.5)' : 'rgba(34, 211, 238, 0.25)',
+                        }
                       }}
                     >
                       <Typography variant="body2" color={isSingleChecked ? 'text.secondary' : 'text.primary'} sx={{ textDecoration: isSingleChecked ? 'line-through' : 'none' }}>

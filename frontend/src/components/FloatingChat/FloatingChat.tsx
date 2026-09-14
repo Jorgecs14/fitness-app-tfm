@@ -134,38 +134,57 @@ export const FloatingChat: React.FC = () => {
             position: 'fixed',
             bottom: 24,
             right: 24,
-          
             width: { xs: 'calc(100% - 48px)', sm: 380 },
-            height: { xs: 'calc(100% - 48px)', sm: 500 },
+            height: { xs: 'calc(100% - 48px)', sm: 520 },
             maxWidth: 380,
             maxHeight: 600,
             display: isOpen ? 'flex' : 'none',
             flexDirection: 'column',
             zIndex: 1200,    
-            borderRadius: 2,
+            borderRadius: 3.5,
+            bgcolor: 'rgba(15, 23, 42, 0.92)',
+            backdropFilter: 'blur(28px) saturate(190%)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 24px 70px rgba(0, 0, 0, 0.7)',
             overflow: 'hidden'
           }}
         >
-          
           <Box
             sx={{
               p: 2,
-              background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
+              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.25) 0%, rgba(59, 130, 246, 0.2) 100%)',
               color: 'white',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'space-between'
+              justifyContent: 'space-between',
+              borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             }}
           >
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              Asistente Fitness
-            </Typography>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Box
+                sx={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: '10px',
+                  bgcolor: 'rgba(6, 182, 212, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#22d3ee',
+                  border: '1px solid rgba(6, 182, 212, 0.4)',
+                }}
+              >
+                <Iconify icon="solar:chat-round-dots-bold" width={18} />
+              </Box>
+              <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#f8fafc' }}>
+                Asistente Fitness
+              </Typography>
+            </Stack>
             <Box>
-              
               <IconButton
                 size="small"
                 onClick={() => setIsOpen(false)}
-                sx={{ color: 'white' }}
+                sx={{ color: '#94a3b8', '&:hover': { color: '#f8fafc' } }}
               >
                 <Iconify icon='solar:minimize-square-minimalistic-bold-duotone' width={20} />
               </IconButton>
@@ -177,34 +196,45 @@ export const FloatingChat: React.FC = () => {
                   setMessages([])      
                   setError(null)      
                 }}
-                sx={{ color: 'white', ml: 0.5 }}
+                sx={{ color: '#94a3b8', ml: 0.5, '&:hover': { color: '#f8fafc' } }}
               >
                 <Iconify icon='solar:close-square-bold-duotone' width={20} />
               </IconButton>
             </Box>
           </Box>
-
-          <Divider />
-
           
           <Box
             sx={{
               flex: 1,              
               overflowY: 'auto',    
               p: 2,
-              bgcolor: '#f5f5f5'
+              bgcolor: 'transparent'
             }}
           >
-            
             {messages.length === 0 && (
-              <Box sx={{ textAlign: 'center', mt: 4 }}>
+              <Box sx={{ textAlign: 'center', mt: 4, px: 2 }}>
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    bgcolor: 'rgba(6, 182, 212, 0.1)',
+                    border: '1px solid rgba(6, 182, 212, 0.3)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#22d3ee',
+                    mb: 1.5,
+                  }}
+                >
+                  <Iconify icon="solar:magic-stick-3-bold" width={24} />
+                </Box>
                 <Typography variant="body2" color="text.secondary">
-                  ¡Hola! Soy tu asistente de fitness. Pregúntame cualquier cosa sobre entrenamientos, nutrición o bienestar!
+                  ¡Hola! Soy tu asistente de fitness. Pregúntame sobre tus rutinas, pesos, progresos o recetas nutricionales.
                 </Typography>
               </Box>
             )}
 
-          
             <List sx={{ p: 0 }}>
               {messages.map((message) => (
                 <ListItem
@@ -213,19 +243,25 @@ export const FloatingChat: React.FC = () => {
                     p: 0,
                     mb: 2,
                     display: 'flex',
-                    
                     justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start'
                   }}
                 >
                   <Box
                     sx={{
-                      maxWidth: '75%',   
+                      maxWidth: '80%',   
                       p: 1.5,
-                      borderRadius: 2,
-                      
-                      bgcolor: message.role === 'user' ? 'primary.main' : 'white',
-                      color: message.role === 'user' ? 'white' : 'text.primary',
-                      boxShadow: 1
+                      borderRadius: 2.5,
+                      background: message.role === 'user' 
+                        ? 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)' 
+                        : 'rgba(255, 255, 255, 0.04)',
+                      color: message.role === 'user' ? '#ffffff' : '#f8fafc',
+                      border: message.role === 'user' 
+                        ? 'none' 
+                        : '1px solid rgba(255, 255, 255, 0.08)',
+                      backdropFilter: 'blur(10px)',
+                      boxShadow: message.role === 'user'
+                        ? '0 4px 14px rgba(6, 182, 212, 0.35)'
+                        : '0 4px 12px rgba(0, 0, 0, 0.2)',
                     }}
                   >
                     <ListItemText
@@ -243,10 +279,10 @@ export const FloatingChat: React.FC = () => {
               
               {isLoading && (
                 <ListItem sx={{ p: 0, display: 'flex', justifyContent: 'flex-start' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CircularProgress size={20} />
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1.5, borderRadius: 2, bgcolor: 'rgba(255, 255, 255, 0.04)' }}>
+                    <CircularProgress size={18} color="primary" />
                     <Typography variant="body2" color="text.secondary">
-                      Pensando...
+                      Analizando...
                     </Typography>
                   </Box>
                 </ListItem>
@@ -255,23 +291,19 @@ export const FloatingChat: React.FC = () => {
             
             <div ref={messagesEndRef} />
           </Box>
-
           
           {error && (
             <Alert
               severity="error"
               onClose={() => setError(null)}  
-              sx={{ mx: 2, mb: 1 }}
+              sx={{ mx: 2, mb: 1, borderRadius: 2 }}
             >
               {error}
             </Alert>
           )}
 
-          <Divider />
-
-          
-          <Box sx={{ p: 2, bgcolor: 'white' }}>
-            <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ p: 2, bgcolor: 'rgba(15, 23, 42, 0.7)', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
               <TextField
                 fullWidth
                 size="small"
@@ -282,25 +314,24 @@ export const FloatingChat: React.FC = () => {
                 disabled={isLoading}                 
                 multiline                            
                 maxRows={3}                         
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 2
-                  }
-                }}
               />
               
               <IconButton
-                color="primary"
                 onClick={handleSendMessage}
                 disabled={isLoading || !inputMessage.trim()}  
                 sx={{
-                  bgcolor: 'primary.main',
+                  background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
                   color: 'white',
+                  width: 40,
+                  height: 40,
+                  flexShrink: 0,
+                  boxShadow: '0 4px 12px rgba(6, 182, 212, 0.35)',
                   '&:hover': {
-                    bgcolor: 'primary.dark'
+                    background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
                   },
                   '&:disabled': {
-                    bgcolor: 'action.disabledBackground'
+                    background: 'rgba(255, 255, 255, 0.08)',
+                    color: 'rgba(255, 255, 255, 0.2)',
                   }
                 }}
               >

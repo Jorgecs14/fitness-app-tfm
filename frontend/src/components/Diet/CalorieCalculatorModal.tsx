@@ -79,33 +79,34 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
       PaperProps={{
         sx: {
           borderRadius: '28px',
-          bgcolor: 'rgba(255, 255, 255, 0.92)',
-          backdropFilter: 'blur(28px) saturate(190%)',
-          border: '1px solid rgba(255, 255, 255, 0.9)',
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.22)',
+          bgcolor: 'rgba(15, 23, 42, 0.92)',
+          backdropFilter: 'blur(32px) saturate(190%)',
+          border: '1px solid rgba(255, 255, 255, 0.15)',
+          boxShadow: '0 24px 70px rgba(0, 0, 0, 0.7)',
           overflow: 'hidden',
         },
       }}
     >
-      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 3, pb: 2 }}>
+      <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 3, pb: 2, borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
         <Box
           sx={{
             display: 'inline-flex',
             p: 1,
             borderRadius: '12px',
-            bgcolor: 'rgba(2, 132, 199, 0.12)',
-            color: '#0284c7',
+            bgcolor: 'rgba(6, 182, 212, 0.15)',
+            color: '#22d3ee',
+            border: '1px solid rgba(6, 182, 212, 0.3)',
           }}
         >
           <Iconify icon='solar:calculator-minimalistic-bold-duotone' width={26} height={26} />
         </Box>
-        <Typography variant='h6' fontWeight={800} sx={{ color: '#0f172a' }}>
+        <Typography variant='h6' fontWeight={800} sx={{ color: '#f8fafc' }}>
           Calculadora de Calorías Diarias y Macros
         </Typography>
       </DialogTitle>
 
-      <DialogContent dividers sx={{ p: 3 }}>
-        <Grid container spacing={2}>
+      <DialogContent sx={{ p: 3 }}>
+        <Grid container spacing={2} sx={{ mt: 0.5 }}>
           <Grid size={{ xs: 6 }}>
             <TextField
               select
@@ -181,63 +182,63 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
           </Grid>
         </Grid>
 
-        <Divider sx={{ my: 3 }} />
+        <Divider sx={{ my: 3, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
 
         {/* Resultados Estimados */}
-        <Box sx={{ bgcolor: 'rgba(241, 245, 249, 0.7)', backdropFilter: 'blur(10px)', p: 2.5, borderRadius: '20px', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
-          <Typography variant='subtitle2' fontWeight={800} sx={{ color: '#0f172a', textAlign: 'center', mb: 2 }}>
+        <Box sx={{ bgcolor: 'rgba(255, 255, 255, 0.03)', backdropFilter: 'blur(10px)', p: 2.5, borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <Typography variant='subtitle2' fontWeight={800} sx={{ color: '#f8fafc', textAlign: 'center', mb: 2 }}>
             📊 Estimación Metabólica (Mifflin-St Jeor)
           </Typography>
 
           <Grid container spacing={1.5}>
             <Grid size={{ xs: 4 }}>
-              <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: '14px', bgcolor: 'rgba(2, 132, 199, 0.08)', border: '1px solid rgba(2, 132, 199, 0.2)' }}>
-                <Typography variant='caption' sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>Metabolismo Basal</Typography>
-                <Typography variant='subtitle1' fontWeight={800} sx={{ color: '#0284c7' }}>{bmr} kcal</Typography>
+              <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: '14px', bgcolor: 'rgba(2, 132, 199, 0.12)', border: '1px solid rgba(2, 132, 199, 0.3)' }}>
+                <Typography variant='caption' sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>Metabolismo Basal</Typography>
+                <Typography variant='subtitle1' fontWeight={800} sx={{ color: '#38bdf8' }}>{bmr} kcal</Typography>
               </Box>
             </Grid>
             <Grid size={{ xs: 4 }}>
-              <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: '14px', bgcolor: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
-                <Typography variant='caption' sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>Gasto Total (TDEE)</Typography>
-                <Typography variant='subtitle1' fontWeight={800} sx={{ color: '#f59e0b' }}>{tdee} kcal</Typography>
+              <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: '14px', bgcolor: 'rgba(245, 158, 11, 0.12)', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+                <Typography variant='caption' sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>Gasto Total (TDEE)</Typography>
+                <Typography variant='subtitle1' fontWeight={800} sx={{ color: '#fbbf24' }}>{tdee} kcal</Typography>
               </Box>
             </Grid>
             <Grid size={{ xs: 4 }}>
-              <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: '14px', bgcolor: 'rgba(16, 185, 129, 0.08)', border: '1px solid rgba(16, 185, 129, 0.2)' }}>
-                <Typography variant='caption' sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>Objetivo Diario</Typography>
-                <Typography variant='subtitle1' fontWeight={800} sx={{ color: '#10b981' }}>{targetCalories} kcal</Typography>
+              <Box sx={{ textAlign: 'center', p: 1.5, borderRadius: '14px', bgcolor: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+                <Typography variant='caption' sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>Objetivo Diario</Typography>
+                <Typography variant='subtitle1' fontWeight={800} sx={{ color: '#34d399' }}>{targetCalories} kcal</Typography>
               </Box>
             </Grid>
           </Grid>
 
           {/* Desglose de Macros */}
-          <Box sx={{ mt: 2.5, p: 2, borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.85)', border: '1px solid rgba(226, 232, 240, 0.8)' }}>
-            <Typography variant='caption' sx={{ fontWeight: 800, color: '#334155', display: 'block', textAlign: 'center', mb: 1.5 }}>
+          <Box sx={{ mt: 2.5, p: 2, borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.04)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <Typography variant='caption' sx={{ fontWeight: 800, color: '#e2e8f0', display: 'block', textAlign: 'center', mb: 1.5 }}>
               🥩 Reparto Recomendado de Macronutrientes
             </Typography>
             <Grid container spacing={1} textAlign='center'>
               <Grid size={{ xs: 4 }}>
-                <Typography variant='caption' fontWeight={700} sx={{ color: '#f43f5e' }}>Proteínas</Typography>
-                <Typography variant='h6' fontWeight={800} sx={{ color: '#0f172a' }}>{proteinGrams}g</Typography>
-                <Typography variant='caption' color='text.secondary'>30% ({proteinGrams * 4} kcal)</Typography>
+                <Typography variant='caption' fontWeight={700} sx={{ color: '#fb7185' }}>Proteínas</Typography>
+                <Typography variant='h6' fontWeight={800} sx={{ color: '#f8fafc' }}>{proteinGrams}g</Typography>
+                <Typography variant='caption' sx={{ color: '#94a3b8' }}>30% ({proteinGrams * 4} kcal)</Typography>
               </Grid>
               <Grid size={{ xs: 4 }}>
-                <Typography variant='caption' fontWeight={700} sx={{ color: '#0284c7' }}>Carbohidratos</Typography>
-                <Typography variant='h6' fontWeight={800} sx={{ color: '#0f172a' }}>{carbsGrams}g</Typography>
-                <Typography variant='caption' color='text.secondary'>45% ({carbsGrams * 4} kcal)</Typography>
+                <Typography variant='caption' fontWeight={700} sx={{ color: '#38bdf8' }}>Carbohidratos</Typography>
+                <Typography variant='h6' fontWeight={800} sx={{ color: '#f8fafc' }}>{carbsGrams}g</Typography>
+                <Typography variant='caption' sx={{ color: '#94a3b8' }}>45% ({carbsGrams * 4} kcal)</Typography>
               </Grid>
               <Grid size={{ xs: 4 }}>
-                <Typography variant='caption' fontWeight={700} sx={{ color: '#f59e0b' }}>Grasas</Typography>
-                <Typography variant='h6' fontWeight={800} sx={{ color: '#0f172a' }}>{fatGrams}g</Typography>
-                <Typography variant='caption' color='text.secondary'>25% ({fatGrams * 9} kcal)</Typography>
+                <Typography variant='caption' fontWeight={700} sx={{ color: '#fbbf24' }}>Grasas</Typography>
+                <Typography variant='h6' fontWeight={800} sx={{ color: '#f8fafc' }}>{fatGrams}g</Typography>
+                <Typography variant='caption' sx={{ color: '#94a3b8' }}>25% ({fatGrams * 9} kcal)</Typography>
               </Grid>
             </Grid>
           </Box>
         </Box>
       </DialogContent>
 
-      <DialogActions sx={{ px: 3, py: 2.5, bgcolor: 'rgba(248, 250, 252, 0.8)' }}>
-        <Button onClick={onClose} sx={{ borderRadius: '9999px', color: '#64748b', fontWeight: 600 }}>
+      <DialogActions sx={{ px: 3, py: 2.5, bgcolor: 'rgba(15, 23, 42, 0.7)', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <Button onClick={onClose} sx={{ borderRadius: '9999px', color: '#94a3b8', fontWeight: 600, '&:hover': { color: '#f8fafc' } }}>
           Cerrar
         </Button>
         <Button
@@ -249,12 +250,12 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
             px: 3,
             py: 1,
             fontWeight: 700,
-            bgcolor: '#0f172a',
+            background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
             color: '#ffffff',
-            boxShadow: '0 4px 14px rgba(15, 23, 42, 0.25)',
+            boxShadow: '0 4px 14px rgba(6, 182, 212, 0.35)',
             '&:hover': {
-              bgcolor: '#0284c7',
-              boxShadow: '0 6px 18px rgba(2, 132, 199, 0.35)',
+              background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
+              boxShadow: '0 6px 20px rgba(6, 182, 212, 0.5)',
             },
           }}
         >

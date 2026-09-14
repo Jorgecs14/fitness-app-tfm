@@ -478,7 +478,7 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
         )}
 
         {/* Contenedor Principal */}
-        <Box sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#f4f6f8', flexGrow: 1, overflowY: 'auto' }}>
+        <Box sx={{ p: { xs: 2, sm: 3 }, bgcolor: 'transparent', flexGrow: 1, overflowY: 'auto' }}>
           {loadingWorkout ? (
             <Box display="flex" flexDirection="column" alignItems="center" justifyContent="center" minHeight="300px">
               <CircularProgress size={50} color="primary" />
@@ -635,11 +635,15 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
                         sx={{
                           p: 2,
                           borderRadius: 2.5,
-                          bgcolor: setItem.completed ? '#f0fdf4' : 'background.paper',
-                          border: '2px solid',
-                          borderColor: setItem.completed ? '#22c55e' : '#e2e8f0',
-                          transition: 'all 0.2s ease',
-                          boxShadow: setItem.completed ? '0 4px 12px rgba(34, 197, 94, 0.15)' : 'none',
+                          bgcolor: setItem.completed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.03)',
+                          border: '1.5px solid',
+                          borderColor: setItem.completed ? 'rgba(16, 185, 129, 0.5)' : 'rgba(255, 255, 255, 0.1)',
+                          backdropFilter: 'blur(16px)',
+                          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                          boxShadow: setItem.completed ? '0 4px 20px rgba(16, 185, 129, 0.2)' : '0 4px 16px rgba(0, 0, 0, 0.2)',
+                          '&:hover': {
+                            borderColor: setItem.completed ? 'rgba(16, 185, 129, 0.8)' : 'rgba(34, 211, 238, 0.4)',
+                          },
                         }}
                       >
                         <Stack direction={{ xs: 'column', md: 'row' }} alignItems={{ xs: 'stretch', md: 'center' }} justifyContent="space-between" spacing={2}>
@@ -652,10 +656,10 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
                               sx={{ '& .MuiSvgIcon-root': { fontSize: 28 } }}
                             />
                             <Box>
-                              <Typography variant="subtitle1" fontWeight="bold">
+                              <Typography variant="subtitle1" fontWeight="bold" sx={{ color: '#f8fafc' }}>
                                 Serie #{setItem.setIndex}
                               </Typography>
-                              <Typography variant="caption" color="text.secondary">
+                              <Typography variant="caption" sx={{ color: setItem.completed ? '#34d399' : '#94a3b8' }}>
                                 {setItem.completed ? '✅ Completada' : 'Pendiente'}
                               </Typography>
                             </Box>
@@ -689,10 +693,10 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
 
                               {/* Chips de ajuste instantáneo con un toque */}
                               <Stack direction="row" spacing={0.5} sx={{ mt: 0.75, justifyContent: 'center' }}>
-                                <button type="button" className="liquid-quick-chip" style={{ color: '#0f172a' }} onClick={() => handleQuickAdjust(globalIndex, 'weight', -2.5)}>-2.5</button>
-                                <button type="button" className="liquid-quick-chip" style={{ color: '#0f172a' }} onClick={() => handleQuickAdjust(globalIndex, 'weight', 1)}>+1</button>
-                                <button type="button" className="liquid-quick-chip" style={{ color: '#0f172a' }} onClick={() => handleQuickAdjust(globalIndex, 'weight', 2.5)}>+2.5</button>
-                                <button type="button" className="liquid-quick-chip" style={{ color: '#0f172a' }} onClick={() => handleQuickAdjust(globalIndex, 'weight', 5)}>+5kg</button>
+                                <button type="button" className="liquid-quick-chip" onClick={() => handleQuickAdjust(globalIndex, 'weight', -2.5)}>-2.5</button>
+                                <button type="button" className="liquid-quick-chip" onClick={() => handleQuickAdjust(globalIndex, 'weight', 1)}>+1</button>
+                                <button type="button" className="liquid-quick-chip" onClick={() => handleQuickAdjust(globalIndex, 'weight', 2.5)}>+2.5</button>
+                                <button type="button" className="liquid-quick-chip" onClick={() => handleQuickAdjust(globalIndex, 'weight', 5)}>+5kg</button>
                               </Stack>
                             </Box>
 
@@ -738,12 +742,12 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
 
                         {/* Renders de Sub-filas para DropSets */}
                         {setItem.drops && setItem.drops.length > 0 && (
-                          <Box sx={{ ml: 4, mt: 1.5, p: 1.5, bgcolor: '#fdf4ff', borderRadius: 1.5, borderLeft: '3px solid #d946ef' }}>
-                            <Typography variant="caption" fontWeight="bold" color="secondary">
+                          <Box sx={{ ml: 4, mt: 1.5, p: 1.5, bgcolor: 'rgba(217, 70, 239, 0.1)', borderRadius: 1.5, borderLeft: '3px solid #d946ef', border: '1px solid rgba(217, 70, 239, 0.2)' }}>
+                            <Typography variant="caption" fontWeight="bold" sx={{ color: '#e879f9' }}>
                               🔥 Bajadas Drop-Set:
                             </Typography>
                             {setItem.drops.map((drop, dIdx) => (
-                              <Typography key={dIdx} variant="body2" sx={{ mt: 0.5 }}>
+                              <Typography key={dIdx} variant="body2" sx={{ mt: 0.5, color: '#f1f5f9' }}>
                                 Bajada #{dIdx + 1}: <strong>{drop.weight} kg</strong> x {drop.reps} reps
                               </Typography>
                             ))}
@@ -752,12 +756,12 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
 
                         {/* Renders de Sub-filas para Rest-Pause */}
                         {setItem.clusters && setItem.clusters.length > 0 && (
-                          <Box sx={{ ml: 4, mt: 1.5, p: 1.5, bgcolor: '#fffbeb', borderRadius: 1.5, borderLeft: '3px solid #f59e0b' }}>
-                            <Typography variant="caption" fontWeight="bold" color="warning.main">
+                          <Box sx={{ ml: 4, mt: 1.5, p: 1.5, bgcolor: 'rgba(245, 158, 11, 0.1)', borderRadius: 1.5, borderLeft: '3px solid #f59e0b', border: '1px solid rgba(245, 158, 11, 0.2)' }}>
+                            <Typography variant="caption" fontWeight="bold" sx={{ color: '#fbbf24' }}>
                               ⚡ Ráfagas Rest-Pause (15s descanso):
                             </Typography>
                             {setItem.clusters.map((cluster, cIdx) => (
-                              <Typography key={cIdx} variant="body2" sx={{ mt: 0.5 }}>
+                              <Typography key={cIdx} variant="body2" sx={{ mt: 0.5, color: '#f1f5f9' }}>
                                 Ráfaga #{cIdx + 1}: {cluster.reps} reps
                               </Typography>
                             ))}
@@ -768,7 +772,7 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
                   </Stack>
 
                   {/* Acciones de Navegación del Ejercicio */}
-                  <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <Typography variant="body2" color="text.secondary">
                       {currentGroup.sets.every((s) => s.setItem.completed)
                         ? '🎉 ¡Todas las series completadas para este ejercicio!'
@@ -866,14 +870,19 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
                           sx={{
                             p: 1.5,
                             borderRadius: 2,
-                            bgcolor: setItem.completed ? '#f0fdf4' : 'background.paper',
+                            bgcolor: setItem.completed ? 'rgba(16, 185, 129, 0.12)' : 'rgba(255, 255, 255, 0.03)',
                             border: '1px solid',
-                            borderColor: setItem.completed ? '#22c55e' : '#e2e8f0',
+                            borderColor: setItem.completed ? 'rgba(16, 185, 129, 0.45)' : 'rgba(255, 255, 255, 0.1)',
+                            backdropFilter: 'blur(12px)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             flexWrap: 'wrap',
                             gap: 1,
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              borderColor: setItem.completed ? 'rgba(16, 185, 129, 0.7)' : 'rgba(34, 211, 238, 0.35)',
+                            },
                           }}
                         >
                           <Stack direction="row" alignItems="center" spacing={1}>
@@ -932,10 +941,10 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
         PaperProps={{
           sx: {
             borderRadius: '28px',
-            bgcolor: 'rgba(255, 255, 255, 0.88)',
-            backdropFilter: 'blur(28px) saturate(190%)',
-            border: '1px solid rgba(255, 255, 255, 0.9)',
-            boxShadow: '0 24px 60px rgba(0, 0, 0, 0.25)',
+            bgcolor: 'rgba(15, 23, 42, 0.92)',
+            backdropFilter: 'blur(32px) saturate(190%)',
+            border: '1px solid rgba(255, 255, 255, 0.15)',
+            boxShadow: '0 24px 70px rgba(0, 0, 0, 0.7)',
             overflow: 'hidden',
           },
         }}
@@ -945,8 +954,8 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
           sx={{
             p: 4,
             textAlign: 'center',
-            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(2, 132, 199, 0.12) 100%)',
-            borderBottom: '1px solid rgba(226, 232, 240, 0.8)',
+            background: 'radial-gradient(ellipse at top, rgba(16, 185, 129, 0.25) 0%, rgba(15, 23, 42, 0.5) 100%)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
             position: 'relative',
           }}
         >
@@ -955,17 +964,18 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
               display: 'inline-flex',
               p: 2,
               borderRadius: '50%',
-              bgcolor: 'rgba(255, 255, 255, 0.9)',
-              boxShadow: '0 10px 28px rgba(16, 185, 129, 0.3)',
+              bgcolor: 'rgba(16, 185, 129, 0.15)',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
+              boxShadow: '0 0 25px rgba(16, 185, 129, 0.4)',
               mb: 1.5,
             }}
           >
-            <Iconify icon="solar:cup-star-bold" width={48} height={48} sx={{ color: '#10b981' }} />
+            <Iconify icon="solar:cup-star-bold" width={48} height={48} sx={{ color: '#34d399' }} />
           </Box>
-          <Typography variant="h4" fontWeight={800} sx={{ color: '#0f172a', letterSpacing: '-0.02em', mb: 0.5 }}>
+          <Typography variant="h4" fontWeight={800} sx={{ color: '#f8fafc', letterSpacing: '-0.02em', mb: 0.5 }}>
             ¡Sesión Completada con Éxito!
           </Typography>
-          <Typography variant="body2" sx={{ color: '#475569', fontWeight: 500 }}>
+          <Typography variant="body2" sx={{ color: '#94a3b8', fontWeight: 500 }}>
             Excelente trabajo. Cada serie suma a tu adaptación neuromuscular y composición corporal.
           </Typography>
 
@@ -975,15 +985,15 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
               sx={{
                 p: 1.5,
                 borderRadius: '18px',
-                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                bgcolor: 'rgba(255, 255, 255, 0.04)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(226, 232, 240, 0.8)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>
                 ⏱️ Tiempo
               </Typography>
-              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#0f172a' }}>
+              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#f8fafc' }}>
                 {formatTime(duration)}
               </Typography>
             </Box>
@@ -992,15 +1002,15 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
               sx={{
                 p: 1.5,
                 borderRadius: '18px',
-                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                bgcolor: 'rgba(255, 255, 255, 0.04)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(226, 232, 240, 0.8)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>
                 🏋️ Volumen Total
               </Typography>
-              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#0284c7' }}>
+              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#38bdf8' }}>
                 {totalVolumeLifted.toLocaleString()} kg
               </Typography>
             </Box>
@@ -1009,15 +1019,15 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
               sx={{
                 p: 1.5,
                 borderRadius: '18px',
-                bgcolor: 'rgba(255, 255, 255, 0.8)',
+                bgcolor: 'rgba(255, 255, 255, 0.04)',
                 backdropFilter: 'blur(10px)',
-                border: '1px solid rgba(226, 232, 240, 0.8)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <Typography variant="caption" sx={{ color: '#64748b', fontWeight: 600, display: 'block' }}>
+              <Typography variant="caption" sx={{ color: '#94a3b8', fontWeight: 600, display: 'block' }}>
                 🎯 Series
               </Typography>
-              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#10b981' }}>
+              <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#34d399' }}>
                 {completedCount}/{totalCount}
               </Typography>
             </Box>
@@ -1028,7 +1038,7 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
         <Box sx={{ p: 3.5 }}>
           <Stack spacing={3}>
             <Box sx={{ textAlign: 'center' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#334155', mb: 1 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#e2e8f0', mb: 1 }}>
                 ¿Cómo calificarías tu esfuerzo y sensaciones hoy?
               </Typography>
               <Rating value={rating} onChange={(_, val) => setRating(val || 5)} size="large" sx={{ color: '#f59e0b' }} />
@@ -1045,9 +1055,10 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
               sx={{
                 '& .MuiOutlinedInput-root': {
                   borderRadius: '18px',
-                  bgcolor: 'rgba(255, 255, 255, 0.7)',
+                  bgcolor: 'rgba(255, 255, 255, 0.04)',
                   backdropFilter: 'blur(10px)',
-                  '& fieldset': { borderColor: 'rgba(226, 232, 240, 0.8)' },
+                  '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                  '&:hover fieldset': { borderColor: 'rgba(34, 211, 238, 0.5)' },
                 },
               }}
             />
@@ -1062,13 +1073,13 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            bgcolor: 'rgba(248, 250, 252, 0.8)',
-            borderTop: '1px solid rgba(226, 232, 240, 0.8)',
+            bgcolor: 'rgba(15, 23, 42, 0.7)',
+            borderTop: '1px solid rgba(255, 255, 255, 0.08)',
           }}
         >
           <Button
             onClick={() => setFinishModalOpen(false)}
-            sx={{ borderRadius: '9999px', color: '#64748b', fontWeight: 600 }}
+            sx={{ borderRadius: '9999px', color: '#94a3b8', fontWeight: 600, '&:hover': { color: '#f8fafc' } }}
           >
             Volver
           </Button>
@@ -1082,12 +1093,12 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
               px: 3,
               py: 1,
               fontWeight: 700,
-              bgcolor: '#0f172a',
+              background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
               color: '#ffffff',
-              boxShadow: '0 6px 20px rgba(15, 23, 42, 0.25)',
+              boxShadow: '0 6px 20px rgba(6, 182, 212, 0.35)',
               '&:hover': {
-                bgcolor: '#10b981',
-                boxShadow: '0 8px 24px rgba(16, 185, 129, 0.35)',
+                background: 'linear-gradient(135deg, #0891b2 0%, #2563eb 100%)',
+                boxShadow: '0 8px 24px rgba(6, 182, 212, 0.5)',
               },
             }}
           >

@@ -360,9 +360,9 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
                       sx={{
                         fontWeight: 700,
                         fontSize: '0.75rem',
-                        bgcolor: 'rgba(255, 255, 255, 0.9)',
-                        color: '#0f172a',
-                        border: '1px solid rgba(2, 132, 199, 0.25)',
+                        bgcolor: 'rgba(2, 132, 199, 0.15)',
+                        color: '#38bdf8',
+                        border: '1px solid rgba(2, 132, 199, 0.35)',
                         borderRadius: '9999px',
                       }}
                     />
@@ -391,7 +391,17 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
               ) : (
                 <Stack spacing={1.5}>
                   {selectedExercises.map((item, idx) => (
-                    <Card key={item.exercise_id} variant="outlined" sx={{ borderRadius: 2, p: 1.5, bgcolor: '#fafafa' }}>
+                    <Card
+                      key={item.exercise_id}
+                      variant="outlined"
+                      sx={{
+                        borderRadius: 2,
+                        p: 1.5,
+                        bgcolor: 'rgba(255, 255, 255, 0.03)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        backdropFilter: 'blur(10px)',
+                      }}
+                    >
                       <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between" spacing={1.5}>
                         <Box sx={{ flexGrow: 1 }}>
                           <Typography variant="subtitle2" fontWeight="bold">
@@ -514,12 +524,17 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
                           sx={{
                             p: 1.5,
                             borderRadius: 2,
-                            border: '1px solid #e2e8f0',
+                            bgcolor: 'rgba(255, 255, 255, 0.02)',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
                             gap: 1.5,
-                            '&:hover': { bgcolor: '#f8fafc' },
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              bgcolor: 'rgba(34, 211, 238, 0.06)',
+                              borderColor: 'rgba(34, 211, 238, 0.35)',
+                            },
                           }}
                         >
                           <Stack direction="row" spacing={1.5} alignItems="center">
@@ -534,7 +549,7 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
                                   borderRadius: 1.5,
                                   objectFit: 'contain',
                                   bgcolor: '#0a0f1d',
-                                  border: '1px solid #cbd5e1',
+                                  border: '1px solid rgba(255, 255, 255, 0.1)',
                                   flexShrink: 0,
                                 }}
                                 loading="lazy"
@@ -579,7 +594,23 @@ export const ClientWorkoutBuilderModal: React.FC<ClientWorkoutBuilderModalProps>
             <Grid container spacing={2}>
               {STARTER_TEMPLATES.map((tmpl, idx) => (
                 <Grid size={{ xs: 12, sm: 6 }} key={idx}>
-                  <Card sx={{ borderRadius: 2.5, height: '100%', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column' }}>
+                  <Card
+                    sx={{
+                      borderRadius: 2.5,
+                      height: '100%',
+                      bgcolor: 'rgba(255, 255, 255, 0.03)',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
+                      backdropFilter: 'blur(10px)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      transition: 'all 0.25s ease',
+                      '&:hover': {
+                        borderColor: 'rgba(34, 211, 238, 0.4)',
+                        transform: 'translateY(-2px)',
+                        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.4)',
+                      },
+                    }}
+                  >
                     <CardContent sx={{ p: 2.5, flexGrow: 1 }}>
                       <Typography variant="h6" fontWeight="bold" gutterBottom>
                         {tmpl.title}

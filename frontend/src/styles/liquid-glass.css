@@ -411,3 +411,76 @@
   background: rgba(255, 255, 255, 0.09) !important;
 }
 
+/* ==========================================================================
+   Universal Form Controls & Inputs - Liquid Glass iOS 26
+   ========================================================================== */
+
+/* Universal Outlined Input */
+.MuiOutlinedInput-root {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 14px !important;
+  color: #ffffff !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.MuiOutlinedInput-root:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border-color: rgba(34, 211, 238, 0.5) !important;
+  box-shadow: 0 0 16px rgba(6, 182, 212, 0.2) !important;
+}
+
+.MuiOutlinedInput-root.Mui-focused {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: #22d3ee !important;
+  box-shadow: 0 0 25px rgba(6, 182, 212, 0.38) !important;
+}
+
+.MuiOutlinedInput-notchedOutline {
+  border: none !important;
+}
+
+/* Universal Input Label */
+.MuiInputLabel-root {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: #22d3ee !important;
+  font-weight: 700 !important;
+}
+
+/* Dropdown Menu Items */
+.MuiMenuItem-root {
+  border-radius: 10px !important;
+  margin: 2px 4px !important;
+  color: #ffffff !important;
+  transition: all 0.2s ease !important;
+}
+
+.MuiMenuItem-root:hover {
+  background: rgba(6, 182, 212, 0.18) !important;
+  color: #22d3ee !important;
+  transform: translateX(3px) !important;
+}
+
+.MuiMenuItem-root.Mui-selected {
+  background: rgba(6, 182, 212, 0.25) !important;
+  color: #22d3ee !important;
+  font-weight: 800 !important;
+}
+
+/* Dialog Backdrop & Paper */
+.MuiDialog-paper {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(30, 41, 59, 0.90) 100%) !important;
+  backdrop-filter: blur(32px) !important;
+  -webkit-backdrop-filter: blur(32px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-radius: 24px !important;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.65), 0 0 35px rgba(6, 182, 212, 0.2) !important;
+  color: #ffffff !important;
+}
+
+
