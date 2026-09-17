@@ -60,7 +60,7 @@ export function HeaderSection({
       sx={sx}
       {...other}
     >
-      <Container maxWidth={false} sx={{ px: { xs: 2, sm: 3 } }}>
+      <Container maxWidth={false} sx={{ px: { xs: 1.5, sm: 3 } }}>
         <HeaderContent>
           {slots?.leftArea}
           {slots?.centerArea}
@@ -95,9 +95,12 @@ const HeaderContent = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
+  flexWrap: 'nowrap',
   minHeight: 'var(--layout-header-mobile-height)',
   width: '100%',
+  gap: 8,
   [theme.breakpoints.up('lg')]: {
-    minHeight: 'var(--layout-header-desktop-height)'
+    minHeight: 'var(--layout-header-desktop-height)',
+    gap: 16
   }
 }))

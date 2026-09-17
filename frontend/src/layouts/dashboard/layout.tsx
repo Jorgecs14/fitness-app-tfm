@@ -209,24 +209,10 @@ export function DashboardLayout({
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: { xs: 0.8, sm: 1.5 }
+                gap: { xs: 0.8, sm: 1.2 },
+                flexShrink: 0
               }}
             >
-              {/* Botón de Búsqueda Rápida Móvil */}
-              <IconButton
-                onClick={() => setSearchOpen(true)}
-                title="Búsqueda Rápida (Cmd+K)"
-                sx={{
-                  width: 36,
-                  height: 36,
-                  color: '#ffffff',
-                  borderRadius: 2,
-                  background: 'rgba(120, 120, 128, 0.16)',
-                }}
-              >
-                <Iconify icon="solar:magnifer-bold" width={18} sx={{ color: '#ffffff' }} />
-              </IconButton>
-
               {/* Botón Alargado: Chat del Entrenador */}
               <Box
                 component="button"
@@ -235,32 +221,34 @@ export function DashboardLayout({
                 sx={{
                   display: 'inline-flex',
                   alignItems: 'center',
-                  gap: { xs: 0.7, sm: 1 },
-                  px: { xs: 1.4, sm: 2 },
-                  py: 0.85,
-                  borderRadius: '12px',
+                  gap: { xs: 0.6, sm: 0.8 },
+                  px: { xs: 1.2, sm: 1.8 },
+                  py: { xs: 0.6, sm: 0.8 },
+                  height: { xs: 35, sm: 38 },
+                  borderRadius: '10px',
                   background: 'linear-gradient(135deg, rgba(0, 122, 255, 0.22) 0%, rgba(0, 122, 255, 0.1) 100%)',
                   border: '1px solid rgba(0, 122, 255, 0.4)',
                   color: '#ffffff',
                   cursor: 'pointer',
                   fontWeight: 700,
-                  fontSize: { xs: '0.78rem', sm: '0.85rem' },
+                  fontSize: { xs: '0.76rem', sm: '0.84rem' },
                   letterSpacing: '-0.01em',
-                  boxShadow: '0 4px 14px rgba(0, 122, 255, 0.2)',
-                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 2px 10px rgba(0, 122, 255, 0.2)',
+                  transition: 'all 0.15s ease',
                   whiteSpace: 'nowrap',
+                  flexShrink: 0,
                   '&:hover': {
                     background: 'linear-gradient(135deg, #007AFF 0%, #0056b3 100%)',
                     borderColor: '#007AFF',
-                    boxShadow: '0 6px 20px rgba(0, 122, 255, 0.45)',
+                    boxShadow: '0 4px 16px rgba(0, 122, 255, 0.4)',
                     transform: 'translateY(-1px)',
                   },
                   '&:active': {
-                    transform: 'scale(0.97)',
+                    transform: 'scale(0.96)',
                   }
                 }}
               >
-                <MessageSquare size={16} color="#38bdf8" />
+                <MessageSquare size={15} color="#38bdf8" />
                 <Typography component="span" sx={{ fontSize: 'inherit', fontWeight: 'inherit', color: 'inherit' }}>
                   Chat del Entrenador
                 </Typography>
