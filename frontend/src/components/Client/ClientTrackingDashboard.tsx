@@ -623,55 +623,105 @@ export const ClientTrackingDashboard: React.FC<ClientTrackingDashboardProps> = (
             </Box>
           </Grid>
 
-          {/* Último seguimiento semanal */}
-          {weeklyTrackings.length > 0 && (
-            <Grid size={{ xs: 12 }}>
-              <Box
-                className="liquid-glass-card"
-                sx={{
-                  p: 3,
-                  borderRadius: 4,
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                }}
-              >
-                <Typography variant="h6" fontWeight="800" gutterBottom>
-                  Último Reporte Registrado ({new Date(weeklyTrackings[0].week_start_date).toLocaleDateString('es-ES')})
-                </Typography>
-                <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
-                {(() => {
-                  const lastTracking = weeklyTrackings[0];
-                  return (
-                    <Grid container spacing={2.5}>
-                      <Grid size={{ xs: 6, sm: 3 }}>
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Peso Báscula</Typography>
-                        <Typography variant="h5" fontWeight="800" sx={{ color: '#22d3ee', mt: 0.5 }}>
-                          {lastTracking.weight ? `${lastTracking.weight} kg` : '—'}
+          {/* Punto de Partida del Atleta */}
+          {weeklyTrackings.length > 0 && (() => {
+            const chronological = [...weeklyTrackings].sort(
+              (a, b) => new Date(a.week_start_date).getTime() - new Date(b.week_start_date).getTime()
+            );
+            const baseline = chronological[0];
+            const latest = weeklyTrackings[0];
+
+            const weightDelta =
+              latest.weight && baseline.weight ? Number((latest.weight - baseline.weight).toFixed(1)) : null;
+            const waistDelta =
+              latest.waist_measurement && baseline.waist_measurement
+                ? Number((latest.waist_measurement - baseline.waist_measurement).toFixed(1))
+                : null;
+
+            return (
+              <Grid size={{ xs: 12 }}>
+                <Box
+                  className="liquid-glass-card"
+                  sx={{
+                    p: 3,
+                    borderRadius: 4,
+                    background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(16, 185, 129, 0.05) 100%)',
+                    border: '1px solid rgba(6, 182, 212, 0.25)',
+                  }}
+                >
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2} flexWrap="wrap" gap={1}>
+                    <Box display="flex" alignItems="center" gap={1.2}>
+                      <Iconify icon="solar:flag-bold" width={22} sx={{ color: '#22d3ee' }} />
+                      <Typography variant="h6" fontWeight="800">
+                        Punto de Partida del Atleta (Día 1 vs Actual)
+                      </Typography>
+                    </Box>
+                    <Chip
+                      label={`Registrado el ${new Date(baseline.week_start_date).toLocaleDateString('es-ES')}`}
+                      size="small"
+                      sx={{
+                        background: 'rgba(6, 182, 212, 0.15)',
+                        color: '#22d3ee',
+                        fontWeight: 700,
+                      }}
+                    />
+                  </Box>
+
+                  <Grid container spacing={2}>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(0, 0, 0, 0.25)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                          Evolución de Peso
                         </Typography>
-                      </Grid>
-                      <Grid size={{ xs: 6, sm: 3 }}>
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Días Entrenados</Typography>
-                        <Typography variant="h5" fontWeight="800" sx={{ color: '#10b981', mt: 0.5 }}>
-                          {lastTracking.training_days_completed ?? '—'} / 7
-                        </Typography>
-                      </Grid>
-                      <Grid size={{ xs: 6, sm: 3 }}>
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Calidad del Sueño</Typography>
-                        <Typography variant="h6" fontWeight="700" sx={{ textTransform: 'capitalize', mt: 0.5 }}>
-                          {lastTracking.sleep_quality === 'good' ? '🌙 Bueno' : lastTracking.sleep_quality === 'regular' ? '⛅ Regular' : '⚡ Malo'}
-                        </Typography>
-                      </Grid>
-                      <Grid size={{ xs: 6, sm: 3 }}>
-                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>Autoevaluación</Typography>
-                        <Typography variant="h5" fontWeight="800" sx={{ color: '#f59e0b', mt: 0.5 }}>
-                          {lastTracking.self_rating ? `${lastTracking.self_rating} / 10` : '—'}
-                        </Typography>
-                      </Grid>
+                        <Box display="flex" alignItems="center" gap={1.5} mt={0.5}>
+                          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                            Inicio: <strong>{baseline.weight ? `${baseline.weight} kg` : '—'}</strong>
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>➔</Typography>
+                          <Typography variant="body1" fontWeight="800" sx={{ color: '#22d3ee' }}>
+                            Actual: {latest.weight ? `${latest.weight} kg` : '—'}
+                          </Typography>
+                          {weightDelta !== null && (
+                            <Chip
+                              label={`${weightDelta > 0 ? `+${weightDelta}` : weightDelta} kg`}
+                              size="small"
+                              color={weightDelta <= 0 ? 'success' : 'warning'}
+                              sx={{ fontWeight: 800, height: 22, fontSize: '0.72rem', ml: 'auto' }}
+                            />
+                          )}
+                        </Box>
+                      </Box>
                     </Grid>
-                  );
-                })()}
-              </Box>
-            </Grid>
-          )}
+
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                      <Box sx={{ p: 2, borderRadius: 2.5, background: 'rgba(0, 0, 0, 0.25)', border: '1px solid rgba(255, 255, 255, 0.06)' }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+                          Evolución de Cintura
+                        </Typography>
+                        <Box display="flex" alignItems="center" gap={1.5} mt={0.5}>
+                          <Typography variant="body1" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                            Inicio: <strong>{baseline.waist_measurement ? `${baseline.waist_measurement} cm` : '—'}</strong>
+                          </Typography>
+                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>➔</Typography>
+                          <Typography variant="body1" fontWeight="800" sx={{ color: '#22d3ee' }}>
+                            Actual: {latest.waist_measurement ? `${latest.waist_measurement} cm` : '—'}
+                          </Typography>
+                          {waistDelta !== null && (
+                            <Chip
+                              label={`${waistDelta > 0 ? `+${waistDelta}` : waistDelta} cm`}
+                              size="small"
+                              color={waistDelta <= 0 ? 'success' : 'warning'}
+                              sx={{ fontWeight: 800, height: 22, fontSize: '0.72rem', ml: 'auto' }}
+                            />
+                          )}
+                        </Box>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Grid>
+            );
+          })()}
         </Grid>
       </TabPanel>
 

@@ -30,7 +30,14 @@ import {
   User,
   Activity,
   Unlock,
-  RefreshCw
+  RefreshCw,
+  TrendingDown,
+  TrendingUp,
+  Flag,
+  Target,
+  Sparkles,
+  ArrowRight,
+  Compass
 } from 'lucide-react';
 import { getCurrentUser } from '../services/userService';
 import { weeklyTrackingService } from '../services/weeklyTrackingService';
@@ -222,8 +229,76 @@ export const ClientProgressSubmitPage: React.FC = () => {
     }
   };
 
-  const previousWeight = pastTrackings.length > 0 && pastTrackings[0].weight ? pastTrackings[0].weight : null;
+  // Ordenar trackings cronológicamente (el más antiguo primero) para el Punto de Partida
+  const chronologicalTrackings = [...pastTrackings].sort((a, b) => {
+    const dateA = new Date(a.week_start_date || a.created_at || (a as any).date).getTime();
+    const dateB = new Date(b.week_start_date || b.created_at || (b as any).date).getTime();
+    return dateA - dateB;
+  });
+
+  const baselineTracking = chronologicalTrackings.length > 0 ? chronologicalTrackings[0] : null;
+
+  const baselineDateStr = baselineTracking
+    ? new Date(baselineTracking.week_start_date || baselineTracking.created_at || (baselineTracking as any).date).toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : null;
+
+  const baselineDaysAgo = baselineTracking
+    ? Math.max(
+        0,
+        Math.floor(
+          (new Date().getTime() -
+            new Date(baselineTracking.week_start_date || baselineTracking.created_at || (baselineTracking as any).date).getTime()) /
+            (1000 * 60 * 60 * 24)
+        )
+      )
+    : 0;
+
+  const latestTracking = pastTrackings.length > 0 ? pastTrackings[0] : null;
+  const previousWeight = latestTracking && latestTracking.weight ? latestTracking.weight : null;
   const weightDiff = form.weight && previousWeight ? Number(form.weight) - previousWeight : null;
+
+  // Valores actuales (form en vivo si el usuario está escribiendo, sino último registro)
+  const currentWeightVal = form.weight !== '' ? Number(form.weight) : (latestTracking?.weight ?? null);
+  const currentWaistVal = form.waist_measurement !== '' ? Number(form.waist_measurement) : (latestTracking?.waist_measurement ?? null);
+  const currentChestVal = form.chest_measurement !== '' ? Number(form.chest_measurement) : (latestTracking?.chest_measurement ?? null);
+  const currentHipVal = form.hip_measurement !== '' ? Number(form.hip_measurement) : (latestTracking?.hip_measurement ?? null);
+  const currentThighVal = form.thigh_measurement !== '' ? Number(form.thigh_measurement) : (latestTracking?.thigh_measurement ?? null);
+  const currentBicepVal = form.bicep_measurement !== '' ? Number(form.bicep_measurement) : (latestTracking?.bicep_measurement ?? null);
+
+  // Deltas acumulados frente al Punto de Partida
+  const totalWeightDelta =
+    currentWeightVal !== null && baselineTracking?.weight
+      ? Number((currentWeightVal - Number(baselineTracking.weight)).toFixed(1))
+      : null;
+
+  const totalWaistDelta =
+    currentWaistVal !== null && baselineTracking?.waist_measurement
+      ? Number((currentWaistVal - Number(baselineTracking.waist_measurement)).toFixed(1))
+      : null;
+
+  const totalChestDelta =
+    currentChestVal !== null && baselineTracking?.chest_measurement
+      ? Number((currentChestVal - Number(baselineTracking.chest_measurement)).toFixed(1))
+      : null;
+
+  const totalHipDelta =
+    currentHipVal !== null && baselineTracking?.hip_measurement
+      ? Number((currentHipVal - Number(baselineTracking.hip_measurement)).toFixed(1))
+      : null;
+
+  const totalThighDelta =
+    currentThighVal !== null && baselineTracking?.thigh_measurement
+      ? Number((currentThighVal - Number(baselineTracking.thigh_measurement)).toFixed(1))
+      : null;
+
+  const totalBicepDelta =
+    currentBicepVal !== null && baselineTracking?.bicep_measurement
+      ? Number((currentBicepVal - Number(baselineTracking.bicep_measurement)).toFixed(1))
+      : null;
 
   if (submitted) {
     return (
@@ -559,6 +634,349 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 />
               </Grid>
             </Grid>
+          </Box>
+
+          {/* Card: Mi Punto de Partida & Evolución Acumulada */}
+          <Box
+            className="apple-card"
+            sx={{
+              p: { xs: 2.5, sm: 3.5 },
+              background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.08) 0%, rgba(59, 130, 246, 0.05) 50%, rgba(16, 185, 129, 0.05) 100%)',
+              border: '1px solid rgba(6, 182, 212, 0.25)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            {/* Header */}
+            <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2} flexWrap="wrap" gap={1.5}>
+              <Box display="flex" alignItems="center" gap={1.5}>
+                <Box
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 0 15px rgba(6, 182, 212, 0.4)',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Flag size={18} color="#FFFFFF" />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: { xs: '1rem', sm: '1.15rem' } }}>
+                    Mi Punto de Partida
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.65)', display: 'block' }}>
+                    Historial de medidas iniciales y balance de adelgazamiento / evolución
+                  </Typography>
+                </Box>
+              </Box>
+
+              {baselineTracking && (
+                <Stack direction="row" spacing={1} flexWrap="wrap">
+                  {baselineDateStr && (
+                    <Chip
+                      icon={<Compass size={13} style={{ color: '#22d3ee' }} />}
+                      label={`Inicio: ${baselineDateStr}`}
+                      size="small"
+                      sx={{
+                        background: 'rgba(6, 182, 212, 0.15)',
+                        color: '#22d3ee',
+                        fontWeight: 700,
+                        border: '1px solid rgba(6, 182, 212, 0.3)',
+                        fontSize: '0.72rem',
+                        height: 24,
+                      }}
+                    />
+                  )}
+                  {baselineDaysAgo > 0 && (
+                    <Chip
+                      icon={<Sparkles size={13} style={{ color: '#10b981' }} />}
+                      label={`${baselineDaysAgo} días de proceso`}
+                      size="small"
+                      sx={{
+                        background: 'rgba(16, 185, 129, 0.15)',
+                        color: '#34d399',
+                        fontWeight: 700,
+                        border: '1px solid rgba(16, 185, 129, 0.3)',
+                        fontSize: '0.72rem',
+                        height: 24,
+                      }}
+                    />
+                  )}
+                </Stack>
+              )}
+            </Box>
+
+            <Divider sx={{ mb: 2.5, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
+
+            {baselineTracking ? (
+              <Stack spacing={2.5}>
+                {/* 2 Big Spotlight Cards: Peso y Cintura */}
+                <Grid container spacing={2}>
+                  {/* Spotlight Peso */}
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Box
+                      sx={{
+                        p: 2.2,
+                        borderRadius: '16px',
+                        background: 'rgba(0, 0, 0, 0.35)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        backdropFilter: 'blur(10px)',
+                      }}
+                    >
+                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+                          ⚖️ Peso Corporal
+                        </Typography>
+                        {totalWeightDelta !== null && (
+                          <Chip
+                            icon={totalWeightDelta <= 0 ? <TrendingDown size={14} color="#34C759" /> : <TrendingUp size={14} color="#FF9500" />}
+                            label={`${totalWeightDelta <= 0 ? `${totalWeightDelta} kg` : `+${totalWeightDelta} kg`}`}
+                            size="small"
+                            sx={{
+                              fontWeight: 800,
+                              fontSize: '0.75rem',
+                              height: 22,
+                              bgcolor: totalWeightDelta <= 0 ? 'rgba(52, 199, 89, 0.18)' : 'rgba(255, 149, 0, 0.18)',
+                              color: totalWeightDelta <= 0 ? '#34C759' : '#FF9500',
+                              border: `1px solid ${totalWeightDelta <= 0 ? 'rgba(52, 199, 89, 0.35)' : 'rgba(255, 149, 0, 0.35)'}`,
+                            }}
+                          />
+                        )}
+                      </Box>
+
+                      <Box display="flex" alignItems="baseline" gap={1.5} flexWrap="wrap">
+                        <Box>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.7rem', display: 'block' }}>
+                            Punto de Partida
+                          </Typography>
+                          <Typography variant="h5" fontWeight="900" sx={{ color: '#FFFFFF' }}>
+                            {baselineTracking.weight ? `${baselineTracking.weight} kg` : '—'}
+                          </Typography>
+                        </Box>
+
+                        <ArrowRight size={18} color="rgba(255, 255, 255, 0.3)" style={{ alignSelf: 'center' }} />
+
+                        <Box>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.7rem', display: 'block' }}>
+                            Actual
+                          </Typography>
+                          <Typography variant="h5" fontWeight="900" sx={{ color: totalWeightDelta !== null && totalWeightDelta <= 0 ? '#34d399' : '#22d3ee' }}>
+                            {currentWeightVal ? `${currentWeightVal} kg` : '—'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Grid>
+
+                  {/* Spotlight Cintura */}
+                  <Grid size={{ xs: 12, sm: 6 }}>
+                    <Box
+                      sx={{
+                        p: 2.2,
+                        borderRadius: '16px',
+                        background: 'rgba(0, 0, 0, 0.35)',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
+                        backdropFilter: 'blur(10px)',
+                      }}
+                    >
+                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.7rem' }}>
+                          📏 Cintura / Abdomen
+                        </Typography>
+                        {totalWaistDelta !== null && (
+                          <Chip
+                            icon={totalWaistDelta <= 0 ? <TrendingDown size={14} color="#34C759" /> : <TrendingUp size={14} color="#FF9500" />}
+                            label={`${totalWaistDelta <= 0 ? `${totalWaistDelta} cm` : `+${totalWaistDelta} cm`}`}
+                            size="small"
+                            sx={{
+                              fontWeight: 800,
+                              fontSize: '0.75rem',
+                              height: 22,
+                              bgcolor: totalWaistDelta <= 0 ? 'rgba(52, 199, 89, 0.18)' : 'rgba(255, 149, 0, 0.18)',
+                              color: totalWaistDelta <= 0 ? '#34C759' : '#FF9500',
+                              border: `1px solid ${totalWaistDelta <= 0 ? 'rgba(52, 199, 89, 0.35)' : 'rgba(255, 149, 0, 0.35)'}`,
+                            }}
+                          />
+                        )}
+                      </Box>
+
+                      <Box display="flex" alignItems="baseline" gap={1.5} flexWrap="wrap">
+                        <Box>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.7rem', display: 'block' }}>
+                            Punto de Partida
+                          </Typography>
+                          <Typography variant="h5" fontWeight="900" sx={{ color: '#FFFFFF' }}>
+                            {baselineTracking.waist_measurement ? `${baselineTracking.waist_measurement} cm` : '—'}
+                          </Typography>
+                        </Box>
+
+                        <ArrowRight size={18} color="rgba(255, 255, 255, 0.3)" style={{ alignSelf: 'center' }} />
+
+                        <Box>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.7rem', display: 'block' }}>
+                            Actual
+                          </Typography>
+                          <Typography variant="h5" fontWeight="900" sx={{ color: totalWaistDelta !== null && totalWaistDelta <= 0 ? '#34d399' : '#22d3ee' }}>
+                            {currentWaistVal ? `${currentWaistVal} cm` : '—'}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    </Box>
+                  </Grid>
+                </Grid>
+
+                {/* Sub-grid of other measurements */}
+                <Box>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700, mb: 1.5, display: 'block', textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.68rem' }}>
+                    Otras Medidas Corporales (Inicio vs Ahora)
+                  </Typography>
+
+                  <Grid container spacing={1.5}>
+                    {/* Pecho */}
+                    <Grid size={{ xs: 6, sm: 3 }}>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: '12px',
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          border: '0.5px solid rgba(255, 255, 255, 0.06)',
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 600, fontSize: '0.72rem' }}>
+                          Pecho
+                        </Typography>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mt={0.5}>
+                          <Typography variant="body2" fontWeight="700">
+                            {baselineTracking.chest_measurement ? `${baselineTracking.chest_measurement} cm` : '—'}
+                          </Typography>
+                          {totalChestDelta !== null && (
+                            <Typography variant="caption" fontWeight="800" sx={{ color: totalChestDelta <= 0 ? '#34d399' : '#38bdf8', fontSize: '0.72rem' }}>
+                              {totalChestDelta > 0 ? `+${totalChestDelta}` : totalChestDelta} cm
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </Grid>
+
+                    {/* Cadera */}
+                    <Grid size={{ xs: 6, sm: 3 }}>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: '12px',
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          border: '0.5px solid rgba(255, 255, 255, 0.06)',
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 600, fontSize: '0.72rem' }}>
+                          Cadera
+                        </Typography>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mt={0.5}>
+                          <Typography variant="body2" fontWeight="700">
+                            {baselineTracking.hip_measurement ? `${baselineTracking.hip_measurement} cm` : '—'}
+                          </Typography>
+                          {totalHipDelta !== null && (
+                            <Typography variant="caption" fontWeight="800" sx={{ color: totalHipDelta <= 0 ? '#34d399' : '#fb923c', fontSize: '0.72rem' }}>
+                              {totalHipDelta > 0 ? `+${totalHipDelta}` : totalHipDelta} cm
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </Grid>
+
+                    {/* Muslo */}
+                    <Grid size={{ xs: 6, sm: 3 }}>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: '12px',
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          border: '0.5px solid rgba(255, 255, 255, 0.06)',
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 600, fontSize: '0.72rem' }}>
+                          Muslo
+                        </Typography>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mt={0.5}>
+                          <Typography variant="body2" fontWeight="700">
+                            {baselineTracking.thigh_measurement ? `${baselineTracking.thigh_measurement} cm` : '—'}
+                          </Typography>
+                          {totalThighDelta !== null && (
+                            <Typography variant="caption" fontWeight="800" sx={{ color: totalThighDelta <= 0 ? '#34d399' : '#fb923c', fontSize: '0.72rem' }}>
+                              {totalThighDelta > 0 ? `+${totalThighDelta}` : totalThighDelta} cm
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </Grid>
+
+                    {/* Bíceps */}
+                    <Grid size={{ xs: 6, sm: 3 }}>
+                      <Box
+                        sx={{
+                          p: 1.5,
+                          borderRadius: '12px',
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          border: '0.5px solid rgba(255, 255, 255, 0.06)',
+                        }}
+                      >
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 600, fontSize: '0.72rem' }}>
+                          Bíceps
+                        </Typography>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mt={0.5}>
+                          <Typography variant="body2" fontWeight="700">
+                            {baselineTracking.bicep_measurement ? `${baselineTracking.bicep_measurement} cm` : '—'}
+                          </Typography>
+                          {totalBicepDelta !== null && (
+                            <Typography variant="caption" fontWeight="800" sx={{ color: totalBicepDelta >= 0 ? '#34d399' : '#fb923c', fontSize: '0.72rem' }}>
+                              {totalBicepDelta > 0 ? `+${totalBicepDelta}` : totalBicepDelta} cm
+                            </Typography>
+                          )}
+                        </Box>
+                      </Box>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Stack>
+            ) : (
+              /* State when client has zero previous trackings */
+              <Box
+                sx={{
+                  p: 3,
+                  borderRadius: '16px',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '0.5px dashed rgba(6, 182, 212, 0.3)',
+                  textAlign: 'center',
+                }}
+              >
+                <Box
+                  sx={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '50%',
+                    background: 'rgba(6, 182, 212, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    mx: 'auto',
+                    mb: 1.5,
+                  }}
+                >
+                  <Target size={24} color="#06b6d4" />
+                </Box>
+                <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5 }}>
+                  Tu punto de partida se guardará con tu 1º registro
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', maxWidth: 540, mx: 'auto', fontSize: '0.82rem', lineHeight: 1.5 }}>
+                  Completa tu peso en báscula y medidas corporales en el formulario de arriba y pulsa en <strong>"Enviar Reporte"</strong>. Esos primeros datos quedarán fijados automáticamente aquí como tu punto de partida inicial (Día 1) para que puedas seguir cuántos kilos y centímetros vas adelgazando.
+                </Typography>
+              </Box>
+            )}
           </Box>
 
           {/* Card 2: Fotos de Progreso Corporal (3 Ángulos) */}
