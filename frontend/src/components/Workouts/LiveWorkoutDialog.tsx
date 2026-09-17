@@ -671,87 +671,228 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
                       key={globalIndex}
                       sx={{
                         p: 1.8,
-                        borderRadius: '14px',
-                        bgcolor: setItem.completed ? 'rgba(52, 199, 89, 0.1)' : '#161618',
-                        border: '0.5px solid',
-                        borderColor: setItem.completed ? 'rgba(52, 199, 89, 0.35)' : 'rgba(255, 255, 255, 0.08)',
-                        transition: 'all 0.15s ease',
+                        borderRadius: '16px',
+                        bgcolor: setItem.completed ? 'rgba(52, 199, 89, 0.12)' : '#161618',
+                        border: '1px solid',
+                        borderColor: setItem.completed ? 'rgba(52, 199, 89, 0.4)' : 'rgba(255, 255, 255, 0.08)',
+                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                       }}
                     >
-                      <Stack direction={{ xs: 'column', sm: 'row' }} alignItems={{ xs: 'stretch', sm: 'center' }} justifyContent="space-between" spacing={1.5}>
-                        {/* Checkbox y Serie */}
-                        <Stack direction="row" alignItems="center" spacing={1.2}>
-                          <Box onClick={() => handleToggleSet(globalIndex)} sx={{ cursor: 'pointer', display: 'flex' }}>
-                            {setItem.completed ? (
-                              <CheckCircle2 size={24} color="#34C759" />
-                            ) : (
-                              <Circle size={24} color="rgba(255, 255, 255, 0.25)" />
-                            )}
-                          </Box>
-                          <Box>
-                            <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF' }}>
-                              Serie #{setItem.setIndex}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: setItem.completed ? '#34C759' : 'rgba(255, 255, 255, 0.4)' }}>
-                              {setItem.completed ? 'Completada' : 'Pendiente'}
-                            </Typography>
-                          </Box>
+                      {/* Sub-cabecera de la Serie */}
+                      <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.2 }}>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Typography variant="subtitle2" fontWeight="800" sx={{ color: setItem.completed ? '#34C759' : '#FFFFFF', fontSize: '0.92rem' }}>
+                            Serie #{setItem.setIndex}
+                          </Typography>
+                          <Chip
+                            label={setItem.completed ? 'Completada' : 'Pendiente'}
+                            size="small"
+                            sx={{
+                              height: 20,
+                              fontSize: '0.68rem',
+                              fontWeight: 700,
+                              bgcolor: setItem.completed ? 'rgba(52, 199, 89, 0.2)' : 'rgba(255, 255, 255, 0.06)',
+                              color: setItem.completed ? '#34C759' : 'rgba(255, 255, 255, 0.5)',
+                            }}
+                          />
                         </Stack>
 
-                        {/* Controles de Peso y Reps */}
-                        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" gap={0.5}>
-                          {/* Peso */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-                            <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'weight', -2.5)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                              <Minus size={14} />
+                        <Tooltip title="Calculadora de Discos">
+                          <IconButton
+                            size="small"
+                            onClick={() => handleOpenBarCalc(setItem.weight)}
+                            sx={{
+                              color: '#007AFF',
+                              bgcolor: 'rgba(0, 122, 255, 0.1)',
+                              p: 0.6,
+                              '&:hover': { bgcolor: 'rgba(0, 122, 255, 0.2)' }
+                            }}
+                          >
+                            <Dumbbell size={15} />
+                          </IconButton>
+                        </Tooltip>
+                      </Stack>
+
+                      {/* Grid de Inputs y Botón Checkmark */}
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gridTemplateColumns: { xs: '1fr 1fr 64px 44px', sm: '1fr 1fr 80px 48px' },
+                          gap: 1,
+                          alignItems: 'center',
+                        }}
+                      >
+                        {/* Campo PESO (KG) */}
+                        <Box>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700, fontSize: '0.68rem', display: 'block', mb: 0.4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                            Kg
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              bgcolor: '#101012',
+                              borderRadius: '10px',
+                              border: '1px solid rgba(255, 255, 255, 0.1)',
+                              px: 0.3,
+                              py: 0.2,
+                            }}
+                          >
+                            <IconButton
+                              size="small"
+                              onClick={() => handleQuickAdjust(globalIndex, 'weight', -2.5)}
+                              sx={{ color: 'rgba(255, 255, 255, 0.7)', p: 0.5 }}
+                            >
+                              <Minus size={13} />
                             </IconButton>
                             <TextField
-                              size="small"
-                              label="Kg"
+                              variant="standard"
                               type="number"
                               value={setItem.weight}
                               onChange={(e) => handleUpdateField(globalIndex, 'weight', Number(e.target.value))}
-                              sx={{ width: 75 }}
+                              inputProps={{
+                                style: {
+                                  textAlign: 'center',
+                                  fontWeight: 800,
+                                  fontSize: '16px',
+                                  color: '#FFFFFF',
+                                  padding: '4px 0',
+                                },
+                              }}
+                              InputProps={{ disableUnderline: true }}
+                              sx={{ flex: 1 }}
                             />
-                            <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'weight', 2.5)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                              <Plus size={14} />
+                            <IconButton
+                              size="small"
+                              onClick={() => handleQuickAdjust(globalIndex, 'weight', 2.5)}
+                              sx={{ color: 'rgba(255, 255, 255, 0.7)', p: 0.5 }}
+                            >
+                              <Plus size={13} />
                             </IconButton>
-                            <Tooltip title="Calculadora de Discos">
-                              <IconButton size="small" onClick={() => handleOpenBarCalc(setItem.weight)} sx={{ color: '#007AFF' }}>
-                                <Dumbbell size={16} />
-                              </IconButton>
-                            </Tooltip>
                           </Box>
+                        </Box>
 
-                          {/* Reps */}
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-                            <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'reps', -1)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                              <Minus size={14} />
+                        {/* Campo REPS */}
+                        <Box>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700, fontSize: '0.68rem', display: 'block', mb: 0.4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                            Reps
+                          </Typography>
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              bgcolor: '#101012',
+                              borderRadius: '10px',
+                              border: '1px solid rgba(255, 255, 255, 0.1)',
+                              px: 0.3,
+                              py: 0.2,
+                            }}
+                          >
+                            <IconButton
+                              size="small"
+                              onClick={() => handleQuickAdjust(globalIndex, 'reps', -1)}
+                              sx={{ color: 'rgba(255, 255, 255, 0.7)', p: 0.5 }}
+                            >
+                              <Minus size={13} />
                             </IconButton>
                             <TextField
-                              size="small"
-                              label="Reps"
+                              variant="standard"
                               type="number"
                               value={setItem.reps}
                               onChange={(e) => handleUpdateField(globalIndex, 'reps', Number(e.target.value))}
-                              sx={{ width: 65 }}
+                              inputProps={{
+                                style: {
+                                  textAlign: 'center',
+                                  fontWeight: 800,
+                                  fontSize: '16px',
+                                  color: '#FFFFFF',
+                                  padding: '4px 0',
+                                },
+                              }}
+                              InputProps={{ disableUnderline: true }}
+                              sx={{ flex: 1 }}
                             />
-                            <IconButton size="small" onClick={() => handleQuickAdjust(globalIndex, 'reps', 1)} sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                              <Plus size={14} />
+                            <IconButton
+                              size="small"
+                              onClick={() => handleQuickAdjust(globalIndex, 'reps', 1)}
+                              sx={{ color: 'rgba(255, 255, 255, 0.7)', p: 0.5 }}
+                            >
+                              <Plus size={13} />
                             </IconButton>
                           </Box>
+                        </Box>
 
-                          {/* RPE */}
-                          <TextField
-                            size="small"
-                            label="RPE"
-                            type="number"
-                            value={setItem.rpe}
-                            onChange={(e) => handleUpdateField(globalIndex, 'rpe', Number(e.target.value))}
-                            sx={{ width: 60 }}
-                          />
-                        </Stack>
-                      </Stack>
+                        {/* Campo RPE */}
+                        <Box>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700, fontSize: '0.68rem', display: 'block', mb: 0.4, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                            RPE
+                          </Typography>
+                          <Box
+                            sx={{
+                              bgcolor: '#101012',
+                              borderRadius: '10px',
+                              border: '1px solid rgba(255, 255, 255, 0.1)',
+                              py: 0.2,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              height: 38,
+                            }}
+                          >
+                            <TextField
+                              variant="standard"
+                              type="number"
+                              value={setItem.rpe}
+                              onChange={(e) => handleUpdateField(globalIndex, 'rpe', Number(e.target.value))}
+                              inputProps={{
+                                min: 1,
+                                max: 10,
+                                style: {
+                                  textAlign: 'center',
+                                  fontWeight: 800,
+                                  fontSize: '16px',
+                                  color: '#FF9500',
+                                  padding: '4px 0',
+                                },
+                              }}
+                              InputProps={{ disableUnderline: true }}
+                            />
+                          </Box>
+                        </Box>
+
+                        {/* Botón Checkmark de Completado */}
+                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                          <Typography variant="caption" sx={{ color: 'transparent', fontSize: '0.68rem', display: 'block', mb: 0.4 }}>
+                            ✓
+                          </Typography>
+                          <Box
+                            onClick={() => handleToggleSet(globalIndex)}
+                            sx={{
+                              width: { xs: 38, sm: 44 },
+                              height: { xs: 38, sm: 44 },
+                              borderRadius: '12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              bgcolor: setItem.completed ? '#34C759' : 'rgba(255, 255, 255, 0.08)',
+                              color: setItem.completed ? '#000000' : 'rgba(255, 255, 255, 0.4)',
+                              border: '1px solid',
+                              borderColor: setItem.completed ? '#34C759' : 'rgba(255, 255, 255, 0.15)',
+                              transition: 'all 0.15s cubic-bezier(0.4, 0, 0.2, 1)',
+                              '&:active': {
+                                transform: 'scale(0.92)',
+                              },
+                            }}
+                          >
+                            {setItem.completed ? (
+                              <CheckCircle2 size={22} color="#000000" strokeWidth={2.5} />
+                            ) : (
+                              <Circle size={20} color="rgba(255, 255, 255, 0.3)" />
+                            )}
+                          </Box>
+                        </Box>
+                      </Box>
                     </Box>
                   ))}
                 </Stack>
@@ -817,51 +958,110 @@ export const LiveWorkoutDialog: React.FC<LiveWorkoutDialogProps> = ({
                     </Button>
                   </Stack>
 
-                  <Stack spacing={1}>
+                  <Stack spacing={1.2}>
                     {group.sets.map(({ setItem, globalIndex }) => (
                       <Box
                         key={globalIndex}
                         sx={{
-                          p: 1.2,
-                          px: 1.5,
-                          borderRadius: '10px',
-                          bgcolor: setItem.completed ? 'rgba(52, 199, 89, 0.1)' : '#161618',
+                          p: 1.5,
+                          borderRadius: '14px',
+                          bgcolor: setItem.completed ? 'rgba(52, 199, 89, 0.12)' : '#161618',
                           border: '0.5px solid',
-                          borderColor: setItem.completed ? 'rgba(52, 199, 89, 0.3)' : 'rgba(255, 255, 255, 0.06)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          flexWrap: 'wrap',
-                          gap: 1,
+                          borderColor: setItem.completed ? 'rgba(52, 199, 89, 0.35)' : 'rgba(255, 255, 255, 0.06)',
+                          transition: 'all 0.15s ease',
                         }}
                       >
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <Box onClick={() => handleToggleSet(globalIndex)} sx={{ cursor: 'pointer', display: 'flex' }}>
-                            {setItem.completed ? <CheckCircle2 size={18} color="#34C759" /> : <Circle size={18} color="rgba(255,255,255,0.3)" />}
-                          </Box>
-                          <Typography variant="body2" fontWeight="600" sx={{ color: '#FFFFFF' }}>
+                        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
+                          <Typography variant="caption" fontWeight="800" sx={{ color: setItem.completed ? '#34C759' : '#FFFFFF' }}>
                             Serie #{setItem.setIndex}
                           </Typography>
+                          <Chip
+                            label={setItem.completed ? 'Completada' : 'Pendiente'}
+                            size="small"
+                            sx={{
+                              height: 18,
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                              bgcolor: setItem.completed ? 'rgba(52, 199, 89, 0.2)' : 'rgba(255, 255, 255, 0.06)',
+                              color: setItem.completed ? '#34C759' : 'rgba(255, 255, 255, 0.5)',
+                            }}
+                          />
                         </Stack>
 
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <TextField
-                            size="small"
-                            label="Kg"
-                            type="number"
-                            value={setItem.weight}
-                            onChange={(e) => handleUpdateField(globalIndex, 'weight', Number(e.target.value))}
-                            sx={{ width: 70 }}
-                          />
-                          <TextField
-                            size="small"
-                            label="Reps"
-                            type="number"
-                            value={setItem.reps}
-                            onChange={(e) => handleUpdateField(globalIndex, 'reps', Number(e.target.value))}
-                            sx={{ width: 65 }}
-                          />
-                        </Stack>
+                        <Box
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: { xs: '1fr 1fr 64px 44px', sm: '1fr 1fr 80px 48px' },
+                            gap: 1,
+                            alignItems: 'center',
+                          }}
+                        >
+                          {/* Kg */}
+                          <Box sx={{ bgcolor: '#101012', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)', px: 0.5, py: 0.2, display: 'flex', alignItems: 'center' }}>
+                            <TextField
+                              variant="standard"
+                              type="number"
+                              value={setItem.weight}
+                              onChange={(e) => handleUpdateField(globalIndex, 'weight', Number(e.target.value))}
+                              inputProps={{ style: { textAlign: 'center', fontWeight: 800, fontSize: '16px', color: '#FFFFFF', padding: '4px 0' } }}
+                              InputProps={{ disableUnderline: true }}
+                              sx={{ flex: 1 }}
+                            />
+                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700, mr: 0.5 }}>kg</Typography>
+                          </Box>
+
+                          {/* Reps */}
+                          <Box sx={{ bgcolor: '#101012', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)', px: 0.5, py: 0.2, display: 'flex', alignItems: 'center' }}>
+                            <TextField
+                              variant="standard"
+                              type="number"
+                              value={setItem.reps}
+                              onChange={(e) => handleUpdateField(globalIndex, 'reps', Number(e.target.value))}
+                              inputProps={{ style: { textAlign: 'center', fontWeight: 800, fontSize: '16px', color: '#FFFFFF', padding: '4px 0' } }}
+                              InputProps={{ disableUnderline: true }}
+                              sx={{ flex: 1 }}
+                            />
+                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontWeight: 700, mr: 0.5 }}>reps</Typography>
+                          </Box>
+
+                          {/* RPE */}
+                          <Box sx={{ bgcolor: '#101012', borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.08)', py: 0.2, display: 'flex', alignItems: 'center', justifyContent: 'center', height: 38 }}>
+                            <TextField
+                              variant="standard"
+                              type="number"
+                              value={setItem.rpe}
+                              onChange={(e) => handleUpdateField(globalIndex, 'rpe', Number(e.target.value))}
+                              inputProps={{ min: 1, max: 10, style: { textAlign: 'center', fontWeight: 800, fontSize: '16px', color: '#FF9500', padding: '4px 0' } }}
+                              InputProps={{ disableUnderline: true }}
+                            />
+                          </Box>
+
+                          {/* Complete Check */}
+                          <Box
+                            onClick={() => handleToggleSet(globalIndex)}
+                            sx={{
+                              width: { xs: 38, sm: 44 },
+                              height: { xs: 38, sm: 44 },
+                              borderRadius: '12px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              cursor: 'pointer',
+                              bgcolor: setItem.completed ? '#34C759' : 'rgba(255, 255, 255, 0.08)',
+                              color: setItem.completed ? '#000000' : 'rgba(255, 255, 255, 0.4)',
+                              border: '1px solid',
+                              borderColor: setItem.completed ? '#34C759' : 'rgba(255, 255, 255, 0.15)',
+                              transition: 'all 0.15s ease',
+                              '&:active': { transform: 'scale(0.92)' },
+                            }}
+                          >
+                            {setItem.completed ? (
+                              <CheckCircle2 size={20} color="#000000" strokeWidth={2.5} />
+                            ) : (
+                              <Circle size={18} color="rgba(255, 255, 255, 0.3)" />
+                            )}
+                          </Box>
+                        </Box>
                       </Box>
                     ))}
                   </Stack>
