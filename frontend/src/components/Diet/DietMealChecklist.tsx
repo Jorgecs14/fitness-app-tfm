@@ -129,22 +129,44 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
     }
   };
 
-  const foods: DietFood[] = diet.diet_foods || [];
-  const foodsPerMeal = Math.max(1, Math.ceil(foods.length / MEAL_TIMES.length));
+  // Obtener alimentos por comida desde meals_data o fallback a diet_foods
+  const mealItemsMap = useMemo(() => {
+    let structuredMeals: Record<string, any[]> = {};
+    if (diet.meals_data) {
+      structuredMeals = typeof diet.meals_data === 'string' ? JSON.parse(diet.meals_data) : diet.meals_data;
+    }
 
-  const mealItemsMap = MEAL_TIMES.reduce((acc, meal, index) => {
-    const start = index * foodsPerMeal;
-    const mealFoods = foods.slice(start, start + foodsPerMeal);
-    acc[meal.key] = mealFoods;
-    return acc;
-  }, {} as Record<string, DietFood[]>);
+    const hasStructured = Object.values(structuredMeals).some((arr) => Array.isArray(arr) && arr.length > 0);
+
+    if (hasStructured) {
+      const map: Record<string, any[]> = {};
+      MEAL_TIMES.forEach((m) => {
+        map[m.key] = structuredMeals[m.key] || [];
+      });
+      return map;
+    }
+
+    // Fallback con diet_foods
+    const foods: DietFood[] = diet.diet_foods || [];
+    const foodsPerMeal = Math.max(1, Math.ceil(foods.length / MEAL_TIMES.length));
+
+    return MEAL_TIMES.reduce((acc, meal, index) => {
+      const start = index * foodsPerMeal;
+      const mealFoods = foods.slice(start, start + foodsPerMeal);
+      acc[meal.key] = mealFoods;
+      return acc;
+    }, {} as Record<string, any[]>);
+  }, [diet]);
 
   const totalMealSlots = MEAL_TIMES.length;
   let checkedCount = 0;
   MEAL_TIMES.forEach((meal) => {
     const mealFoods = mealItemsMap[meal.key] || [];
     if (mealFoods.length > 0) {
-      const allChecked = mealFoods.every((f) => checkedMap[`${meal.key}_${f.food_id}`]);
+      const allChecked = mealFoods.every((f) => {
+        const idKey = f.food_id || f.id || 0;
+        return checkedMap[`${meal.key}_${idKey}`];
+      });
       if (allChecked) checkedCount++;
     } else {
       if (checkedMap[`${meal.key}_0`]) checkedCount++;
@@ -322,16 +344,19 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
 
                   {mealFoods.length > 0 ? (
                     <Stack spacing={0.8}>
-                      {mealFoods.map((f) => {
-                        const checkKey = `${meal.key}_${f.food_id}`;
+                      {mealFoods.map((f, fIdx) => {
+                        const foodIdentifier = f.food_id || f.id || fIdx + 1;
+                        const checkKey = `${meal.key}_${foodIdentifier}`;
                         const isChecked = !!checkedMap[checkKey];
-                        const foodName = f.foods?.name || `Alimento #${f.food_id}`;
-                        const foodKcal = f.foods?.calories || 0;
+                        const foodName = f.name || f.foods?.name || `Alimento #${foodIdentifier}`;
+                        const foodKcal = f.calories !== undefined ? f.calories : (f.foods?.calories || 0);
+                        const foodQty = f.quantity || 100;
+                        const foodUnit = f.unit || 'g';
 
                         return (
                           <Box
-                            key={f.id}
-                            onClick={() => !readOnly && handleToggle(meal.key, f.food_id)}
+                            key={f.id || fIdx}
+                            onClick={() => !readOnly && handleToggle(meal.key, foodIdentifier)}
                             sx={{
                               p: 1,
                               borderRadius: '10px',
@@ -366,7 +391,7 @@ export const DietMealChecklist: React.FC<DietMealChecklistProps> = ({
                             </Stack>
 
                             <Stack direction="row" spacing={0.8}>
-                              <Chip label={`${f.quantity}g`} size="small" sx={{ height: 20, fontSize: '0.68rem', bgcolor: 'rgba(255, 255, 255, 0.06)', color: 'rgba(255, 255, 255, 0.7)' }} />
+                              <Chip label={`${foodQty} ${foodUnit}`} size="small" sx={{ height: 20, fontSize: '0.68rem', bgcolor: 'rgba(255, 255, 255, 0.06)', color: 'rgba(255, 255, 255, 0.7)' }} />
                               <Chip label={`${foodKcal} kcal`} size="small" sx={{ height: 20, fontSize: '0.68rem', bgcolor: 'rgba(0, 122, 255, 0.15)', color: '#007AFF' }} />
                             </Stack>
                           </Box>

@@ -38,21 +38,30 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { name, description, price } = req.body
+    const { name, description, price, url, image_url, category, trainer_id } = req.body
 
-    if (!name || !description || !price) {
-      return res.status(400).json({ error: 'Faltan campos requeridos' })
+    if (!name) {
+      return res.status(400).json({ error: 'El nombre del producto es requerido' })
     }
 
     const { data, error } = await supabase
       .from('products')
-      .insert([{ name, description, price }])
+      .insert([{
+        name,
+        description: description || '',
+        price: Number(price) || 0,
+        url: url || null,
+        image_url: image_url || null,
+        category: category || 'Suplementos',
+        trainer_id: trainer_id || null
+      }])
       .select()
       .single()
 
     if (error) throw error
     res.status(201).json(data)
   } catch (error) {
+    console.error('Error al crear producto:', error)
     res.status(500).json({ error: 'Error al crear producto' })
   }
 })
@@ -60,11 +69,20 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const { name, description, price } = req.body
+    const { name, description, price, url, image_url, category, trainer_id } = req.body
+
+    const updatePayload = {}
+    if (name !== undefined) updatePayload.name = name
+    if (description !== undefined) updatePayload.description = description
+    if (price !== undefined) updatePayload.price = Number(price)
+    if (url !== undefined) updatePayload.url = url
+    if (image_url !== undefined) updatePayload.image_url = image_url
+    if (category !== undefined) updatePayload.category = category
+    if (trainer_id !== undefined) updatePayload.trainer_id = trainer_id
 
     const { data, error } = await supabase
       .from('products')
-      .update({ name, description, price })
+      .update(updatePayload)
       .eq('id', id)
       .select()
       .single()
@@ -74,6 +92,7 @@ router.put('/:id', async (req, res) => {
     if (error) throw error
     res.json(data)
   } catch (error) {
+    console.error('Error al actualizar producto:', error)
     res.status(500).json({ error: 'Error al actualizar producto' })
   }
 })

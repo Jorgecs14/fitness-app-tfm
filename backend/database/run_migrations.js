@@ -143,7 +143,26 @@ async function runMigrations() {
     );`,
 
     `CREATE INDEX IF NOT EXISTS idx_payment_invoices_client ON public.payment_invoices(client_id);`,
-    `CREATE INDEX IF NOT EXISTS idx_payment_invoices_trainer ON public.payment_invoices(trainer_id);`
+    `CREATE INDEX IF NOT EXISTS idx_payment_invoices_trainer ON public.payment_invoices(trainer_id);`,
+
+    // 9. Columnas adicionales para diets (agua, datos de comidas estructuradas, productos recomendados con enlaces y notas)
+    `ALTER TABLE public.diets
+      ADD COLUMN IF NOT EXISTS water_liters NUMERIC(4,2) DEFAULT 2.5,
+      ADD COLUMN IF NOT EXISTS meals_data JSONB,
+      ADD COLUMN IF NOT EXISTS supplement_products JSONB,
+      ADD COLUMN IF NOT EXISTS notes TEXT;`,
+
+    // 10. Columnas adicionales para products (enlace url de compra, categoría, imagen, trainer_id)
+    `ALTER TABLE public.products
+      ADD COLUMN IF NOT EXISTS url TEXT,
+      ADD COLUMN IF NOT EXISTS image_url TEXT,
+      ADD COLUMN IF NOT EXISTS category VARCHAR(100),
+      ADD COLUMN IF NOT EXISTS trainer_id INTEGER REFERENCES public.users(id) ON DELETE SET NULL;`,
+
+    // 11. Columnas adicionales para diet_foods (meal_type, notes)
+    `ALTER TABLE public.diet_foods
+      ADD COLUMN IF NOT EXISTS meal_type VARCHAR(50),
+      ADD COLUMN IF NOT EXISTS notes TEXT;`
   ]
 
   for (let i = 0; i < migrations.length; i++) {

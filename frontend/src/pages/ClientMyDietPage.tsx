@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -7,7 +7,10 @@ import {
   Chip,
   TextField,
   CircularProgress,
-  Alert
+  Alert,
+  LinearProgress,
+  IconButton,
+  Grid
 } from '@mui/material';
 import {
   Calculator,
@@ -18,6 +21,14 @@ import {
   Check,
   Send,
   Sparkles,
+  Droplets,
+  Pill,
+  ExternalLink,
+  Plus,
+  Minus,
+  Info,
+  Clock,
+  ShieldCheck
 } from 'lucide-react';
 import { getCurrentUser } from '../services/userService';
 import {
@@ -29,6 +40,7 @@ import {
   getTodayDietObservation
 } from '../services/dietService';
 import { DietWithFoods } from '../types/DietWithFoods';
+import { DietSupplementProduct } from '../types/Diet';
 import { User } from '../types/User';
 import { DietMealChecklist } from '../components/Diet/DietMealChecklist';
 import { DietVisualPdfModal } from '../components/Diet/DietVisualPdfModal';
@@ -41,6 +53,13 @@ export const ClientMyDietPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [pdfModalOpen, setPdfModalOpen] = useState(false);
   const [calculatorOpen, setCalculatorOpen] = useState(false);
+
+  // Estados para Hidratación diaria interactiva
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [glassesDrunk, setGlassesDrunk] = useState<number>(() => {
+    const saved = localStorage.getItem(`water_glasses_${todayStr}`);
+    return saved ? Number(saved) : 0;
+  });
 
   // Estados para la Observación Diaria
   const [dailyObservation, setDailyObservation] = useState('');
@@ -95,6 +114,12 @@ export const ClientMyDietPage: React.FC = () => {
     }
   };
 
+  const handleGlassChange = (delta: number) => {
+    const next = Math.max(0, glassesDrunk + delta);
+    setGlassesDrunk(next);
+    localStorage.setItem(`water_glasses_${todayStr}`, String(next));
+  };
+
   const handleSaveObservation = async () => {
     if (!currentUser || !dailyObservation.trim()) return;
     try {
@@ -112,6 +137,24 @@ export const ClientMyDietPage: React.FC = () => {
       setSavingObservation(false);
     }
   };
+
+  // Suplementos recomendados parseados
+  const supplements: DietSupplementProduct[] = useMemo(() => {
+    if (!diet?.supplement_products) return [];
+    if (typeof diet.supplement_products === 'string') {
+      try {
+        return JSON.parse(diet.supplement_products);
+      } catch (e) {
+        return [];
+      }
+    }
+    return Array.isArray(diet.supplement_products) ? diet.supplement_products : [];
+  }, [diet]);
+
+  const targetWaterLiters = diet?.water_liters ? Number(diet.water_liters) : 2.5;
+  const targetGlasses = Math.max(1, Math.round((targetWaterLiters * 1000) / 250)); // 250ml por vaso
+  const currentLiters = (glassesDrunk * 0.25).toFixed(2);
+  const waterProgressPercent = Math.min(100, Math.round((glassesDrunk / targetGlasses) * 100));
 
   if (loading) {
     return (
@@ -131,7 +174,7 @@ export const ClientMyDietPage: React.FC = () => {
           </Typography>
 
           <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5 }}>
-            Seguimiento de tomas, macronutrientes pautados y reporte de observaciones a tu entrenador.
+            Seguimiento de tomas, hidratación diaria, suplementación y reporte a tu entrenador.
           </Typography>
         </Box>
 
@@ -207,42 +250,289 @@ export const ClientMyDietPage: React.FC = () => {
             subtitle="Pauta nutricional prescrita por tu entrenador personal"
           />
 
-          {/* Ficha Resumen Dieta */}
-          <Box className="apple-card" sx={{ p: 3 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
-              <Box>
-                <Typography variant="h5" fontWeight={800} sx={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
-                  {diet.name}
-                </Typography>
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5, maxWidth: 650, lineHeight: 1.5 }}>
-                  {diet.description || 'Pautas de nutrición personalizadas prescritas por tu entrenador.'}
-                </Typography>
+          {/* Ficha Resumen Dieta & Hidratación */}
+          <Grid container spacing={2}>
+            {/* Resumen Dieta */}
+            <Grid item xs={12} md={7}>
+              <Box className="apple-card" sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <Box>
+                  <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={2} mb={1.5}>
+                    <Typography variant="h5" fontWeight={800} sx={{ color: '#FFFFFF', letterSpacing: '-0.02em' }}>
+                      {diet.name}
+                    </Typography>
+                    <Chip
+                      icon={<Flame size={16} color="#FF9500" />}
+                      label={`${diet.calories} Kcal / día`}
+                      sx={{
+                        fontWeight: 800,
+                        fontSize: '0.85rem',
+                        py: 1.5,
+                        px: 1.2,
+                        borderRadius: '10px',
+                        bgcolor: 'rgba(255, 149, 0, 0.15)',
+                        color: '#FF9500',
+                      }}
+                    />
+                  </Stack>
+                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.6 }}>
+                    {diet.description || 'Pautas de nutrición personalizadas prescritas por tu entrenador.'}
+                  </Typography>
+                </Box>
+
+                {diet.notes && (
+                  <Box sx={{ mt: 2, p: 1.5, borderRadius: '12px', bgcolor: 'rgba(255, 255, 255, 0.04)', border: '0.5px solid rgba(255, 255, 255, 0.08)' }}>
+                    <Typography variant="caption" sx={{ color: '#AF52DE', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 0.8, mb: 0.5 }}>
+                      <Info size={14} /> Pautas del Entrenador:
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.8)', display: 'block' }}>
+                      {diet.notes}
+                    </Typography>
+                  </Box>
+                )}
               </Box>
+            </Grid>
 
-              <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                <Chip
-                  icon={<Flame size={16} color="#FF9500" />}
-                  label={`${diet.calories} Kcal / día`}
-                  sx={{
-                    fontWeight: 800,
-                    fontSize: '0.9rem',
-                    py: 1.8,
-                    px: 1.5,
-                    borderRadius: '10px',
-                    bgcolor: 'rgba(255, 149, 0, 0.15)',
-                    color: '#FF9500',
-                  }}
-                />
-              </Stack>
-            </Stack>
-          </Box>
+            {/* Widget de Hidratación Diaria Requerida */}
+            <Grid item xs={12} md={5}>
+              <Box
+                className="apple-card"
+                sx={{
+                  p: 3,
+                  height: '100%',
+                  bgcolor: '#1C1C1E',
+                  border: '0.5px solid rgba(0, 122, 255, 0.25)',
+                  boxShadow: '0 8px 30px rgba(0, 122, 255, 0.08)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Box>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Box
+                        sx={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '8px',
+                          bgcolor: 'rgba(0, 122, 255, 0.15)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          color: '#007AFF',
+                        }}
+                      >
+                        <Droplets size={18} />
+                      </Box>
+                      <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#FFFFFF' }}>
+                        Hidratación Diaria
+                      </Typography>
+                    </Stack>
 
-          {/* Componente de Retos Alimenticios Interactivos */}
+                    <Chip
+                      label={`${targetWaterLiters} L / día`}
+                      size="small"
+                      sx={{ bgcolor: 'rgba(0, 122, 255, 0.15)', color: '#007AFF', fontWeight: 800, fontSize: '0.78rem' }}
+                    />
+                  </Stack>
+
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mb: 2 }}>
+                    Meta pautada: Bebe {targetGlasses} vasos de agua al día ({targetWaterLiters} L)
+                  </Typography>
+
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
+                    <Typography variant="body2" fontWeight={800} sx={{ color: '#007AFF' }}>
+                      {currentLiters} L bebidos ({glassesDrunk} de {targetGlasses} vasos)
+                    </Typography>
+                    <Typography variant="caption" fontWeight={700} sx={{ color: waterProgressPercent >= 100 ? '#34C759' : '#FFFFFF' }}>
+                      {waterProgressPercent}%
+                    </Typography>
+                  </Stack>
+
+                  <LinearProgress
+                    variant="determinate"
+                    value={waterProgressPercent}
+                    sx={{
+                      height: 8,
+                      borderRadius: 4,
+                      bgcolor: 'rgba(255, 255, 255, 0.08)',
+                      '& .MuiLinearProgress-bar': {
+                        borderRadius: 4,
+                        bgcolor: waterProgressPercent >= 100 ? '#34C759' : '#007AFF',
+                      },
+                    }}
+                  />
+                </Box>
+
+                {/* Controles de registro rápido de agua */}
+                <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="center" sx={{ mt: 2.5 }}>
+                  <IconButton
+                    onClick={() => handleGlassChange(-1)}
+                    disabled={glassesDrunk <= 0}
+                    sx={{
+                      bgcolor: 'rgba(255, 255, 255, 0.08)',
+                      color: '#fff',
+                      width: 38,
+                      height: 38,
+                      '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+                    }}
+                  >
+                    <Minus size={16} />
+                  </IconButton>
+
+                  <Button
+                    variant="contained"
+                    onClick={() => handleGlassChange(1)}
+                    startIcon={<Droplets size={16} />}
+                    sx={{
+                      bgcolor: '#007AFF',
+                      color: '#fff',
+                      fontWeight: 700,
+                      borderRadius: '12px',
+                      px: 2.5,
+                      py: 0.9,
+                      textTransform: 'none',
+                      fontSize: '0.85rem',
+                      '&:hover': { bgcolor: '#0062cc' },
+                    }}
+                  >
+                    +1 Vaso (250ml)
+                  </Button>
+
+                  <IconButton
+                    onClick={() => handleGlassChange(1)}
+                    sx={{
+                      bgcolor: 'rgba(255, 255, 255, 0.08)',
+                      color: '#fff',
+                      width: 38,
+                      height: 38,
+                      '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+                    }}
+                  >
+                    <Plus size={16} />
+                  </IconButton>
+                </Stack>
+              </Box>
+            </Grid>
+          </Grid>
+
+          {/* Componente de Retos Alimenticios Interactivos (Las 5 Comidas) */}
           {currentUser && (
             <DietMealChecklist
               diet={diet}
               userId={currentUser.id}
             />
+          )}
+
+          {/* Sección de Suplementación y Productos Recomendados */}
+          {supplements.length > 0 && (
+            <Box
+              className="apple-card"
+              sx={{
+                p: { xs: 2.5, sm: 3.5 },
+                bgcolor: '#1C1C1E',
+                border: '0.5px solid rgba(255, 149, 0, 0.25)',
+              }}
+            >
+              <Stack direction="row" spacing={1.5} alignItems="center" mb={2}>
+                <Box
+                  sx={{
+                    width: 38,
+                    height: 38,
+                    borderRadius: '10px',
+                    bgcolor: 'rgba(255, 149, 0, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#FF9500',
+                    border: '0.5px solid rgba(255, 149, 0, 0.3)',
+                  }}
+                >
+                  <Pill size={20} />
+                </Box>
+                <Box>
+                  <Typography variant="h6" fontWeight={800} sx={{ color: '#FFFFFF', letterSpacing: '-0.01em', lineHeight: 1.2 }}>
+                    Suplementación & Productos Recomendados
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                    Pautas específicas y enlaces de compra recomendados por tu entrenador
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Grid container spacing={2}>
+                {supplements.map((supp, idx) => (
+                  <Grid item xs={12} sm={6} key={supp.id || idx}>
+                    <Box
+                      sx={{
+                        p: 2.2,
+                        borderRadius: '16px',
+                        bgcolor: '#2C2C2E',
+                        border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                        height: '100%',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                      }}
+                    >
+                      <Box>
+                        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" gap={1} mb={1}>
+                          <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#ffffff' }}>
+                            {supp.name}
+                          </Typography>
+                          {supp.timing && (
+                            <Chip
+                              size="small"
+                              label={supp.timing}
+                              sx={{ bgcolor: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 700, fontSize: '0.72rem' }}
+                            />
+                          )}
+                        </Stack>
+
+                        {supp.dosage && (
+                          <Typography variant="caption" sx={{ color: '#34C759', fontWeight: 700, display: 'block', mb: 0.8 }}>
+                            Dosis: {supp.dosage}
+                          </Typography>
+                        )}
+
+                        {supp.observations && (
+                          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.82rem', lineHeight: 1.5, mb: 1.5 }}>
+                            {supp.observations}
+                          </Typography>
+                        )}
+                      </Box>
+
+                      {supp.url && (
+                        <Button
+                          fullWidth
+                          variant="outlined"
+                          component="a"
+                          href={supp.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          startIcon={<ExternalLink size={15} />}
+                          sx={{
+                            mt: 1,
+                            borderRadius: '10px',
+                            borderColor: 'rgba(0, 122, 255, 0.4)',
+                            color: '#007AFF',
+                            fontWeight: 700,
+                            textTransform: 'none',
+                            fontSize: '0.82rem',
+                            '&:hover': {
+                              borderColor: '#007AFF',
+                              bgcolor: 'rgba(0, 122, 255, 0.1)',
+                            },
+                          }}
+                        >
+                          Ver / Comprar Producto
+                        </Button>
+                      )}
+                    </Box>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
           )}
 
           {/* Tarjeta de Observaciones Diarias del Alumno para su Entrenador */}

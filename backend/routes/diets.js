@@ -172,19 +172,31 @@ router.get('/:id/details', async (req, res) => {
 // Crear una nueva dieta
 router.post('/', async (req, res) => {
   try {
-    const { name, description, calories, export_template } = req.body
+    const { name, description, calories, export_template, water_liters, meals_data, supplement_products, notes } = req.body
 
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'El nombre de la dieta es obligatorio' })
     }
 
     const cal = calories ? Math.min(Math.max(Number(calories), 500), 10000) : 2000
+    const water = water_liters != null ? Math.max(0.5, Math.min(Number(water_liters), 10.0)) : 2.5
+    const mealsDataJson = meals_data ? (typeof meals_data === 'string' ? meals_data : JSON.stringify(meals_data)) : null
+    const supplementProductsJson = supplement_products ? (typeof supplement_products === 'string' ? supplement_products : JSON.stringify(supplement_products)) : null
 
     const { rows } = await pool.query(
-      `INSERT INTO diets (name, description, calories, export_template)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO diets (name, description, calories, export_template, water_liters, meals_data, supplement_products, notes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        RETURNING *`,
-      [name.trim(), description || '', cal, export_template || 'visual']
+      [
+        name.trim(),
+        description || '',
+        cal,
+        export_template || 'visual',
+        water,
+        mealsDataJson,
+        supplementProductsJson,
+        notes || ''
+      ]
     )
 
     res.status(201).json(rows[0])
@@ -194,24 +206,44 @@ router.post('/', async (req, res) => {
   }
 })
 
-// Actualizar una dieta existente (nombre, calorías, notas)
+// Actualizar una dieta existente (nombre, calorías, agua, comidas, suplementos, notas)
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const { name, description, calories, export_template } = req.body
+    const { name, description, calories, export_template, water_liters, meals_data, supplement_products, notes } = req.body
 
     if (!name || !name.trim()) {
       return res.status(400).json({ error: 'El nombre de la dieta es obligatorio' })
     }
 
     const cal = calories ? Math.min(Math.max(Number(calories), 500), 10000) : 2000
+    const water = water_liters != null ? Math.max(0.5, Math.min(Number(water_liters), 10.0)) : 2.5
+    const mealsDataJson = meals_data ? (typeof meals_data === 'string' ? meals_data : JSON.stringify(meals_data)) : null
+    const supplementProductsJson = supplement_products ? (typeof supplement_products === 'string' ? supplement_products : JSON.stringify(supplement_products)) : null
 
     const { rows } = await pool.query(
       `UPDATE diets
-       SET name = $1, description = $2, calories = $3, export_template = COALESCE($4, export_template)
-       WHERE id = $5
+       SET name = $1,
+           description = $2,
+           calories = $3,
+           export_template = COALESCE($4, export_template),
+           water_liters = $5,
+           meals_data = COALESCE($6, meals_data),
+           supplement_products = COALESCE($7, supplement_products),
+           notes = COALESCE($8, notes)
+       WHERE id = $9
        RETURNING *`,
-      [name.trim(), description || '', cal, export_template || null, id]
+      [
+        name.trim(),
+        description || '',
+        cal,
+        export_template || null,
+        water,
+        mealsDataJson,
+        supplementProductsJson,
+        notes || '',
+        id
+      ]
     )
 
     if (rows.length === 0) {
