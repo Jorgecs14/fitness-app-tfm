@@ -8,9 +8,6 @@ import {
   Select,
   MenuItem,
   FormControl,
-  InputLabel,
-  Switch,
-  FormControlLabel,
   Stack,
   Button
 } from '@mui/material';
@@ -22,28 +19,6 @@ interface BeforeAfterSliderProps {
   initialAngle?: 'front_arms_cross' | 'side_arms_front' | 'back_arms_cross';
   onUploadClick?: () => void;
 }
-
-// Demo fallback images with aesthetic fitness transformation demonstration
-const DEMO_PHOTOS = {
-  front_arms_cross: {
-    before: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=800&q=80',
-    beforeDate: 'Semana 1 (Inicio)',
-    after: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?auto=format&fit=crop&w=800&q=80',
-    afterDate: 'Semana 16 (Actual)',
-  },
-  side_arms_front: {
-    before: 'https://images.unsplash.com/photo-1571019614242-c5c5dee9f50b?auto=format&fit=crop&w=800&q=80',
-    beforeDate: 'Semana 1 (Inicio)',
-    after: 'https://images.unsplash.com/photo-1581009146145-b5ef050c2e1e?auto=format&fit=crop&w=800&q=80',
-    afterDate: 'Semana 16 (Actual)',
-  },
-  back_arms_cross: {
-    before: 'https://images.unsplash.com/photo-1574680096145-d05b474e2155?auto=format&fit=crop&w=800&q=80',
-    beforeDate: 'Semana 1 (Inicio)',
-    after: 'https://images.unsplash.com/photo-1605296867304-46d5465a13f1?auto=format&fit=crop&w=800&q=80',
-    afterDate: 'Semana 16 (Actual)',
-  },
-};
 
 export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   photos = [],
@@ -61,8 +36,6 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     .filter(p => p.photo_type === selectedAngle)
     .sort((a, b) => new Date(a.photo_date).getTime() - new Date(b.photo_date).getTime() || a.id - b.id);
 
-  const [useDemoMode, setUseDemoMode] = useState<boolean>(anglePhotos.length < 2);
-
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Date selection states: beforeId is ALWAYS the 1st photo (baseline), afterId defaults to latest photo
@@ -73,7 +46,6 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     if (anglePhotos.length >= 2) {
       setBeforeId(anglePhotos[0].id);
       setAfterId(anglePhotos[anglePhotos.length - 1].id);
-      setUseDemoMode(false);
     } else if (anglePhotos.length === 1) {
       setBeforeId(anglePhotos[0].id);
       setAfterId(anglePhotos[0].id);
@@ -86,25 +58,15 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   const selectedBeforePhoto = anglePhotos.find(p => p.id === beforeId) || anglePhotos[0];
   const selectedAfterPhoto = anglePhotos.find(p => p.id === afterId) || anglePhotos[anglePhotos.length - 1];
 
-  // Resolved URLs and dates
-  const hasRealPhotos = !useDemoMode && selectedBeforePhoto && selectedAfterPhoto && anglePhotos.length >= 2;
-  const beforeUrl = hasRealPhotos
-    ? selectedBeforePhoto.photo_url
-    : anglePhotos.length === 1 && !useDemoMode
-    ? anglePhotos[0].photo_url
-    : DEMO_PHOTOS[selectedAngle].before;
+  const beforeUrl = selectedBeforePhoto?.photo_url || '';
+  const beforeLabel = selectedBeforePhoto
+    ? `${new Date(selectedBeforePhoto.photo_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} (Inicio)`
+    : '';
 
-  const beforeLabel = hasRealPhotos || (!useDemoMode && anglePhotos.length === 1)
-    ? `${new Date(selectedBeforePhoto?.photo_date || anglePhotos[0]?.photo_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} (Inicio)`
-    : DEMO_PHOTOS[selectedAngle].beforeDate;
-
-  const afterUrl = hasRealPhotos
-    ? selectedAfterPhoto.photo_url
-    : DEMO_PHOTOS[selectedAngle].after;
-
-  const afterLabel = hasRealPhotos
+  const afterUrl = selectedAfterPhoto?.photo_url || '';
+  const afterLabel = selectedAfterPhoto
     ? `${new Date(selectedAfterPhoto.photo_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} (Actual)`
-    : DEMO_PHOTOS[selectedAngle].afterDate;
+    : '';
 
   // Handle Dragging
   const handleMove = useCallback((clientX: number) => {
@@ -210,64 +172,47 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
             />
           </Box>
           <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', maxWidth: 640 }}>
-            La 1ª foto se conserva como referencia inicial (Antes) y se compara automáticamente con tu último progreso (Después).
+            Tu 1ª foto se almacena como referencia inicial (Antes) y se contrasta milimétricamente contra tu último progreso (Después).
           </Typography>
         </Box>
 
-        {/* View Mode & Toggle Controls */}
+        {/* View Mode & Upload button */}
         <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
-          <ToggleButtonGroup
-            value={viewMode}
-            exclusive
-            onChange={(_, val) => val && setViewMode(val)}
-            size="small"
-            sx={{
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: '20px',
-              p: '2px',
-              '& .MuiToggleButton-root': {
-                borderRadius: '16px',
-                px: { xs: 1.2, sm: 1.6 },
-                py: 0.4,
-                border: 'none',
-                color: 'text.secondary',
-                fontSize: '0.75rem',
-                '&.Mui-selected': {
-                  background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3))',
-                  color: '#22d3ee',
-                  fontWeight: 700,
+          {anglePhotos.length >= 2 && (
+            <ToggleButtonGroup
+              value={viewMode}
+              exclusive
+              onChange={(_, val) => val && setViewMode(val)}
+              size="small"
+              sx={{
+                background: 'rgba(255, 255, 255, 0.05)',
+                border: '1px solid rgba(255, 255, 255, 0.12)',
+                borderRadius: '20px',
+                p: '2px',
+                '& .MuiToggleButton-root': {
+                  borderRadius: '16px',
+                  px: { xs: 1.2, sm: 1.6 },
+                  py: 0.4,
+                  border: 'none',
+                  color: 'text.secondary',
+                  fontSize: '0.75rem',
+                  '&.Mui-selected': {
+                    background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3))',
+                    color: '#22d3ee',
+                    fontWeight: 700,
+                  },
                 },
-              },
-            }}
-          >
-            <ToggleButton value="slider">
-              <Iconify icon="solar:slider-vertical-bold" width={14} sx={{ mr: 0.5 }} />
-              Deslizador
-            </ToggleButton>
-            <ToggleButton value="side-by-side">
-              <Iconify icon="solar:mirror-left-bold" width={14} sx={{ mr: 0.5 }} />
-              Lado a Lado
-            </ToggleButton>
-          </ToggleButtonGroup>
-
-          {anglePhotos.length < 2 && (
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={useDemoMode}
-                  onChange={(e) => setUseDemoMode(e.target.checked)}
-                  color="info"
-                  size="small"
-                />
-              }
-              label={
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.75rem' }}>
-                  Demo
-                </Typography>
-              }
-              sx={{ m: 0 }}
-            />
+              }}
+            >
+              <ToggleButton value="slider">
+                <Iconify icon="solar:slider-vertical-bold" width={14} sx={{ mr: 0.5 }} />
+                Deslizador
+              </ToggleButton>
+              <ToggleButton value="side-by-side">
+                <Iconify icon="solar:mirror-left-bold" width={14} sx={{ mr: 0.5 }} />
+                Lado a Lado
+              </ToggleButton>
+            </ToggleButtonGroup>
           )}
 
           {onUploadClick && (
@@ -346,30 +291,32 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
         </ToggleButtonGroup>
 
         {/* Silhouette overlay toggle */}
-        <Button
-          size="small"
-          variant={showSilhouette ? 'contained' : 'outlined'}
-          onClick={() => setShowSilhouette(!showSilhouette)}
-          startIcon={<Iconify icon="solar:tuning-bold" />}
-          sx={{
-            borderRadius: '12px',
-            textTransform: 'none',
-            fontSize: '0.75rem',
-            py: 0.6,
-            borderColor: showSilhouette ? 'transparent' : 'rgba(255, 255, 255, 0.15)',
-            background: showSilhouette ? 'rgba(6, 182, 212, 0.25)' : 'transparent',
-            color: showSilhouette ? '#22d3ee' : 'text.secondary',
-            '&:hover': {
-              background: showSilhouette ? 'rgba(6, 182, 212, 0.35)' : 'rgba(255, 255, 255, 0.05)',
-            },
-          }}
-        >
-          {showSilhouette ? 'Ocultar Guía Anatómica' : 'Mostrar Guía Anatómica'}
-        </Button>
+        {anglePhotos.length > 0 && (
+          <Button
+            size="small"
+            variant={showSilhouette ? 'contained' : 'outlined'}
+            onClick={() => setShowSilhouette(!showSilhouette)}
+            startIcon={<Iconify icon="solar:tuning-bold" />}
+            sx={{
+              borderRadius: '12px',
+              textTransform: 'none',
+              fontSize: '0.75rem',
+              py: 0.6,
+              borderColor: showSilhouette ? 'transparent' : 'rgba(255, 255, 255, 0.15)',
+              background: showSilhouette ? 'rgba(6, 182, 212, 0.25)' : 'transparent',
+              color: showSilhouette ? '#22d3ee' : 'text.secondary',
+              '&:hover': {
+                background: showSilhouette ? 'rgba(6, 182, 212, 0.35)' : 'rgba(255, 255, 255, 0.05)',
+              },
+            }}
+          >
+            {showSilhouette ? 'Ocultar Guía Anatómica' : 'Mostrar Guía Anatómica'}
+          </Button>
+        )}
       </Stack>
 
-      {/* Date Pickers (if user has 3+ real photos for this angle to compare different check-ins against baseline) */}
-      {!useDemoMode && anglePhotos.length > 2 && (
+      {/* Date Pickers (if user has 3+ real photos for this angle) */}
+      {anglePhotos.length > 2 && (
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 2 }} alignItems={{ xs: 'stretch', sm: 'center' }}>
           <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
             Comparando Línea Base (Antes) con Reporte:
@@ -396,7 +343,100 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       )}
 
       {/* Main View Area */}
-      {viewMode === 'slider' ? (
+      {anglePhotos.length === 0 ? (
+        /* Estado vacío cuando no hay fotos de este ángulo */
+        <Box
+          sx={{
+            height: { xs: 260, sm: 340 },
+            borderRadius: 3,
+            background: 'rgba(255, 255, 255, 0.02)',
+            border: '1px dashed rgba(255, 255, 255, 0.15)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            p: 3,
+            textAlign: 'center',
+            gap: 1.5,
+          }}
+        >
+          <Box
+            sx={{
+              width: 54,
+              height: 54,
+              borderRadius: '16px',
+              background: 'rgba(6, 182, 212, 0.12)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#22d3ee',
+            }}
+          >
+            <Iconify icon="solar:camera-minimalistic-bold" width={28} />
+          </Box>
+          <Typography variant="subtitle1" fontWeight="700">
+            Sin fotos de {selectedAngle === 'front_arms_cross' ? 'Frente' : selectedAngle === 'side_arms_front' ? 'Perfil' : 'Espalda'}
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 440, fontSize: '0.82rem' }}>
+            La 1ª foto que subas quedará guardada permanentemente como tu punto de partida (Antes). Cada foto posterior actualizará tu estado actual (Después).
+          </Typography>
+        </Box>
+      ) : anglePhotos.length === 1 ? (
+        /* Estado con 1 sola foto (Línea de base guardada) */
+        <Box
+          sx={{
+            position: 'relative',
+            width: '100%',
+            height: { xs: 340, sm: 460 },
+            borderRadius: 3,
+            overflow: 'hidden',
+            background: '#090d16',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          <Box component="img" src={beforeUrl} alt="Línea Base" sx={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 12,
+              left: 12,
+              background: 'rgba(15, 23, 42, 0.85)',
+              backdropFilter: 'blur(14px)',
+              border: '1px solid rgba(255, 255, 255, 0.18)',
+              borderRadius: '10px',
+              px: 1.5,
+              py: 0.6,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 0.8,
+            }}
+          >
+            <Box sx={{ width: 7, height: 7, borderRadius: '50%', background: '#94a3b8' }} />
+            <Typography variant="caption" sx={{ fontWeight: 800, color: '#f1f5f9', fontSize: '0.78rem' }}>
+              ANTES • {beforeLabel}
+            </Typography>
+          </Box>
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 12,
+              left: 12,
+              right: 12,
+              p: 1.5,
+              borderRadius: '12px',
+              background: 'rgba(15, 23, 42, 0.85)',
+              backdropFilter: 'blur(14px)',
+              border: '1px solid rgba(6, 182, 212, 0.3)',
+              textAlign: 'center',
+            }}
+          >
+            <Typography variant="caption" sx={{ color: '#22d3ee', fontWeight: 700, fontSize: '0.78rem' }}>
+              ✓ 1ª foto registrada como línea de base inicial. Sube tu próximo reporte semanal para activar el comparador antes/después.
+            </Typography>
+          </Box>
+        </Box>
+      ) : viewMode === 'slider' ? (
+        /* Slider con 2 o más fotos reales */
         <Box
           ref={containerRef}
           onMouseDown={handleMouseDown}
@@ -481,19 +521,14 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 strokeWidth="1.5"
                 strokeDasharray="4 4"
               >
-                {/* Anatomical reference wireframe */}
                 <circle cx="100" cy="45" r="22" />
                 <line x1="100" y1="67" x2="100" y2="210" />
-                {/* Shoulders */}
                 <line x1="50" y1="95" x2="150" y2="95" />
-                {/* Arms */}
                 <line x1="50" y1="95" x2="25" y2="180" />
                 <line x1="150" y1="95" x2="175" y2="180" />
-                {/* Chest & Waist Guidelines */}
                 <ellipse cx="100" cy="115" rx="38" ry="12" />
                 <ellipse cx="100" cy="150" rx="30" ry="10" />
                 <ellipse cx="100" cy="190" rx="36" ry="12" />
-                {/* Legs */}
                 <line x1="80" y1="210" x2="70" y2="360" />
                 <line x1="120" y1="210" x2="130" y2="360" />
                 <line x1="40" y1="360" x2="160" y2="360" stroke="#06b6d4" strokeWidth="2" strokeDasharray="0" />
@@ -710,32 +745,32 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       )}
 
       {/* Bottom Summary / Instruction strip */}
-      <Box
-        sx={{
-          mt: 2,
-          p: 1.5,
-          borderRadius: 2.5,
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 1,
-        }}
-      >
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Iconify icon="solar:info-circle-bold" width={16} sx={{ color: '#22d3ee', flexShrink: 0 }} />
-          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.74rem' }}>
-            {useDemoMode
-              ? 'Modo demo ilustrativo. Tus fotos reales reemplazarán esta muestra en tus check-ins semanales.'
-              : `Comparando línea base (${beforeLabel}) con tu registro (${afterLabel}). Desliza el cursor central.`}
+      {anglePhotos.length >= 2 && (
+        <Box
+          sx={{
+            mt: 2,
+            p: 1.5,
+            borderRadius: 2.5,
+            background: 'rgba(255, 255, 255, 0.03)',
+            border: '1px solid rgba(255, 255, 255, 0.06)',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 1,
+          }}
+        >
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Iconify icon="solar:info-circle-bold" width={16} sx={{ color: '#22d3ee', flexShrink: 0 }} />
+            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.74rem' }}>
+              Comparando línea base ({beforeLabel}) con tu registro ({afterLabel}). Desliza el cursor central.
+            </Typography>
+          </Stack>
+          <Typography variant="caption" sx={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.74rem' }}>
+            Visor: {Math.round(sliderPosition)}%
           </Typography>
-        </Stack>
-        <Typography variant="caption" sx={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.74rem' }}>
-          Visor: {Math.round(sliderPosition)}%
-        </Typography>
-      </Box>
+        </Box>
+      )}
     </Box>
   );
 };

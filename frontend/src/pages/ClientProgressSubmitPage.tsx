@@ -5,8 +5,6 @@ import {
   Grid,
   TextField,
   Button,
-  MenuItem,
-  Rating,
   Alert,
   Stack,
   Divider,
@@ -31,11 +29,10 @@ import {
   Send,
   User,
   Activity,
-  Sparkles,
   Unlock,
   RefreshCw
 } from 'lucide-react';
-import { getCurrentUser, updateUser } from '../services/userService';
+import { getCurrentUser } from '../services/userService';
 import { weeklyTrackingService } from '../services/weeklyTrackingService';
 import { clientProgressPhotoService } from '../services/clientProgressPhotoService';
 import { ClientProgressPhoto } from '../types/ClientProgressPhoto';
@@ -58,20 +55,12 @@ export const ClientProgressSubmitPage: React.FC = () => {
 
   const [form, setForm] = useState({
     weight: '' as number | '',
-    weight_photo_url: '',
     chest_measurement: '' as number | '',
     waist_measurement: '' as number | '',
     hip_measurement: '' as number | '',
     thigh_measurement: '' as number | '',
     bicep_measurement: '' as number | '',
-    diet_difficulties: '',
     exercise_difficulties: '',
-    bowel_movements_per_week: 7,
-    daily_water_intake: 2.5,
-    sleep_quality: 'good',
-    training_days_completed: 4,
-    diet_deviations: '',
-    self_rating: 8,
   });
 
   const [photoFront, setPhotoFront] = useState('');
@@ -179,20 +168,12 @@ export const ClientProgressSubmitPage: React.FC = () => {
       const trackingPayload: Partial<WeeklyTracking> = {
         user_id: userId,
         weight: form.weight ? Number(form.weight) : undefined,
-        weight_photo_url: form.weight_photo_url || undefined,
         chest_measurement: form.chest_measurement ? Number(form.chest_measurement) : undefined,
         waist_measurement: form.waist_measurement ? Number(form.waist_measurement) : undefined,
         hip_measurement: form.hip_measurement ? Number(form.hip_measurement) : undefined,
         thigh_measurement: form.thigh_measurement ? Number(form.thigh_measurement) : undefined,
         bicep_measurement: form.bicep_measurement ? Number(form.bicep_measurement) : undefined,
-        diet_difficulties: form.diet_difficulties || undefined,
         exercise_difficulties: form.exercise_difficulties || undefined,
-        bowel_movements_per_week: Number(form.bowel_movements_per_week),
-        daily_water_intake: Number(form.daily_water_intake),
-        sleep_quality: form.sleep_quality,
-        training_days_completed: Number(form.training_days_completed),
-        diet_deviations: form.diet_deviations || undefined,
-        self_rating: Number(form.self_rating),
         date: todayDate,
       };
 
@@ -271,12 +252,12 @@ export const ClientProgressSubmitPage: React.FC = () => {
             <CheckCircle2 size={36} color="#34C759" />
           </Box>
           <Typography variant="h4" fontWeight="800" gutterBottom sx={{ color: '#FFFFFF', fontSize: { xs: '1.5rem', sm: '2rem' } }}>
-            {isResettingBaseline ? 'Línea de Base Inicial Actualizada' : 'Reporte Semanal Enviado'}
+            {isResettingBaseline ? 'Línea de Base Inicial Actualizada' : 'Reporte de Progreso Enviado'}
           </Typography>
           <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.65)', mb: 3.5, lineHeight: 1.6 }}>
             {isResettingBaseline
               ? 'Tus fotos iniciales de referencia (Antes) han sido reemplazadas correctamente. A partir de ahora servirán como punto de partida.'
-              : 'Tus datos biométricos, fotos y sensaciones semanales han sido sincronizados. Tu entrenador revisará el progreso para ajustar tus cargas y calorías.'}
+              : 'Tus medidas antropométricas y fotos han sido sincronizadas. Tu entrenador revisará el progreso para ajustar tus cargas y pautas.'}
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center">
             <Button
@@ -508,16 +489,6 @@ export const ClientProgressSubmitPage: React.FC = () => {
 
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  label="Foto Báscula (URL opcional)"
-                  value={form.weight_photo_url}
-                  onChange={handleChange('weight_photo_url')}
-                  fullWidth
-                  placeholder="https://..."
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <TextField
                   label="Pecho (cm)"
                   type="number"
                   inputProps={{ step: '0.1' }}
@@ -528,7 +499,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   label="Cintura (cm)"
                   type="number"
@@ -540,7 +511,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   label="Cadera (cm)"
                   type="number"
@@ -575,138 +546,22 @@ export const ClientProgressSubmitPage: React.FC = () => {
                   placeholder="ej. 36.5"
                 />
               </Grid>
-            </Grid>
-          </Box>
-
-          {/* Card 2: Hábitos Semanales y Sensaciones */}
-          <Box
-            className="apple-card"
-            sx={{
-              p: { xs: 2, sm: 3 },
-            }}
-          >
-            <Box display="flex" alignItems="center" gap={1.2} mb={1.5}>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '8px',
-                  background: 'rgba(0, 122, 255, 0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flexShrink: 0,
-                }}
-              >
-                <Activity size={18} color="#007AFF" />
-              </Box>
-              <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: { xs: '0.95rem', sm: '1.05rem' } }}>
-                Hábitos, Sueño & Adherencia
-              </Typography>
-            </Box>
-
-            <Divider sx={{ mb: 2.5, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
-
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  select
-                  label="Calidad del Sueño"
-                  value={form.sleep_quality}
-                  onChange={handleChange('sleep_quality')}
-                  fullWidth
-                >
-                  <MenuItem value="good">🌙 Bueno (Reparador y profundo)</MenuItem>
-                  <MenuItem value="regular">⛅ Regular (Interrupciones leves)</MenuItem>
-                  <MenuItem value="bad">⚡ Malo (Insomnio / Cansancio)</MenuItem>
-                </TextField>
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  label="Días Entrenados en la Semana"
-                  type="number"
-                  inputProps={{ min: 0, max: 7 }}
-                  value={form.training_days_completed}
-                  onChange={handleChange('training_days_completed')}
-                  fullWidth
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  label="Agua Diaria (Litros/día)"
-                  type="number"
-                  inputProps={{ step: '0.25', min: 0 }}
-                  value={form.daily_water_intake}
-                  onChange={handleChange('daily_water_intake')}
-                  fullWidth
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  label="Deposiciones por Semana"
-                  type="number"
-                  value={form.bowel_movements_per_week}
-                  onChange={handleChange('bowel_movements_per_week')}
-                  fullWidth
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12 }}>
-                <Box
-                  sx={{
-                    p: 2,
-                    borderRadius: '12px',
-                    background: 'rgba(255, 255, 255, 0.02)',
-                    border: '0.5px solid rgba(255, 255, 255, 0.06)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: 1.5,
-                  }}
-                >
-                  <Typography variant="body2" fontWeight="600" sx={{ color: '#FFFFFF' }}>
-                    Autoevaluación de Compromiso (1 a 10)
-                  </Typography>
-                  <Rating
-                    max={10}
-                    value={form.self_rating}
-                    onChange={(_, val) => setForm({ ...form, self_rating: val || 8 })}
-                    size="medium"
-                  />
-                </Box>
-              </Grid>
 
               <Grid size={{ xs: 12 }}>
                 <TextField
-                  label="Dificultades con la Dieta u Observaciones"
-                  multiline
-                  rows={2}
-                  value={form.diet_difficulties}
-                  onChange={handleChange('diet_difficulties')}
-                  fullWidth
-                  placeholder="¿Hambre excesiva, comidas fuera de plan o antojos?"
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label="Molestias Musculares o Articulares"
+                  label="Molestias Musculares o Articulares (Opcional)"
                   multiline
                   rows={2}
                   value={form.exercise_difficulties}
                   onChange={handleChange('exercise_difficulties')}
                   fullWidth
-                  placeholder="¿Algún ejercicio te produjo dolor o molestia articular?"
+                  placeholder="¿Algún dolor muscular o molestia articular durante la semana?"
                 />
               </Grid>
             </Grid>
           </Box>
 
-          {/* Card 3: Fotos de Progreso Corporal (3 Ángulos) */}
+          {/* Card 2: Fotos de Progreso Corporal (3 Ángulos) */}
           <Box
             className="apple-card"
             sx={{
@@ -804,31 +659,23 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     </Box>
                   )}
 
-                  <Stack spacing={1}>
-                    <Button
-                      component="label"
-                      variant="outlined"
-                      size="small"
-                      disabled={uploadingPhoto === 'front'}
-                      startIcon={uploadingPhoto === 'front' ? <CircularProgress size={16} /> : <Upload size={16} />}
-                      sx={{ borderRadius: '10px', textTransform: 'none', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#FFFFFF' }}
-                    >
-                      {uploadingPhoto === 'front' ? 'Subiendo...' : 'Subir Foto'}
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={(e) => e.target.files?.[0] && handleFileUpload('front', e.target.files[0])}
-                      />
-                    </Button>
-                    <TextField
-                      size="small"
-                      placeholder="o URL https://..."
-                      value={photoFront}
-                      onChange={(e) => setPhotoFront(e.target.value)}
-                      fullWidth
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    disabled={uploadingPhoto === 'front'}
+                    startIcon={uploadingPhoto === 'front' ? <CircularProgress size={16} /> : <Upload size={16} />}
+                    sx={{ borderRadius: '10px', textTransform: 'none', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#FFFFFF' }}
+                  >
+                    {uploadingPhoto === 'front' ? 'Subiendo...' : 'Subir Foto'}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleFileUpload('front', e.target.files[0])}
                     />
-                  </Stack>
+                  </Button>
                 </Box>
               </Grid>
 
@@ -881,31 +728,23 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     </Box>
                   )}
 
-                  <Stack spacing={1}>
-                    <Button
-                      component="label"
-                      variant="outlined"
-                      size="small"
-                      disabled={uploadingPhoto === 'side'}
-                      startIcon={uploadingPhoto === 'side' ? <CircularProgress size={16} /> : <Upload size={16} />}
-                      sx={{ borderRadius: '10px', textTransform: 'none', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#FFFFFF' }}
-                    >
-                      {uploadingPhoto === 'side' ? 'Subiendo...' : 'Subir Foto'}
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={(e) => e.target.files?.[0] && handleFileUpload('side', e.target.files[0])}
-                      />
-                    </Button>
-                    <TextField
-                      size="small"
-                      placeholder="o URL https://..."
-                      value={photoSide}
-                      onChange={(e) => setPhotoSide(e.target.value)}
-                      fullWidth
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    disabled={uploadingPhoto === 'side'}
+                    startIcon={uploadingPhoto === 'side' ? <CircularProgress size={16} /> : <Upload size={16} />}
+                    sx={{ borderRadius: '10px', textTransform: 'none', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#FFFFFF' }}
+                  >
+                    {uploadingPhoto === 'side' ? 'Subiendo...' : 'Subir Foto'}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleFileUpload('side', e.target.files[0])}
                     />
-                  </Stack>
+                  </Button>
                 </Box>
               </Grid>
 
@@ -958,31 +797,23 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     </Box>
                   )}
 
-                  <Stack spacing={1}>
-                    <Button
-                      component="label"
-                      variant="outlined"
-                      size="small"
-                      disabled={uploadingPhoto === 'back'}
-                      startIcon={uploadingPhoto === 'back' ? <CircularProgress size={16} /> : <Upload size={16} />}
-                      sx={{ borderRadius: '10px', textTransform: 'none', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#FFFFFF' }}
-                    >
-                      {uploadingPhoto === 'back' ? 'Subiendo...' : 'Subir Foto'}
-                      <input
-                        type="file"
-                        hidden
-                        accept="image/*"
-                        onChange={(e) => e.target.files?.[0] && handleFileUpload('back', e.target.files[0])}
-                      />
-                    </Button>
-                    <TextField
-                      size="small"
-                      placeholder="o URL https://..."
-                      value={photoBack}
-                      onChange={(e) => setPhotoBack(e.target.value)}
-                      fullWidth
+                  <Button
+                    component="label"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    disabled={uploadingPhoto === 'back'}
+                    startIcon={uploadingPhoto === 'back' ? <CircularProgress size={16} /> : <Upload size={16} />}
+                    sx={{ borderRadius: '10px', textTransform: 'none', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#FFFFFF' }}
+                  >
+                    {uploadingPhoto === 'back' ? 'Subiendo...' : 'Subir Foto'}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/*"
+                      onChange={(e) => e.target.files?.[0] && handleFileUpload('back', e.target.files[0])}
                     />
-                  </Stack>
+                  </Button>
                 </Box>
               </Grid>
             </Grid>

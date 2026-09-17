@@ -7,12 +7,13 @@ import {
   Stack,
   CircularProgress,
   Alert,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import {
   Flame,
   Calendar,
-  TrendingUp,
   Dumbbell,
   Clock,
   PlayCircle,
@@ -20,9 +21,16 @@ import {
   ShieldCheck,
   User,
   ArrowRight,
-  Sparkles,
   Camera,
-  ChefHat
+  Droplets,
+  Plus,
+  Minus,
+  Check,
+  Moon,
+  Sun,
+  RotateCcw,
+  Sparkles,
+  Award
 } from 'lucide-react';
 import { getCurrentUser } from '../services/userService';
 import { getWorkoutsWithExercises, getWorkoutDetails } from '../services/workoutService';
@@ -35,6 +43,14 @@ import { LiveWorkoutDialog } from '../components/Workouts/LiveWorkoutDialog';
 import { BodyHeatmap } from '../components/Analytics/BodyHeatmap';
 import { loadOf } from '../lib/muscles';
 
+const MEAL_STEPS = [
+  { id: 'desayuno', label: '1º Desayuno', short: 'Desayuno', icon: '🍳' },
+  { id: 'media_manana', label: '2º Media Mañana', short: 'Media Mañana', icon: '🍎' },
+  { id: 'comida', label: '3º Comida', short: 'Comida', icon: '🥗' },
+  { id: 'merienda', label: '4º Merienda', short: 'Merienda', icon: '🥪' },
+  { id: 'cena', label: '5º Cena', short: 'Cena', icon: '🍲' },
+];
+
 export const ClientHomePage: React.FC = () => {
   const navigate = useNavigate();
   const [currentUser, setCurrentUser] = useState<UserType | null>(null);
@@ -46,6 +62,12 @@ export const ClientHomePage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [loadingWorkoutId, setLoadingWorkoutId] = useState<number | null>(null);
 
+  // Daily Habits States (Auto-reset every 24h day)
+  const todayKey = new Date().toISOString().split('T')[0];
+  const [waterIntake, setWaterIntake] = useState<number>(0); // in Liters
+  const [completedMealIndex, setCompletedMealIndex] = useState<number>(0); // 0 to 5
+  const [sleepQuality, setSleepQuality] = useState<'good' | 'regular' | 'bad' | null>(null);
+
   useEffect(() => {
     loadClientData();
   }, []);
@@ -55,6 +77,18 @@ export const ClientHomePage: React.FC = () => {
       setLoading(true);
       const user = await getCurrentUser();
       setCurrentUser(user);
+
+      // Cargar hábitos diarios desde localStorage con clave de fecha diaria
+      if (user?.id) {
+        const savedWater = localStorage.getItem(`lifeboost_water_${user.id}_${todayKey}`);
+        if (savedWater) setWaterIntake(parseFloat(savedWater) || 0);
+
+        const savedMeals = localStorage.getItem(`lifeboost_meals_${user.id}_${todayKey}`);
+        if (savedMeals !== null) setCompletedMealIndex(parseInt(savedMeals, 10) || 0);
+
+        const savedSleep = localStorage.getItem(`lifeboost_sleep_${user.id}_${todayKey}`);
+        if (savedSleep) setSleepQuality(savedSleep as any);
+      }
 
       // Cargar rutinas completas con ejercicios
       try {
@@ -100,6 +134,35 @@ export const ClientHomePage: React.FC = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Water handler
+  const handleAddWater = (amount: number) => {
+    if (!currentUser) return;
+    const newAmount = Math.max(0, Math.min(6.0, Number((waterIntake + amount).toFixed(2))));
+    setWaterIntake(newAmount);
+    localStorage.setItem(`lifeboost_water_${currentUser.id}_${todayKey}`, newAmount.toString());
+  };
+
+  // Meal sequence handler
+  const handleAdvanceMeal = () => {
+    if (!currentUser) return;
+    const nextIndex = Math.min(5, completedMealIndex + 1);
+    setCompletedMealIndex(nextIndex);
+    localStorage.setItem(`lifeboost_meals_${currentUser.id}_${todayKey}`, nextIndex.toString());
+  };
+
+  const handleResetMeals = () => {
+    if (!currentUser) return;
+    setCompletedMealIndex(0);
+    localStorage.setItem(`lifeboost_meals_${currentUser.id}_${todayKey}`, '0');
+  };
+
+  // Sleep quality handler
+  const handleSelectSleep = (quality: 'good' | 'regular' | 'bad') => {
+    if (!currentUser) return;
+    setSleepQuality(quality);
+    localStorage.setItem(`lifeboost_sleep_${currentUser.id}_${todayKey}`, quality);
   };
 
   const handleStartLiveWorkout = async (workout: any) => {
@@ -173,6 +236,9 @@ export const ClientHomePage: React.FC = () => {
   }
 
   const spotlightWorkout = assignedWorkouts.length > 0 ? assignedWorkouts[0] : null;
+  const waterTarget = 2.5; // Target 2.5L
+  const waterPercentage = Math.min(100, Math.round((waterIntake / waterTarget) * 100));
+  const nextMeal = completedMealIndex < 5 ? MEAL_STEPS[completedMealIndex] : null;
 
   return (
     <Box className="apple-content-container">
@@ -228,7 +294,7 @@ export const ClientHomePage: React.FC = () => {
         </Typography>
 
         <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.65)', maxWidth: 640, mb: 2.5, lineHeight: 1.5 }}>
-          Tu centro de entrenamiento personal. Registra tus series en vivo, sigue tu plan de nutrición y comparte tus progresos con tu entrenador.
+          Tu centro de entrenamiento personal. Registra tus series en vivo, tus hábitos diarios y comparte tus progresos con tu entrenador.
         </Typography>
 
         {/* Botones Rápidos de Acción */}
@@ -271,6 +337,409 @@ export const ClientHomePage: React.FC = () => {
             Subir Progreso
           </button>
         </Stack>
+      </Box>
+
+      {/* SECCIÓN SUPERIOR: 3 CARDS DE HÁBITOS DIARIOS (AGUA, CHECK COMIDAS, SUEÑO) */}
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.5)', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase', display: 'block', mb: 1.5 }}>
+          Registro de Hábitos de Hoy (24h)
+        </Typography>
+
+        <Grid container spacing={2}>
+          {/* 1. Card de Agua con Botella Interactiva */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Box
+              className="apple-card"
+              sx={{
+                p: 2.5,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                background: 'linear-gradient(180deg, rgba(6, 182, 212, 0.08) 0%, #1C1C1E 100%)',
+                border: '1px solid rgba(6, 182, 212, 0.25)',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
+            >
+              <Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '8px',
+                        background: 'rgba(6, 182, 212, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#22d3ee',
+                      }}
+                    >
+                      <Droplets size={18} />
+                    </Box>
+                    <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: '0.95rem' }}>
+                      Agua Diaria
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={`${waterPercentage}%`}
+                    size="small"
+                    sx={{
+                      background: 'rgba(6, 182, 212, 0.2)',
+                      color: '#22d3ee',
+                      fontWeight: 800,
+                      fontSize: '0.72rem',
+                    }}
+                  />
+                </Box>
+
+                {/* Botella Gráfica Interactiva */}
+                <Box display="flex" alignItems="center" gap={2} my={2}>
+                  {/* Visual Bottle */}
+                  <Box
+                    sx={{
+                      width: 50,
+                      height: 100,
+                      borderRadius: '12px 12px 14px 14px',
+                      border: '2px solid rgba(6, 182, 212, 0.6)',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      background: 'rgba(15, 23, 42, 0.6)',
+                      boxShadow: '0 0 15px rgba(6, 182, 212, 0.2)',
+                      flexShrink: 0,
+                      '&::before': {
+                        content: '""',
+                        position: 'absolute',
+                        top: -6,
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        width: 18,
+                        height: 6,
+                        background: '#22d3ee',
+                        borderRadius: '3px 3px 0 0',
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 0,
+                        right: 0,
+                        height: `${waterPercentage}%`,
+                        background: 'linear-gradient(180deg, #38bdf8 0%, #0284c7 100%)',
+                        transition: 'height 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+                        boxShadow: '0 -2px 8px rgba(56, 189, 248, 0.6)',
+                      }}
+                    />
+                  </Box>
+
+                  <Box>
+                    <Typography variant="h5" fontWeight="900" sx={{ color: '#38bdf8', letterSpacing: '-0.02em' }}>
+                      {waterIntake.toFixed(2)} L
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.55)', display: 'block' }}>
+                      Meta: {waterTarget} Litros / día
+                    </Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+              {/* Botones de incremento */}
+              <Stack direction="row" spacing={1} alignItems="center">
+                <button
+                  onClick={() => handleAddWater(0.25)}
+                  className="apple-btn-secondary"
+                  style={{ flex: 1, height: '36px', fontSize: '12px', padding: '0 8px' }}
+                >
+                  +250ml
+                </button>
+                <button
+                  onClick={() => handleAddWater(0.50)}
+                  className="apple-btn-secondary"
+                  style={{ flex: 1, height: '36px', fontSize: '12px', padding: '0 8px' }}
+                >
+                  +500ml
+                </button>
+                <IconButton
+                  size="small"
+                  onClick={() => handleAddWater(-0.25)}
+                  disabled={waterIntake <= 0}
+                  sx={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: '10px',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: 'rgba(255, 255, 255, 0.6)',
+                    '&:hover': { background: 'rgba(255, 255, 255, 0.1)' },
+                  }}
+                >
+                  <Minus size={16} />
+                </IconButton>
+              </Stack>
+            </Box>
+          </Grid>
+
+          {/* 2. Card de Check Comidas Secuenciales (Cambia de nombre al completar) */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Box
+              className="apple-card"
+              sx={{
+                p: 2.5,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                background: 'linear-gradient(180deg, rgba(52, 199, 89, 0.08) 0%, #1C1C1E 100%)',
+                border: '1px solid rgba(52, 199, 89, 0.25)',
+              }}
+            >
+              <Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '8px',
+                        background: 'rgba(52, 199, 89, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#34C759',
+                      }}
+                    >
+                      <UtensilsCrossed size={18} />
+                    </Box>
+                    <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: '0.95rem' }}>
+                      Control de Comidas
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={`${completedMealIndex} / 5`}
+                    size="small"
+                    sx={{
+                      background: 'rgba(52, 199, 89, 0.2)',
+                      color: '#34C759',
+                      fontWeight: 800,
+                      fontSize: '0.72rem',
+                    }}
+                  />
+                </Box>
+
+                {/* Status central dinámico */}
+                <Box my={1.8} p={1.5} sx={{ borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '0.5px solid rgba(255, 255, 255, 0.06)' }}>
+                  {nextMeal ? (
+                    <Box>
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block' }}>
+                        Próxima comida a marcar:
+                      </Typography>
+                      <Typography variant="h6" fontWeight="800" sx={{ color: '#FFFFFF', mt: 0.2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <span>{nextMeal.icon}</span> {nextMeal.label}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Award size={20} color="#34C759" />
+                      <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#34C759' }}>
+                        ¡Todas las 5 comidas completadas hoy!
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+
+                {/* Timeline de puntos de comidas */}
+                <Stack direction="row" spacing={0.8} mb={2} justifyContent="space-between">
+                  {MEAL_STEPS.map((m, idx) => {
+                    const isDone = idx < completedMealIndex;
+                    const isCurrent = idx === completedMealIndex;
+                    return (
+                      <Tooltip key={m.id} title={m.short}>
+                        <Box
+                          sx={{
+                            flex: 1,
+                            height: 6,
+                            borderRadius: 3,
+                            background: isDone
+                              ? '#34C759'
+                              : isCurrent
+                              ? 'rgba(52, 199, 89, 0.4)'
+                              : 'rgba(255, 255, 255, 0.1)',
+                            transition: 'all 0.25s ease',
+                          }}
+                        />
+                      </Tooltip>
+                    );
+                  })}
+                </Stack>
+              </Box>
+
+              {/* Botón de acción principal con cambio dinámico de nombre */}
+              {nextMeal ? (
+                <button
+                  onClick={handleAdvanceMeal}
+                  className="apple-btn-primary"
+                  style={{
+                    width: '100%',
+                    height: '40px',
+                    fontSize: '13px',
+                    fontWeight: 700,
+                    backgroundColor: '#34C759',
+                    color: '#000000',
+                  }}
+                >
+                  <Check size={16} /> Marcar {nextMeal.label}
+                </button>
+              ) : (
+                <button
+                  onClick={handleResetMeals}
+                  className="apple-btn-secondary"
+                  style={{
+                    width: '100%',
+                    height: '40px',
+                    fontSize: '13px',
+                    gap: '6px',
+                  }}
+                >
+                  <RotateCcw size={15} /> Reiniciar Registro
+                </button>
+              )}
+            </Box>
+          </Grid>
+
+          {/* 3. Card de Calidad de Sueño */}
+          <Grid size={{ xs: 12, md: 4 }}>
+            <Box
+              className="apple-card"
+              sx={{
+                p: 2.5,
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                background: 'linear-gradient(180deg, rgba(168, 85, 247, 0.08) 0%, #1C1C1E 100%)',
+                border: '1px solid rgba(168, 85, 247, 0.25)',
+              }}
+            >
+              <Box>
+                <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Box
+                      sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '8px',
+                        background: 'rgba(168, 85, 247, 0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: '#c084fc',
+                      }}
+                    >
+                      <Moon size={18} />
+                    </Box>
+                    <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: '0.95rem' }}>
+                      Calidad del Sueño
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={
+                      sleepQuality === 'good'
+                        ? 'Bueno'
+                        : sleepQuality === 'regular'
+                        ? 'Regular'
+                        : sleepQuality === 'bad'
+                        ? 'Malo'
+                        : 'Sin registrar'
+                    }
+                    size="small"
+                    sx={{
+                      background: sleepQuality ? 'rgba(168, 85, 247, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+                      color: sleepQuality ? '#c084fc' : 'rgba(255, 255, 255, 0.6)',
+                      fontWeight: 700,
+                      fontSize: '0.72rem',
+                    }}
+                  />
+                </Box>
+
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mb: 2 }}>
+                  ¿Cómo ha sido tu descanso de anoche? Tu recuperación influye en las cargas de hoy.
+                </Typography>
+              </Box>
+
+              {/* 3 opciones táctiles */}
+              <Stack direction="row" spacing={1}>
+                <button
+                  onClick={() => handleSelectSleep('good')}
+                  style={{
+                    flex: 1,
+                    height: '42px',
+                    borderRadius: '10px',
+                    border: sleepQuality === 'good' ? '1.5px solid #a855f7' : '1px solid rgba(255, 255, 255, 0.12)',
+                    background: sleepQuality === 'good' ? 'rgba(168, 85, 247, 0.25)' : 'rgba(255, 255, 255, 0.04)',
+                    color: sleepQuality === 'good' ? '#e9d5ff' : 'rgba(255, 255, 255, 0.8)',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <span>🌙 Bueno</span>
+                </button>
+
+                <button
+                  onClick={() => handleSelectSleep('regular')}
+                  style={{
+                    flex: 1,
+                    height: '42px',
+                    borderRadius: '10px',
+                    border: sleepQuality === 'regular' ? '1.5px solid #f59e0b' : '1px solid rgba(255, 255, 255, 0.12)',
+                    background: sleepQuality === 'regular' ? 'rgba(245, 158, 11, 0.25)' : 'rgba(255, 255, 255, 0.04)',
+                    color: sleepQuality === 'regular' ? '#fde68a' : 'rgba(255, 255, 255, 0.8)',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <span>⛅ Regular</span>
+                </button>
+
+                <button
+                  onClick={() => handleSelectSleep('bad')}
+                  style={{
+                    flex: 1,
+                    height: '42px',
+                    borderRadius: '10px',
+                    border: sleepQuality === 'bad' ? '1.5px solid #ef4444' : '1px solid rgba(255, 255, 255, 0.12)',
+                    background: sleepQuality === 'bad' ? 'rgba(239, 68, 68, 0.25)' : 'rgba(255, 255, 255, 0.04)',
+                    color: sleepQuality === 'bad' ? '#fca5a5' : 'rgba(255, 255, 255, 0.8)',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.2s ease',
+                  }}
+                >
+                  <span>⚡ Malo</span>
+                </button>
+              </Stack>
+            </Box>
+          </Grid>
+        </Grid>
       </Box>
 
       {/* Featured Workout Hero Section */}
