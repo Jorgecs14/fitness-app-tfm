@@ -252,43 +252,58 @@ export const ClientHomePage: React.FC = () => {
           background: 'linear-gradient(180deg, #1C1C1E 0%, #161618 100%)',
         }}
       >
-        <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }} flexWrap="wrap">
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1,
+            flexWrap: 'wrap',
+            mb: 1.8
+          }}
+        >
+          {/* Fecha Actual */}
           <Box
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: 0.8,
-              backgroundColor: 'rgba(255, 149, 0, 0.15)',
-              color: '#FF9500',
-              px: 1.5,
+              bgcolor: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              color: 'rgba(255, 255, 255, 0.85)',
+              px: 1.4,
               py: 0.5,
-              borderRadius: 2,
+              borderRadius: '20px',
               fontSize: '12px',
               fontWeight: 600,
+              textTransform: 'capitalize',
+              letterSpacing: '-0.01em',
             }}
           >
-            <Flame size={14} />
-            <span>{thisWeekSessions.length} sesiones esta semana</span>
+            <Calendar size={13} color="#007AFF" />
+            <span>{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
           </Box>
+
+          {/* Sesiones de la Semana */}
           <Box
             sx={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: 0.8,
-              backgroundColor: 'rgba(120, 120, 128, 0.2)',
-              color: 'rgba(235, 235, 245, 0.7)',
-              px: 1.5,
+              bgcolor: thisWeekSessions.length > 0 ? 'rgba(52, 199, 89, 0.12)' : 'rgba(255, 149, 0, 0.12)',
+              border: thisWeekSessions.length > 0 ? '1px solid rgba(52, 199, 89, 0.3)' : '1px solid rgba(255, 149, 0, 0.3)',
+              color: thisWeekSessions.length > 0 ? '#34C759' : '#FF9500',
+              px: 1.4,
               py: 0.5,
-              borderRadius: 2,
+              borderRadius: '20px',
               fontSize: '12px',
-              fontWeight: 500,
-              textTransform: 'capitalize',
+              fontWeight: 700,
+              letterSpacing: '-0.01em',
             }}
           >
-            <Calendar size={14} />
-            <span>{new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+            <Flame size={13} />
+            <span>{thisWeekSessions.length} {thisWeekSessions.length === 1 ? 'sesión' : 'sesiones'} esta semana</span>
           </Box>
-        </Stack>
+        </Box>
 
         <Typography variant="h4" sx={{ fontWeight: 800, color: '#ffffff', letterSpacing: '-0.03em', mb: 0.8 }}>
           ¡Hola, {currentUser?.name || 'Atleta'}!
