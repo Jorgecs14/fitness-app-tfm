@@ -12,37 +12,37 @@ import { useNavigate } from 'react-router-dom';
 import {
   Flame,
   Calendar,
-  PlusCircle,
   TrendingUp,
   Dumbbell,
   Clock,
   PlayCircle,
   UtensilsCrossed,
   ShieldCheck,
-  UserCheck,
-  BookOpen
+  User,
+  ArrowRight,
+  Sparkles,
+  Camera,
+  ChefHat
 } from 'lucide-react';
 import { getCurrentUser } from '../services/userService';
 import { getWorkoutsWithExercises, getWorkoutDetails } from '../services/workoutService';
 import { getDietsWithFoods, getDietUsers, getDietWithFoods, getUserDiet } from '../services/dietService';
 import { getUserLoggedSessions, LoggedSessionData } from '../services/loggedSessionService';
-import { User } from '../types/User';
+import { User as UserType } from '../types/User';
 import { WorkoutWithExercises } from '../types/WorkoutWithExercises';
 import { DietWithFoods } from '../types/DietWithFoods';
 import { LiveWorkoutDialog } from '../components/Workouts/LiveWorkoutDialog';
-import { ClientWorkoutBuilderModal } from '../components/Workouts/ClientWorkoutBuilderModal';
 import { BodyHeatmap } from '../components/Analytics/BodyHeatmap';
 import { loadOf } from '../lib/muscles';
 
 export const ClientHomePage: React.FC = () => {
   const navigate = useNavigate();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<UserType | null>(null);
   const [assignedWorkouts, setAssignedWorkouts] = useState<WorkoutWithExercises[]>([]);
   const [assignedDiet, setAssignedDiet] = useState<DietWithFoods | null>(null);
   const [loggedSessions, setLoggedSessions] = useState<LoggedSessionData[]>([]);
   const [activeLiveWorkout, setActiveLiveWorkout] = useState<any | null>(null);
   const [liveWorkoutOpen, setLiveWorkoutOpen] = useState(false);
-  const [workoutBuilderOpen, setWorkoutBuilderOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingWorkoutId, setLoadingWorkoutId] = useState<number | null>(null);
 
@@ -164,7 +164,7 @@ export const ClientHomePage: React.FC = () => {
   if (loading) {
     return (
       <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight="60vh">
-        <CircularProgress size={36} sx={{ color: '#007aff' }} />
+        <CircularProgress size={36} sx={{ color: '#007AFF' }} />
         <Typography sx={{ mt: 2, color: 'rgba(235, 235, 245, 0.6)', fontSize: '14px' }}>
           Cargando tu plan de entrenamiento...
         </Typography>
@@ -182,7 +182,7 @@ export const ClientHomePage: React.FC = () => {
         sx={{
           p: { xs: 2.5, sm: 3.5 },
           mb: 3,
-          background: 'linear-gradient(180deg, #1c1c1e 0%, #161618 100%)',
+          background: 'linear-gradient(180deg, #1C1C1E 0%, #161618 100%)',
         }}
       >
         <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1.5 }} flexWrap="wrap">
@@ -192,7 +192,7 @@ export const ClientHomePage: React.FC = () => {
               alignItems: 'center',
               gap: 0.8,
               backgroundColor: 'rgba(255, 149, 0, 0.15)',
-              color: '#ff9500',
+              color: '#FF9500',
               px: 1.5,
               py: 0.5,
               borderRadius: 2,
@@ -228,24 +228,46 @@ export const ClientHomePage: React.FC = () => {
         </Typography>
 
         <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.65)', maxWidth: 640, mb: 2.5, lineHeight: 1.5 }}>
-          Controla en tiempo real tu estímulo muscular, registra series en vivo y mantén el control de tus objetivos.
+          Tu centro de entrenamiento personal. Registra tus series en vivo, sigue tu plan de nutrición y comparte tus progresos con tu entrenador.
         </Typography>
 
-        <Stack direction="row" spacing={1.5} flexWrap="wrap">
+        {/* Botones Rápidos de Acción */}
+        <Stack direction="row" spacing={1.5} flexWrap="wrap" gap={1}>
+          {spotlightWorkout ? (
+            <button
+              onClick={() => handleStartLiveWorkout(spotlightWorkout)}
+              className="apple-btn-blue"
+              style={{ gap: '8px', padding: '0 20px', height: '44px', fontSize: '14px' }}
+            >
+              <PlayCircle size={18} />
+              Iniciar Rutina
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate('/dashboard/workouts')}
+              className="apple-btn-blue"
+              style={{ gap: '8px', padding: '0 20px', height: '44px', fontSize: '14px' }}
+            >
+              <Dumbbell size={18} />
+              Ver Rutinas
+            </button>
+          )}
+
           <button
-            onClick={() => setWorkoutBuilderOpen(true)}
+            onClick={() => navigate('/dashboard/client-diet')}
             className="apple-btn-secondary"
-            style={{ gap: '6px' }}
+            style={{ gap: '8px', padding: '0 18px', height: '44px', fontSize: '14px' }}
           >
-            <PlusCircle size={17} color="#007aff" />
-            Nueva Rutina
+            <UtensilsCrossed size={17} color="#34C759" />
+            Ver Mi Dieta
           </button>
+
           <button
             onClick={() => navigate('/dashboard/submit-progress')}
             className="apple-btn-secondary"
-            style={{ gap: '6px' }}
+            style={{ gap: '8px', padding: '0 18px', height: '44px', fontSize: '14px' }}
           >
-            <TrendingUp size={17} color="#34c759" />
+            <Camera size={17} color="#007AFF" />
             Subir Progreso
           </button>
         </Stack>
@@ -259,7 +281,7 @@ export const ClientHomePage: React.FC = () => {
             p: { xs: 2.5, sm: 3 },
             mb: 3,
             border: '0.5px solid rgba(0, 122, 255, 0.3)',
-            backgroundColor: '#1c1c1e',
+            backgroundColor: '#1C1C1E',
           }}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5, flexWrap: 'wrap', gap: 1 }}>
@@ -267,7 +289,7 @@ export const ClientHomePage: React.FC = () => {
               <Box
                 sx={{
                   backgroundColor: 'rgba(52, 199, 89, 0.15)',
-                  color: '#34c759',
+                  color: '#34C759',
                   px: 1.2,
                   py: 0.4,
                   borderRadius: 1.5,
@@ -277,7 +299,7 @@ export const ClientHomePage: React.FC = () => {
                   textTransform: 'uppercase',
                 }}
               >
-                Recomendado Hoy
+                Pautada por tu Entrenador
               </Box>
               <Chip
                 label={spotlightWorkout.category}
@@ -285,6 +307,23 @@ export const ClientHomePage: React.FC = () => {
                 sx={{ backgroundColor: 'rgba(120, 120, 128, 0.24)', color: '#ffffff', fontWeight: 600 }}
               />
             </Box>
+
+            <button
+              onClick={() => navigate('/dashboard/workouts')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: '#007AFF',
+                fontSize: '13px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              Todas las rutinas <ArrowRight size={14} />
+            </button>
           </Box>
 
           <Typography variant="h5" sx={{ fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', mb: 0.6 }}>
@@ -292,16 +331,16 @@ export const ClientHomePage: React.FC = () => {
           </Typography>
 
           <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.65)', mb: 2 }}>
-            {spotlightWorkout.notes || 'Rutina estructurada con seguimiento en vivo de pesos y descansos.'}
+            {spotlightWorkout.notes || 'Rutina asignada con seguimiento de series, cargas y descansos interactivos.'}
           </Typography>
 
           <Stack direction="row" spacing={2.5} sx={{ mb: 2.5 }} flexWrap="wrap">
             <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.75)', display: 'flex', alignItems: 'center', gap: 0.8, fontSize: '13px' }}>
-              <Dumbbell size={15} color="#007aff" />
+              <Dumbbell size={15} color="#007AFF" />
               {(spotlightWorkout.workout_exercises || spotlightWorkout.exercises || []).length} ejercicios
             </Typography>
             <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.75)', display: 'flex', alignItems: 'center', gap: 0.8, fontSize: '13px' }}>
-              <Clock size={15} color="#ff9500" />
+              <Clock size={15} color="#FF9500" />
               ~45 - 60 min
             </Typography>
           </Stack>
@@ -310,14 +349,14 @@ export const ClientHomePage: React.FC = () => {
             onClick={() => handleStartLiveWorkout(spotlightWorkout)}
             disabled={loadingWorkoutId === spotlightWorkout.id}
             className="apple-btn-primary"
-            style={{ height: '48px' }}
+            style={{ height: '48px', fontSize: '15px' }}
           >
             {loadingWorkoutId === spotlightWorkout.id ? (
               <CircularProgress size={18} sx={{ color: '#000000' }} />
             ) : (
               <>
                 <PlayCircle size={20} />
-                Empezar Sesión
+                Iniciar Rutina en Vivo
               </>
             )}
           </button>
@@ -326,20 +365,24 @@ export const ClientHomePage: React.FC = () => {
         <Box
           className="apple-card"
           sx={{
-            p: 3,
+            p: 3.5,
             mb: 3,
             textAlign: 'center',
           }}
         >
-          <Dumbbell size={36} color="#007aff" style={{ marginBottom: '10px' }} />
-          <Typography variant="h6" sx={{ fontWeight: 700, mb: 0.5 }}>
-            Diseña tu primera rutina
+          <Dumbbell size={40} color="#007AFF" style={{ marginBottom: '12px' }} />
+          <Typography variant="h6" sx={{ fontWeight: 800, mb: 0.5, color: '#ffffff' }}>
+            Aún no tienes una rutina asignada
           </Typography>
-          <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', maxWidth: 450, mx: 'auto', mb: 2 }}>
-            Elige una plantilla contrastada (Tirón/Empuje/Piernas, Torso/Pierna) o añade tus ejercicios preferidos.
+          <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', maxWidth: 460, mx: 'auto', mb: 2.5, lineHeight: 1.5 }}>
+            Tu entrenador personal está diseñando tu plan de entrenamiento. Cuando esté listo, aparecerá aquí automáticamente.
           </Typography>
-          <button onClick={() => setWorkoutBuilderOpen(true)} className="apple-btn-blue" style={{ maxWidth: '280px', margin: '0 auto' }}>
-            Elegir Plantilla
+          <button
+            onClick={() => navigate('/dashboard/workouts')}
+            className="apple-btn-secondary"
+            style={{ maxWidth: '240px', margin: '0 auto' }}
+          >
+            Ver Mis Entrenamientos
           </button>
         </Box>
       )}
@@ -358,20 +401,20 @@ export const ClientHomePage: React.FC = () => {
           <Box className="apple-card" sx={{ p: { xs: 2.5, sm: 3 } }}>
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
               <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '18px' }}>
-                Mis Rutinas ({assignedWorkouts.length})
+                Mis Rutinas Asignadas ({assignedWorkouts.length})
               </Typography>
               <button
-                onClick={() => setWorkoutBuilderOpen(true)}
+                onClick={() => navigate('/dashboard/workouts')}
                 className="apple-btn-secondary"
-                style={{ height: '36px', fontSize: '13px', padding: '0 12px' }}
+                style={{ height: '34px', fontSize: '12px', padding: '0 12px' }}
               >
-                + Añadir
+                Ver Todas
               </button>
             </Box>
 
             {assignedWorkouts.length === 0 ? (
               <Alert severity="info" sx={{ borderRadius: 3, backgroundColor: 'rgba(0, 122, 255, 0.1)', color: '#47a3ff' }}>
-                Aún no tienes rutinas guardadas. Pulsa en "+ Añadir" para crear la primera.
+                Tu entrenador aún no te ha asignado ninguna rutina de ejercicios.
               </Alert>
             ) : (
               <Grid container spacing={2}>
@@ -383,7 +426,7 @@ export const ClientHomePage: React.FC = () => {
                         sx={{
                           p: 2,
                           borderRadius: 3,
-                          backgroundColor: '#2c2c2e',
+                          backgroundColor: '#2C2C2E',
                           border: '0.5px solid rgba(255, 255, 255, 0.08)',
                           display: 'flex',
                           flexDirection: 'column',
@@ -399,7 +442,7 @@ export const ClientHomePage: React.FC = () => {
                             <Chip label={workout.category} size="small" sx={{ fontSize: '11px', height: '22px' }} />
                           </Box>
                           <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '13px', mb: 1 }}>
-                            {workout.notes || 'Rutina personalizada'}
+                            {workout.notes || 'Rutina personalizada prescrita por tu coach.'}
                           </Typography>
                           <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.5)', display: 'flex', alignItems: 'center', gap: 0.5 }}>
                             <Dumbbell size={13} /> {exerciseCount} ejercicios
@@ -412,7 +455,7 @@ export const ClientHomePage: React.FC = () => {
                           className="apple-btn-blue"
                           style={{ height: '40px', fontSize: '14px' }}
                         >
-                          {loadingWorkoutId === workout.id ? 'Iniciando...' : 'Entrenar'}
+                          {loadingWorkoutId === workout.id ? 'Iniciando...' : 'Iniciar Rutina'}
                         </button>
                       </Box>
                     </Grid>
@@ -423,13 +466,13 @@ export const ClientHomePage: React.FC = () => {
           </Box>
         </Grid>
 
-        {/* Nutrition and Trainer Status */}
+        {/* Nutrition and Coach Status */}
         <Grid size={{ xs: 12, md: 4 }}>
           <Stack spacing={2.5}>
             <Box className="apple-card" sx={{ p: 2.5 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                  <UtensilsCrossed size={18} color="#34c759" />
+                  <UtensilsCrossed size={18} color="#34C759" />
                   <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '16px' }}>
                     Mi Plan Nutricional
                   </Typography>
@@ -439,13 +482,13 @@ export const ClientHomePage: React.FC = () => {
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: '#007aff',
+                    color: '#007AFF',
                     fontSize: '13px',
                     fontWeight: 600,
                     cursor: 'pointer'
                   }}
                 >
-                  Ver
+                  Ver Dieta
                 </button>
               </Box>
 
@@ -463,7 +506,7 @@ export const ClientHomePage: React.FC = () => {
                       alignItems: 'center',
                       gap: 0.6,
                       backgroundColor: 'rgba(255, 149, 0, 0.15)',
-                      color: '#ff9500',
+                      color: '#FF9500',
                       px: 1.5,
                       py: 0.5,
                       borderRadius: 2,
@@ -481,7 +524,7 @@ export const ClientHomePage: React.FC = () => {
                     className="apple-btn-secondary"
                     style={{ width: '100%', height: '40px', fontSize: '13px' }}
                   >
-                    Registrar Comidas
+                    Abrir Plan Nutricional
                   </button>
                 </Box>
               ) : (
@@ -494,16 +537,16 @@ export const ClientHomePage: React.FC = () => {
                     className="apple-btn-secondary"
                     style={{ width: '100%', height: '38px', fontSize: '13px' }}
                   >
-                    Configurar Dieta
+                    Ver Mi Dieta
                   </button>
                 </Box>
               )}
             </Box>
 
-            {/* Coach or Autonomous Profile Card */}
+            {/* Coach Profile Card */}
             <Box className="apple-card" sx={{ p: 2.5 }}>
               <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', display: 'block', mb: 1.5 }}>
-                Estado del Atleta
+                Tu Entrenador Asignado
               </Typography>
 
               {currentUser?.trainer ? (
@@ -513,7 +556,7 @@ export const ClientHomePage: React.FC = () => {
                       width: 52,
                       height: 52,
                       borderRadius: '50%',
-                      backgroundColor: '#2c2c2e',
+                      backgroundColor: '#2C2C2E',
                       border: '1px solid rgba(255, 255, 255, 0.15)',
                       display: 'flex',
                       alignItems: 'center',
@@ -533,7 +576,7 @@ export const ClientHomePage: React.FC = () => {
                   <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', display: 'block', mb: 1.5 }}>
                     {currentUser.trainer.email}
                   </Typography>
-                  <Chip icon={<ShieldCheck size={14} color="#34c759" />} label="Entrenador Asignado" size="small" sx={{ mb: 1.5 }} />
+                  <Chip icon={<ShieldCheck size={14} color="#34C759" />} label="Coach Personal Activo" size="small" sx={{ mb: 1.5 }} />
                   <a
                     href={`mailto:${currentUser.trainer.email}`}
                     className="apple-btn-secondary"
@@ -543,7 +586,7 @@ export const ClientHomePage: React.FC = () => {
                   </a>
                 </Box>
               ) : (
-                <Box sx={{ textAlign: 'center' }}>
+                <Box sx={{ textAlign: 'center', py: 1 }}>
                   <Box
                     sx={{
                       width: 46,
@@ -557,21 +600,20 @@ export const ClientHomePage: React.FC = () => {
                       mb: 1,
                     }}
                   >
-                    <UserCheck size={22} color="#007aff" />
+                    <User size={22} color="#007AFF" />
                   </Box>
                   <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff' }}>
-                    Modo Atleta Autónomo
+                    Atleta en Seguimiento
                   </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '12px', mb: 2 }}>
-                    Entrenas y planificas tus cargas y dieta de manera independiente.
+                  <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '12px', mb: 1.5 }}>
+                    Tu cuenta está sincronizada para recibir entrenamientos y dietas de tu coach.
                   </Typography>
                   <button
-                    onClick={() => navigate('/dashboard/workouts')}
+                    onClick={() => navigate('/dashboard/profile')}
                     className="apple-btn-secondary"
-                    style={{ width: '100%', height: '40px', fontSize: '13px', gap: '6px' }}
+                    style={{ width: '100%', height: '38px', fontSize: '13px' }}
                   >
-                    <BookOpen size={15} />
-                    Explorar Ejercicios
+                    Ver Mi Perfil
                   </button>
                 </Box>
               )}
@@ -580,7 +622,7 @@ export const ClientHomePage: React.FC = () => {
         </Grid>
       </Grid>
 
-      {/* Modales */}
+      {/* Modal de Entrenamiento en Vivo */}
       {activeLiveWorkout && (
         <LiveWorkoutDialog
           open={liveWorkoutOpen}
@@ -588,17 +630,6 @@ export const ClientHomePage: React.FC = () => {
           userId={currentUser?.id || 1}
           onClose={() => setLiveWorkoutOpen(false)}
           onSessionSuccess={() => {
-            loadClientData();
-          }}
-        />
-      )}
-
-      {currentUser && (
-        <ClientWorkoutBuilderModal
-          open={workoutBuilderOpen}
-          onClose={() => setWorkoutBuilderOpen(false)}
-          userId={currentUser.id}
-          onSuccess={() => {
             loadClientData();
           }}
         />
