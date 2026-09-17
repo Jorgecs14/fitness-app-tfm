@@ -23,6 +23,7 @@ const weeklyTrackingRouter = require('./routes/weekly_tracking')
 const monthlyTrackingRouter = require('./routes/monthly_tracking')
 const loggedSessionsRouter = require('./routes/logged_sessions')
 const mealChecksRouter = require('./routes/meal_checks')
+const billingRouter = require('./routes/billing')
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -73,6 +74,7 @@ app.use('/weekly-tracking', authenticateToken, weeklyTrackingRouter)
 app.use('/monthly-tracking', authenticateToken, monthlyTrackingRouter)
 app.use('/logged-sessions', authenticateToken, loggedSessionsRouter)
 app.use('/meal-checks', authenticateToken, mealChecksRouter)
+app.use('/billing', authenticateToken, billingRouter)
 
 
 if (require.main === module) {

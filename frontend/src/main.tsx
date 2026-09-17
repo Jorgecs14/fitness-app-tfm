@@ -33,8 +33,8 @@ import ProgressPage from './pages/ProgressPage'
 import ClientHomePage from './pages/ClientHomePage'
 import ClientMyDietPage from './pages/ClientMyDietPage'
 import ClientProgressSubmitPage from './pages/ClientProgressSubmitPage'
-import ClientTrackingPage from './pages/ClientTrackingPage'
 import CrmPage from './pages/CrmPage'
+import TrainerBillingPage from './pages/TrainerBillingPage'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const token = localStorage.getItem('auth_token')
@@ -137,6 +137,10 @@ const router = createBrowserRouter([
       {
         path: 'workouts',
         element: <WorkoutsPage />
+      },
+      {
+        path: 'billing',
+        element: <TrainerBillingPage />
       },
       {
         path: 'profile',

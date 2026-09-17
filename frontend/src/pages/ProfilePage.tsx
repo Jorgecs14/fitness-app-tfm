@@ -29,6 +29,7 @@ import * as dietService from '../services/dietService'
 import * as workoutService from '../services/workoutService'
 import { useToast } from '../utils/notifications'
 import { Chart } from '../utils/chart'
+import { ClientSubscriptionTab } from '../components/Client/ClientSubscriptionTab'
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -379,6 +380,12 @@ export const ProfilePage = () => {
                 iconPosition='start'
                 sx={{ display: { xs: 'flex', sm: 'flex' } }}
               />
+              <Tab
+                label='Suscripción y Pagos'
+                icon={<Iconify icon='solar:card-bold-duotone' width={20} />}
+                iconPosition='start'
+                sx={{ display: { xs: 'flex', sm: 'flex' } }}
+              />
             </Tabs>
           }
         />
@@ -606,6 +613,11 @@ export const ProfilePage = () => {
               </CardContent>
             </Card>
           </Box>
+        </TabPanel>
+
+        {/* Panel de Suscripción y Pagos */}
+        <TabPanel value={activeTab} index={2}>
+          <ClientSubscriptionTab currentUser={currentUser} />
         </TabPanel>
       </Card>
 

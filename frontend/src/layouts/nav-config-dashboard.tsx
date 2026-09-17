@@ -45,6 +45,11 @@ export const trainerNavData: NavItem[] = [
     icon: <Iconify icon='solar:dumbbell-bold-duotone' width={24} />
   },
   {
+    title: 'Facturación',
+    path: '/dashboard/billing',
+    icon: <Iconify icon='solar:wallet-money-bold-duotone' width={24} />
+  },
+  {
     title: 'Productos',
     path: '/dashboard/products',
     icon: <Iconify icon='solar:bag-4-bold-duotone' width={24} />
