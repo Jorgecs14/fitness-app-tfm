@@ -1,4 +1,4 @@
-// Chat del Entrenador - Canal directo con historial persistente y diseño Apple Dark Mode
+// Chat del Entrenador - Canal directo entre Atleta y su Entrenador Asignado (Sin IA / Respuestas Reales)
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
@@ -10,13 +10,11 @@ import {
   List,
   ListItem,
   ListItemText,
-  CircularProgress,
   Alert,
   Stack,
   Chip,
   useTheme,
   useMediaQuery,
-  Avatar,
 } from '@mui/material';
 import {
   Send,
@@ -28,19 +26,16 @@ import {
   TrendingUp,
   ShieldCheck,
   CheckCheck,
-  HelpCircle,
-  Clock,
-  Sparkles,
   MessageSquare
 } from 'lucide-react';
-import { chatService, type ChatMessage } from '../../services/chatService';
 import { User as UserType } from '../../types/User';
 
 export interface ChatHistoryMessage {
   id: string;
   role: 'user' | 'assistant';
+  senderName?: string;
   content: string;
-  timestamp: string; // ISO string for robust JSON storage
+  timestamp: string; // ISO string
 }
 
 interface FloatingChatProps {
@@ -50,16 +45,17 @@ interface FloatingChatProps {
 }
 
 const QUICK_COACH_PROMPTS = [
-  { icon: Dumbbell, text: '¿Cómo adapto las cargas si llego al fallo antes de tiempo?' },
-  { icon: Apple, text: '¿Qué opción me recomiendas si tengo que cambiar una comida?' },
-  { icon: TrendingUp, text: '¿Cómo gestiono los descansos entre series pesadas?' },
-  { icon: ShieldCheck, text: 'Tengo sobrecarga muscular en la espalda, ¿qué ajuste hago?' }
+  { icon: Dumbbell, text: 'Tengo dudas sobre cómo adaptar las cargas de la sesión de hoy.' },
+  { icon: Apple, text: 'No me gusta la comida asignada para hoy, ¿qué alternativa me recomiendas?' },
+  { icon: TrendingUp, text: 'He completado el entrenamiento con buenas sensaciones y he subido pesos.' },
+  { icon: ShieldCheck, text: 'Tengo una ligera molestia articular, ¿sustituyo algún ejercicio?' }
 ];
 
-const getInitialGreeting = (userName?: string): ChatHistoryMessage => ({
+const getInitialGreeting = (userName?: string, coachName?: string): ChatHistoryMessage => ({
   id: 'coach-welcome-1',
   role: 'assistant',
-  content: `¡Hola ${userName ? userName.split(' ')[0] : ''}! Soy tu entrenador personal. Aquí tienes tu canal directo para consultarme cualquier duda sobre tus rutinas, técnica de ejercicios, cargas de trabajo o pautas nutricionales. Te responderé para ajustar tu planificación siempre que lo necesites.`,
+  senderName: coachName || 'Entrenador Personal',
+  content: `¡Hola ${userName ? userName.split(' ')[0] : ''}! Soy tu entrenador personal. Aquí tienes tu canal directo para consultarme cualquier duda sobre tus rutinas, técnica de ejercicios, cargas de trabajo o pautas nutricionales. Te responderé personalmente para revisar y ajustar tu planificación siempre que lo necesites.`,
   timestamp: new Date().toISOString()
 });
 
@@ -70,40 +66,81 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const storageKey = `lifeboost_coach_chat_${currentUser?.id || 'guest'}`;
+  
+  const userId = currentUser?.id || 'guest';
+  const clientStorageKey = `lifeboost_coach_chat_client_${userId}`;
+  const masterStorageKey = `lifeboost_coach_chat_master_${userId}`;
+
+  // Nombre del entrenador asignado y nombre del usuario cliente
+  const coachDisplayName = (currentUser as any)?.trainer?.name
+    ? `${(currentUser as any).trainer.name} ${(currentUser as any).trainer.surname || ''}`.trim()
+    : 'Entrenador Asignado';
+
+  const clientDisplayName = currentUser?.name
+    ? `${currentUser.name} ${currentUser.surname || ''}`.trim()
+    : 'Atleta';
 
   const [messages, setMessages] = useState<ChatHistoryMessage[]>([]);
   const [inputMessage, setInputMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Cargar historial persistente al montar o al cambiar de usuario
+  // Cargar historial de conversación
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(storageKey);
-      if (saved) {
-        const parsed = JSON.parse(saved);
+      const savedClient = localStorage.getItem(clientStorageKey);
+      if (savedClient) {
+        const parsed = JSON.parse(savedClient);
         if (Array.isArray(parsed) && parsed.length > 0) {
           setMessages(parsed);
           return;
         }
       }
-      // Si no hay historial previo, inicializar con el saludo del entrenador
-      const initial = [getInitialGreeting(currentUser?.name)];
+      
+      // Si no existe vista de cliente, verificar si existe en el registro maestro
+      const savedMaster = localStorage.getItem(masterStorageKey);
+      if (savedMaster) {
+        const parsedMaster = JSON.parse(savedMaster);
+        if (Array.isArray(parsedMaster) && parsedMaster.length > 0) {
+          setMessages(parsedMaster);
+          localStorage.setItem(clientStorageKey, JSON.stringify(parsedMaster));
+          return;
+        }
+      }
+
+      // Inicializar con mensaje inicial del profesional
+      const initial = [getInitialGreeting(currentUser?.name, coachDisplayName)];
       setMessages(initial);
-      localStorage.setItem(storageKey, JSON.stringify(initial));
+      localStorage.setItem(clientStorageKey, JSON.stringify(initial));
+      localStorage.setItem(masterStorageKey, JSON.stringify(initial));
     } catch (e) {
       console.error('Error loading coach chat history:', e);
-      setMessages([getInitialGreeting(currentUser?.name)]);
+      setMessages([getInitialGreeting(currentUser?.name, coachDisplayName)]);
     }
-  }, [currentUser?.id, storageKey]);
+  }, [userId, clientStorageKey, masterStorageKey, coachDisplayName, currentUser?.name]);
 
-  // Guardar en localStorage cada vez que cambien los mensajes
+  // Persistir mensajes en almacenamiento de cliente y en el registro maestro del entrenador
   const persistMessages = (newMessages: ChatHistoryMessage[]) => {
     setMessages(newMessages);
     try {
-      localStorage.setItem(storageKey, JSON.stringify(newMessages));
+      localStorage.setItem(clientStorageKey, JSON.stringify(newMessages));
+      
+      // El registro maestro del entrenador siempre conserva todos los mensajes
+      const currentMaster = localStorage.getItem(masterStorageKey);
+      let masterList: ChatHistoryMessage[] = [];
+      if (currentMaster) {
+        try {
+          masterList = JSON.parse(currentMaster);
+        } catch {
+          masterList = [];
+        }
+      }
+      // Combinar y deduplicar por ID
+      const combinedMap = new Map<string, ChatHistoryMessage>();
+      masterList.forEach((m) => combinedMap.set(m.id, m));
+      newMessages.forEach((m) => combinedMap.set(m.id, m));
+      const updatedMaster = Array.from(combinedMap.values());
+      localStorage.setItem(masterStorageKey, JSON.stringify(updatedMaster));
     } catch (e) {
       console.error('Error saving coach chat history:', e);
     }
@@ -119,69 +156,22 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
     }
   }, [messages, open]);
 
-  // Generador de respuesta inteligente del entrenador en caso de no tener API key activa
-  const generateCoachLocalResponse = (prompt: string): string => {
-    const lower = prompt.toLowerCase();
-    if (lower.includes('carga') || lower.includes('peso') || lower.includes('fallo')) {
-      return 'Para gestionar la sobrecarga progresiva: si no alcanzas el rango inferior de repeticiones marcadas, reduce el peso entre un 5% y 10% en la siguiente serie para priorizar la técnica y el RIR objetivo (1-2 repeticiones en reserva).';
-    }
-    if (lower.includes('comida') || lower.includes('dieta') || lower.includes('hambre') || lower.includes('prote')) {
-      return 'En tu planificación nutricional la prioridad es cumplir el balance total diario de macronutrientes. Si necesitas sustituir una fuente de proteína o carbohidrato, mantén equivalencias similares (ej. pechuga de pollo por lomo embuchado o merluza).';
-    }
-    if (lower.includes('dolor') || lower.includes('molestia') || lower.includes('lesion') || lower.includes('hombro') || lower.includes('espalda')) {
-      return 'Importante: no entrenes sobre dolor punzante. Reduce el rango de movimiento o sustituye temporalmente el ejercicio por una variante guiada o con mancuernas. Anota la observación en tu registro para adaptar tu siguiente semana.';
-    }
-    if (lower.includes('descanso') || lower.includes('recuperacion') || lower.includes('sueño')) {
-      return 'Entre series compuestas pesadas (sentadilla, peso muerto, press banca) descansa entre 2 y 3 minutos para asegurar la recuperación neural. En analíticos bastará con 60 a 90 segundos.';
-    }
-    return `He tomado nota de tu consulta: "${prompt}". Sigue con el plan marcado y mantén el foco en la adherencia y la técnica en cada serie. Estoy revisando tus métricas semanales.`;
-  };
-
-  const handleSendMessage = async (textToSend?: string) => {
+  const handleSendMessage = (textToSend?: string) => {
     const text = (textToSend || inputMessage).trim();
     if (!text) return;
 
     const userMessage: ChatHistoryMessage = {
       id: `usr-${Date.now()}`,
       role: 'user',
+      senderName: clientDisplayName,
       content: text,
       timestamp: new Date().toISOString(),
     };
 
-    const updatedWithUser = [...messages, userMessage];
-    persistMessages(updatedWithUser);
+    const updated = [...messages, userMessage];
+    persistMessages(updated);
     setInputMessage('');
-    setIsLoading(true);
     setError(null);
-
-    try {
-      let responseText = '';
-      // Intentar consultar al servicio con rol de entrenador personal
-      try {
-        const conversationHistory: ChatMessage[] = updatedWithUser.map((msg) => ({
-          role: msg.role,
-          content: msg.content,
-        }));
-        responseText = await chatService.sendMessage(text, conversationHistory);
-      } catch (apiErr) {
-        // Fallback al asistente inteligente de entrenador si no hay VITE_OPENAI_API_KEY
-        await new Promise((res) => setTimeout(res, 600));
-        responseText = generateCoachLocalResponse(text);
-      }
-
-      const coachMessage: ChatHistoryMessage = {
-        id: `coach-${Date.now() + 1}`,
-        role: 'assistant',
-        content: responseText,
-        timestamp: new Date().toISOString(),
-      };
-
-      persistMessages([...updatedWithUser, coachMessage]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Error al comunicar con el entrenador');
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -191,10 +181,16 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
     }
   };
 
-  const handleClearHistory = () => {
-    if (window.confirm('¿Deseas reiniciar el historial de conversación con tu entrenador?')) {
-      const resetGreeting = [getInitialGreeting(currentUser?.name)];
-      persistMessages(resetGreeting);
+  // Si el cliente borra el chat, solo se limpia su vista local, sin perder datos en la copia del entrenador
+  const handleClearClientView = () => {
+    if (window.confirm('¿Deseas limpiar tu vista del chat? Tu entrenador conservará todo el registro de tus mensajes en su panel.')) {
+      const resetGreeting = [getInitialGreeting(currentUser?.name, coachDisplayName)];
+      setMessages(resetGreeting);
+      try {
+        localStorage.setItem(clientStorageKey, JSON.stringify(resetGreeting));
+      } catch (e) {
+        console.error('Error clearing client view:', e);
+      }
       setError(null);
     }
   };
@@ -248,7 +244,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
         }}
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
-          {/* Avatar del Entrenador con indicador de estado */}
+          {/* Avatar del Entrenador */}
           <Box sx={{ position: 'relative' }}>
             <Box
               sx={{
@@ -266,7 +262,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
             >
               <ShieldCheck size={20} />
             </Box>
-            {/* Punto verde de En Línea */}
+            {/* Indicador de estado */}
             <Box
               sx={{
                 position: 'absolute',
@@ -283,10 +279,10 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
 
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#ffffff', lineHeight: 1.2, fontSize: '0.98rem' }}>
-              Chat del Entrenador
+              Chat con {coachDisplayName}
             </Typography>
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.55)', fontSize: '0.74rem', display: 'flex', alignItems: 'center', gap: 0.5 }}>
-              <span style={{ color: '#34C759', fontWeight: 700 }}>● En línea</span> — Canal directo y seguimiento
+              <span style={{ color: '#34C759', fontWeight: 700 }}>● Conectado</span> — Canal directo con tu preparador
             </Typography>
           </Box>
         </Stack>
@@ -295,8 +291,8 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
           {messages.length > 1 && (
             <IconButton
               size="small"
-              onClick={handleClearHistory}
-              title="Reiniciar conversación"
+              onClick={handleClearClientView}
+              title="Limpiar mi vista del chat"
               sx={{
                 color: 'rgba(255, 255, 255, 0.5)',
                 bgcolor: 'rgba(255, 255, 255, 0.04)',
@@ -336,7 +332,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
         {/* Separador de Historial */}
         <Box display="flex" justifyContent="center" my={0.5}>
           <Chip
-            label="Historial de mensajes con tu preparador"
+            label={`Historial de mensajes con ${coachDisplayName}`}
             size="small"
             sx={{
               bgcolor: 'rgba(255, 255, 255, 0.05)',
@@ -352,6 +348,10 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
         <List sx={{ p: 0, display: 'flex', flexDirection: 'column', gap: 1.8 }}>
           {messages.map((message) => {
             const isUser = message.role === 'user';
+            const senderTitle = isUser
+              ? `Tú (${clientDisplayName})`
+              : `${coachDisplayName} (Entrenador)`;
+
             return (
               <ListItem
                 key={message.id}
@@ -393,18 +393,18 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
                     alignItems: isUser ? 'flex-end' : 'flex-start',
                   }}
                 >
-                  {/* Etiqueta de Emisor */}
+                  {/* Etiqueta de Emisor con Nombre Real */}
                   <Typography
                     variant="caption"
                     sx={{
-                      color: isUser ? '#007AFF' : 'rgba(255, 255, 255, 0.5)',
-                      fontSize: '0.68rem',
+                      color: isUser ? '#007AFF' : 'rgba(255, 255, 255, 0.55)',
+                      fontSize: '0.7rem',
                       fontWeight: 700,
                       mb: 0.3,
                       px: 0.5,
                     }}
                   >
-                    {isUser ? 'Tú (Atleta)' : 'Entrenador'}
+                    {senderTitle}
                   </Typography>
 
                   {/* Burbuja de Mensaje */}
@@ -473,51 +473,13 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
               </ListItem>
             );
           })}
-
-          {/* Typing Indicator */}
-          {isLoading && (
-            <ListItem disableGutters sx={{ p: 0, display: 'flex', gap: 1.2 }}>
-              <Box
-                sx={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: '9px',
-                  bgcolor: 'rgba(0, 122, 255, 0.15)',
-                  border: '1px solid rgba(0, 122, 255, 0.3)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#007AFF',
-                  flexShrink: 0,
-                }}
-              >
-                <ShieldCheck size={16} />
-              </Box>
-              <Box
-                sx={{
-                  p: 1.5,
-                  borderRadius: '16px 16px 16px 4px',
-                  bgcolor: '#18181b',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 1.2,
-                }}
-              >
-                <CircularProgress size={14} sx={{ color: '#007AFF' }} />
-                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.8rem' }}>
-                  El entrenador está respondiendo...
-                </Typography>
-              </Box>
-            </ListItem>
-          )}
         </List>
 
         {/* Atajos / Sugerencias de Consultas Rápidas al Entrenador */}
         {messages.length <= 2 && (
           <Box mt="auto" pt={2}>
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.45)', fontWeight: 600, display: 'block', mb: 1 }}>
-              Consultas habituales de entrenamiento:
+              Mensajes frecuentes para tu entrenador:
             </Typography>
             <Stack spacing={1}>
               {QUICK_COACH_PROMPTS.map((prompt, idx) => {
@@ -609,11 +571,10 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
           <TextField
             fullWidth
             variant="standard"
-            placeholder="Escribe tu mensaje o consulta al entrenador..."
+            placeholder={`Escribe tu mensaje a ${coachDisplayName}...`}
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            disabled={isLoading}
             multiline
             maxRows={3}
             InputProps={{
@@ -628,7 +589,7 @@ export const FloatingChat: React.FC<FloatingChatProps> = ({
 
           <IconButton
             onClick={() => handleSendMessage()}
-            disabled={isLoading || !inputMessage.trim()}
+            disabled={!inputMessage.trim()}
             sx={{
               width: 38,
               height: 38,
