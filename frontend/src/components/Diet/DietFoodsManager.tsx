@@ -17,7 +17,6 @@ import {
   Typography,
   Box,
   Grid,
-  MenuItem,
   Chip,
   Collapse,
   TableContainer,
@@ -29,18 +28,15 @@ import {
   Plus,
   Trash2,
   X,
-  Scale,
   Calculator,
   Flame,
-  Check,
-  Sparkles,
   Layers,
+  Sparkles,
 } from 'lucide-react';
 import * as foodService from '../../services/foodService';
 import * as dietFoodService from '../../services/dietFoodService';
 import { Food } from '../../types/Food';
 import { DietFood } from '../../types/DietFood';
-import { calculateFoodCalories, formatCalories } from '../../utils/dietUtils';
 
 export interface DietFoodsManagerProps {
   open: boolean;
@@ -48,6 +44,52 @@ export interface DietFoodsManagerProps {
   onClose: () => void;
   onSave: () => Promise<void>;
 }
+
+const textFieldSx = {
+  '& .MuiOutlinedInput-root': {
+    bgcolor: '#1C1C1E',
+    borderRadius: '12px',
+    color: '#ffffff',
+    fontSize: '0.92rem',
+    '& fieldset': {
+      borderColor: 'rgba(255, 255, 255, 0.14)',
+      borderWidth: '1px',
+    },
+    '&:hover fieldset': {
+      borderColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#34C759',
+      borderWidth: '1.5px',
+    },
+  },
+  '& input, & textarea': {
+    color: '#ffffff !important',
+    fontSize: '0.92rem',
+    '&::placeholder': {
+      color: 'rgba(255, 255, 255, 0.4) !important',
+      opacity: 1,
+    },
+  },
+};
+
+const autocompletePaperSx = {
+  bgcolor: '#1C1C1E',
+  color: '#ffffff',
+  border: '1px solid rgba(255, 255, 255, 0.15)',
+  borderRadius: '14px',
+  boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85)',
+  '& .MuiAutocomplete-option': {
+    fontSize: '0.88rem',
+    color: '#ffffff !important',
+    '&[aria-selected="true"]': {
+      bgcolor: 'rgba(52, 199, 89, 0.2) !important',
+    },
+    '&:hover, &.Mui-focused': {
+      bgcolor: 'rgba(255, 255, 255, 0.1) !important',
+    },
+  },
+};
 
 export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
   open,
@@ -61,7 +103,6 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
   const [availableFoods, setAvailableFoods] = useState<Food[]>([]);
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [quantity, setQuantity] = useState('');
-  const [selectedMealType, setSelectedMealType] = useState<string>('lunch');
   const [dietFoods, setDietFoods] = useState<DietFood[]>([]);
 
   const [newFoodName, setNewFoodName] = useState('');
@@ -162,53 +203,54 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
       fullScreen={isMobile}
       PaperProps={{
         sx: {
-          bgcolor: '#000000',
+          bgcolor: '#0B0B0E',
           backgroundImage: 'none',
           color: '#ffffff',
           borderRadius: { xs: 0, sm: '24px' },
           border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.12)' },
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.8)',
+          boxShadow: '0 32px 80px rgba(0, 0, 0, 0.9)',
           maxHeight: { xs: '100%', sm: '92vh' },
           display: 'flex',
           flexDirection: 'column',
+          overflow: 'hidden',
         },
       }}
     >
       {/* Header Apple Liquid Glass */}
       <Box
         sx={{
-          px: { xs: 2, sm: 3 },
-          py: 2,
+          px: { xs: 2.5, sm: 3 },
+          py: 2.2,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)',
-          background: 'rgba(28, 28, 30, 0.8)',
-          backdropFilter: 'blur(20px)',
-          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px)' : 2,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'rgba(22, 22, 26, 0.9)',
+          backdropFilter: 'blur(24px)',
+          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 14px)' : 2.2,
         }}
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <Box
             sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '10px',
+              width: 38,
+              height: 38,
+              borderRadius: '12px',
               bgcolor: 'rgba(52, 199, 89, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#34C759',
-              border: '0.5px solid rgba(52, 199, 89, 0.3)',
+              border: '1px solid rgba(52, 199, 89, 0.3)',
             }}
           >
             <UtensilsCrossed size={20} />
           </Box>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.2 }} noWrap>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#ffffff', lineHeight: 1.2 }} noWrap>
               {diet?.name || 'Alimentos del Plan'}
             </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '0.75rem' }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.78rem' }}>
               Total configurado: {Math.round(totalDietCalories)} kcal
             </Typography>
           </Box>
@@ -218,9 +260,9 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
           size="small"
           onClick={onClose}
           sx={{
-            color: 'rgba(235, 235, 245, 0.8)',
+            color: 'rgba(255, 255, 255, 0.7)',
             bgcolor: 'rgba(255, 255, 255, 0.08)',
-            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)', color: '#fff' },
           }}
         >
           <X size={18} />
@@ -228,67 +270,59 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
       </Box>
 
       {/* Contenido con Scroll */}
-      <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#000000', overflowY: 'auto' }}>
+      <DialogContent sx={{ p: { xs: 2.5, sm: 3.5 }, bgcolor: '#0B0B0E', overflowY: 'auto' }}>
         <Stack spacing={3}>
           {/* Card Inset para Añadir Alimento */}
           <Box
             sx={{
               p: 2.5,
               borderRadius: '20px',
-              bgcolor: '#1C1C1E',
-              border: '0.5px solid rgba(255, 255, 255, 0.08)',
+              bgcolor: '#16161A',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Plus size={16} color="#34C759" /> Añadir Alimento a la Pauta
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#34C759', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Plus size={18} /> Añadir Alimento a la Pauta
             </Typography>
 
-            <Grid container spacing={1.5} alignItems="center">
-              <Grid size={{ xs: 12, sm: 6 }}>
+            <Grid container spacing={1.8} alignItems="flex-end">
+              <Grid item xs={12} sm={6}>
+                <Typography variant="caption" sx={{ color: '#ffffff', mb: 0.75, display: 'block', fontWeight: 700, fontSize: '0.82rem' }}>
+                  Seleccionar Alimento
+                </Typography>
                 <Autocomplete
                   options={availableFoods}
                   getOptionLabel={(option) => `${option.name} (${option.calories} kcal/100g)`}
                   value={selectedFood}
                   onChange={(_, value) => setSelectedFood(value)}
+                  componentsProps={{ paper: { sx: autocompletePaperSx } }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      placeholder="Buscar alimento..."
-                      InputProps={{
-                        ...params.InputProps,
-                        sx: {
-                          color: '#ffffff',
-                          bgcolor: '#2C2C2E',
-                          borderRadius: '12px',
-                          fontSize: '16px',
-                          '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                        },
-                      }}
+                      placeholder="Buscar alimento en catálogo..."
+                      size="small"
+                      sx={textFieldSx}
                     />
                   )}
                 />
               </Grid>
 
-              <Grid size={{ xs: 6, sm: 3 }}>
+              <Grid item xs={6} sm={3}>
+                <Typography variant="caption" sx={{ color: '#ffffff', mb: 0.75, display: 'block', fontWeight: 700, fontSize: '0.82rem' }}>
+                  Cantidad (g)
+                </Typography>
                 <TextField
                   fullWidth
+                  size="small"
                   type="number"
-                  placeholder="Gramos (g)"
+                  placeholder="100"
                   value={quantity}
                   onChange={(e) => setQuantity(e.target.value)}
-                  InputProps={{
-                    sx: {
-                      color: '#ffffff',
-                      bgcolor: '#2C2C2E',
-                      borderRadius: '12px',
-                      fontSize: '16px',
-                      '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                    },
-                  }}
+                  sx={textFieldSx}
                 />
               </Grid>
 
-              <Grid size={{ xs: 6, sm: 3 }}>
+              <Grid item xs={6} sm={3}>
                 <Button
                   fullWidth
                   variant="contained"
@@ -296,13 +330,13 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
                   disabled={!selectedFood || !quantity}
                   startIcon={<Plus size={16} />}
                   sx={{
-                    height: 52,
+                    height: 40,
                     bgcolor: '#34C759',
                     color: '#000000',
-                    fontWeight: 700,
+                    fontWeight: 800,
                     borderRadius: '12px',
                     textTransform: 'none',
-                    fontSize: '0.95rem',
+                    fontSize: '0.9rem',
                     '&:hover': { bgcolor: '#2eb34f' },
                   }}
                 >
@@ -312,13 +346,13 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
             </Grid>
 
             {/* Crear nuevo alimento */}
-            <Box sx={{ mt: 1.5 }}>
+            <Box sx={{ mt: 2 }}>
               {!showNewFoodForm ? (
                 <Button
                   size="small"
                   startIcon={<Plus size={14} />}
                   onClick={() => setShowNewFoodForm(true)}
-                  sx={{ color: '#007AFF', textTransform: 'none', fontSize: '0.8rem', p: 0 }}
+                  sx={{ color: '#007AFF', textTransform: 'none', fontSize: '0.82rem', p: 0, fontWeight: 700 }}
                 >
                   ¿No encuentras el alimento? Créalo aquí
                 </Button>
@@ -328,37 +362,43 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
                     sx={{
                       mt: 1.5,
                       p: 2,
-                      borderRadius: '14px',
-                      bgcolor: '#2C2C2E',
-                      border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                      borderRadius: '16px',
+                      bgcolor: '#1C1C20',
+                      border: '1px solid rgba(255, 255, 255, 0.08)',
                     }}
                   >
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: '#ffffff', mb: 1.5, display: 'block' }}>
+                    <Typography variant="caption" sx={{ fontWeight: 800, color: '#007AFF', mb: 1.5, display: 'block' }}>
                       Nuevo Alimento en la Base de Datos
                     </Typography>
-                    <Grid container spacing={1.5}>
-                      <Grid size={{ xs: 12, sm: 5 }}>
+                    <Grid container spacing={1.5} alignItems="flex-end">
+                      <Grid item xs={12} sm={5}>
+                        <Typography variant="caption" sx={{ color: '#ffffff', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                          Nombre
+                        </Typography>
                         <TextField
                           fullWidth
                           size="small"
                           placeholder="Nombre del alimento"
                           value={newFoodName}
                           onChange={(e) => setNewFoodName(e.target.value)}
-                          InputProps={{ sx: { color: '#ffffff', bgcolor: '#1C1C1E', borderRadius: '8px', fontSize: '16px' } }}
+                          sx={textFieldSx}
                         />
                       </Grid>
-                      <Grid size={{ xs: 6, sm: 4 }}>
+                      <Grid item xs={6} sm={4}>
+                        <Typography variant="caption" sx={{ color: '#ffffff', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                          Kcal / 100g
+                        </Typography>
                         <TextField
                           fullWidth
                           size="small"
                           type="number"
-                          placeholder="Kcal / 100g"
+                          placeholder="Kcal"
                           value={newFoodCalories}
                           onChange={(e) => setNewFoodCalories(e.target.value)}
-                          InputProps={{ sx: { color: '#ffffff', bgcolor: '#1C1C1E', borderRadius: '8px', fontSize: '16px' } }}
+                          sx={textFieldSx}
                         />
                       </Grid>
-                      <Grid size={{ xs: 6, sm: 3 }}>
+                      <Grid item xs={6} sm={3}>
                         <Button
                           fullWidth
                           variant="contained"
@@ -368,8 +408,8 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
                             height: 40,
                             bgcolor: '#007AFF',
                             color: '#ffffff',
-                            fontWeight: 600,
-                            borderRadius: '8px',
+                            fontWeight: 700,
+                            borderRadius: '12px',
                             textTransform: 'none',
                           }}
                         >
@@ -388,87 +428,92 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
             sx={{
               p: 2.5,
               borderRadius: '20px',
-              bgcolor: '#1C1C1E',
-              border: '0.5px solid rgba(255, 255, 255, 0.08)',
+              bgcolor: '#16161A',
+              border: '1px solid rgba(0, 122, 255, 0.25)',
             }}
           >
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Calculator size={16} color="#007AFF" /> Calculadora de Intercambio de Alimentos
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#007AFF', mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Calculator size={18} /> Calculadora de Intercambio de Alimentos
             </Typography>
 
             <Grid container spacing={1.5} alignItems="center">
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid item xs={12} sm={4}>
+                <Typography variant="caption" sx={{ color: '#ffffff', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                  Alimento Original
+                </Typography>
                 <Autocomplete
                   options={availableFoods}
                   getOptionLabel={(o) => o.name}
                   value={altSourceFood}
                   onChange={(_, v) => setAltSourceFood(v)}
+                  componentsProps={{ paper: { sx: autocompletePaperSx } }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      placeholder="Alimento original..."
+                      placeholder="Alimento origen..."
                       size="small"
-                      InputProps={{
-                        ...params.InputProps,
-                        sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' },
-                      }}
+                      sx={textFieldSx}
                     />
                   )}
                 />
               </Grid>
 
-              <Grid size={{ xs: 4, sm: 2 }}>
+              <Grid item xs={4} sm={2}>
+                <Typography variant="caption" sx={{ color: '#ffffff', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                  Gramos
+                </Typography>
                 <TextField
                   fullWidth
                   size="small"
                   type="number"
                   value={altSourceGrams}
                   onChange={(e) => setAltSourceGrams(Number(e.target.value))}
-                  InputProps={{ sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' } }}
+                  sx={textFieldSx}
                 />
               </Grid>
 
-              <Grid size={{ xs: 8, sm: 4 }}>
+              <Grid item xs={8} sm={4}>
+                <Typography variant="caption" sx={{ color: '#ffffff', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                  Sustituir por
+                </Typography>
                 <Autocomplete
                   options={availableFoods}
                   getOptionLabel={(o) => o.name}
                   value={altTargetFood}
                   onChange={(_, v) => setAltTargetFood(v)}
+                  componentsProps={{ paper: { sx: autocompletePaperSx } }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
                       placeholder="Sustituir por..."
                       size="small"
-                      InputProps={{
-                        ...params.InputProps,
-                        sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' },
-                      }}
+                      sx={textFieldSx}
                     />
                   )}
                 />
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 2 }}>
+              <Grid item xs={12} sm={2}>
                 {altSourceFood && altTargetFood ? (
                   <Box
                     sx={{
                       textAlign: 'center',
                       p: 1,
-                      borderRadius: '10px',
+                      borderRadius: '12px',
                       bgcolor: 'rgba(52, 199, 89, 0.15)',
-                      border: '0.5px solid rgba(52, 199, 89, 0.3)',
+                      border: '1px solid rgba(52, 199, 89, 0.3)',
                     }}
                   >
-                    <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', display: 'block' }}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.65)', display: 'block', fontSize: '0.72rem' }}>
                       Equivale a:
                     </Typography>
                     <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#34C759' }}>
-                      {calculateEquivalentGrams()}g
+                      {calculateEquivalentGrams()} g
                     </Typography>
                   </Box>
                 ) : (
-                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.4)', textAlign: 'center', display: 'block' }}>
-                    Elige 2 alimentos
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', textAlign: 'center', display: 'block' }}>
+                    Selecciona 2 alimentos
                   </Typography>
                 )}
               </Grid>
@@ -477,8 +522,8 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
 
           {/* Listado de Alimentos Configurados */}
           <Box>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Layers size={16} color="#34C759" /> Alimentos del Plan ({dietFoods.length})
+            <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#ffffff', mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Layers size={18} color="#34C759" /> Alimentos del Plan ({dietFoods.length})
             </Typography>
 
             {dietFoods.length === 0 ? (
@@ -486,13 +531,13 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
                 sx={{
                   p: 4,
                   textAlign: 'center',
-                  bgcolor: '#1C1C1E',
+                  bgcolor: '#16161A',
                   borderRadius: '20px',
-                  border: '1px dashed rgba(255, 255, 255, 0.15)',
+                  border: '1px dashed rgba(255, 255, 255, 0.12)',
                 }}
               >
-                <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                  No hay alimentos asignados a este plan.
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                  No hay alimentos asignados a este plan. Añádelos arriba.
                 </Typography>
               </Box>
             ) : isMobile ? (
@@ -506,8 +551,8 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
                       sx={{
                         p: 2,
                         borderRadius: '16px',
-                        bgcolor: '#1C1C1E',
-                        border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                        bgcolor: '#16161A',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
@@ -517,8 +562,8 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
                         <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff' }}>
                           {df.food?.name}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)' }}>
-                          {df.quantity}g • <span style={{ color: '#34C759', fontWeight: 600 }}>{cal} kcal</span>
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                          {df.quantity}g • <span style={{ color: '#34C759', fontWeight: 700 }}>{cal} kcal</span>
                         </Typography>
                       </Box>
 
@@ -538,23 +583,23 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
               <TableContainer
                 sx={{
                   borderRadius: '20px',
-                  bgcolor: '#1C1C1E',
-                  border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                  bgcolor: '#16161A',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
                 }}
               >
                 <Table>
                   <TableHead sx={{ bgcolor: 'rgba(255, 255, 255, 0.03)' }}>
                     <TableRow>
-                      <TableCell sx={{ color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
+                      <TableCell sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 700, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
                         Alimento
                       </TableCell>
-                      <TableCell sx={{ color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
+                      <TableCell sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 700, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
                         Cantidad
                       </TableCell>
-                      <TableCell sx={{ color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
+                      <TableCell sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 700, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
                         Calorías
                       </TableCell>
-                      <TableCell align="right" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
+                      <TableCell align="right" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 700, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
                         Acciones
                       </TableCell>
                     </TableRow>
@@ -563,14 +608,14 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
                     {dietFoods.map((df) => {
                       const cal = df.food ? Math.round((df.food.calories * df.quantity) / 100) : 0;
                       return (
-                        <TableRow key={df.id} sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.02)' } }}>
+                        <TableRow key={df.id} sx={{ '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.03)' } }}>
                           <TableCell sx={{ borderBottomColor: 'rgba(255, 255, 255, 0.06)' }}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#ffffff' }}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff' }}>
                               {df.food?.name}
                             </Typography>
                           </TableCell>
                           <TableCell sx={{ borderBottomColor: 'rgba(255, 255, 255, 0.06)' }}>
-                            <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.8)' }}>
+                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.85)' }}>
                               {df.quantity} g
                             </Typography>
                           </TableCell>
@@ -581,8 +626,8 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
                               sx={{
                                 bgcolor: 'rgba(52, 199, 89, 0.15)',
                                 color: '#34C759',
-                                fontWeight: 700,
-                                fontSize: '0.72rem',
+                                fontWeight: 800,
+                                fontSize: '0.74rem',
                               }}
                             />
                           </TableCell>
@@ -609,12 +654,12 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
       {/* Footer Botones Apple */}
       <DialogActions
         sx={{
-          px: { xs: 2, sm: 3 },
-          py: 2,
-          borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
-          bgcolor: 'rgba(28, 28, 30, 0.8)',
+          px: { xs: 2.5, sm: 3 },
+          py: 2.2,
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          bgcolor: 'rgba(22, 22, 26, 0.9)',
           backdropFilter: 'blur(20px)',
-          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 12px)' : 2,
+          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 14px)' : 2.2,
         }}
       >
         <Button
@@ -625,7 +670,7 @@ export const DietFoodsManager: React.FC<DietFoodsManagerProps> = ({
             borderRadius: '12px',
             bgcolor: '#007AFF',
             color: '#ffffff',
-            fontWeight: 700,
+            fontWeight: 800,
             textTransform: 'none',
             fontSize: '0.95rem',
             '&:hover': { bgcolor: '#0062cc' },

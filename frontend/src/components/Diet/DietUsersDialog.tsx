@@ -12,7 +12,6 @@ import {
   CircularProgress,
   IconButton,
   Stack,
-  Chip,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -21,7 +20,6 @@ import {
   UserPlus,
   Trash2,
   X,
-  Check,
 } from 'lucide-react';
 import { Diet } from '../../types/Diet';
 import * as dietService from '../../services/dietService';
@@ -33,6 +31,52 @@ interface DietUsersDialogProps {
   onClose: () => void;
   onUpdate: () => void;
 }
+
+const textFieldSx = {
+  '& .MuiOutlinedInput-root': {
+    bgcolor: '#1C1C1E',
+    borderRadius: '12px',
+    color: '#ffffff',
+    fontSize: '0.92rem',
+    '& fieldset': {
+      borderColor: 'rgba(255, 255, 255, 0.14)',
+      borderWidth: '1px',
+    },
+    '&:hover fieldset': {
+      borderColor: 'rgba(255, 255, 255, 0.3)',
+    },
+    '&.Mui-focused fieldset': {
+      borderColor: '#34C759',
+      borderWidth: '1.5px',
+    },
+  },
+  '& input': {
+    color: '#ffffff !important',
+    fontSize: '0.92rem',
+    '&::placeholder': {
+      color: 'rgba(255, 255, 255, 0.4) !important',
+      opacity: 1,
+    },
+  },
+};
+
+const autocompletePaperSx = {
+  bgcolor: '#1C1C1E',
+  color: '#ffffff',
+  border: '1px solid rgba(255, 255, 255, 0.15)',
+  borderRadius: '14px',
+  boxShadow: '0 16px 40px rgba(0, 0, 0, 0.85)',
+  '& .MuiAutocomplete-option': {
+    fontSize: '0.88rem',
+    color: '#ffffff !important',
+    '&[aria-selected="true"]': {
+      bgcolor: 'rgba(52, 199, 89, 0.2) !important',
+    },
+    '&:hover, &.Mui-focused': {
+      bgcolor: 'rgba(255, 255, 255, 0.1) !important',
+    },
+  },
+};
 
 export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
   open,
@@ -121,53 +165,54 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
       fullScreen={isMobile}
       PaperProps={{
         sx: {
-          bgcolor: '#000000',
+          bgcolor: '#0B0B0E',
           backgroundImage: 'none',
           color: '#ffffff',
           borderRadius: { xs: 0, sm: '24px' },
           border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.12)' },
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.8)',
+          boxShadow: '0 32px 80px rgba(0, 0, 0, 0.9)',
           maxHeight: { xs: '100%', sm: '85vh' },
           display: 'flex',
           flexDirection: 'column',
+          overflow: 'hidden',
         },
       }}
     >
       {/* Header Apple Liquid Glass */}
       <Box
         sx={{
-          px: { xs: 2, sm: 3 },
-          py: 2,
+          px: { xs: 2.5, sm: 3 },
+          py: 2.2,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)',
-          background: 'rgba(28, 28, 30, 0.8)',
-          backdropFilter: 'blur(20px)',
-          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px)' : 2,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'rgba(22, 22, 26, 0.9)',
+          backdropFilter: 'blur(24px)',
+          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 14px)' : 2.2,
         }}
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <Box
             sx={{
-              width: 36,
-              height: 36,
-              borderRadius: '10px',
+              width: 38,
+              height: 38,
+              borderRadius: '12px',
               bgcolor: 'rgba(52, 199, 89, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#34C759',
-              border: '0.5px solid rgba(52, 199, 89, 0.3)',
+              border: '1px solid rgba(52, 199, 89, 0.3)',
             }}
           >
             <Users size={20} />
           </Box>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 700, color: '#ffffff', lineHeight: 1.2 }} noWrap>
+            <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#ffffff', lineHeight: 1.2 }} noWrap>
               Alumnos Asignados
             </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '0.75rem' }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.78rem' }}>
               {diet?.name}
             </Typography>
           </Box>
@@ -177,9 +222,9 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
           size="small"
           onClick={onClose}
           sx={{
-            color: 'rgba(235, 235, 245, 0.8)',
+            color: 'rgba(255, 255, 255, 0.7)',
             bgcolor: 'rgba(255, 255, 255, 0.08)',
-            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)', color: '#fff' },
           }}
         >
           <X size={18} />
@@ -187,7 +232,7 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
       </Box>
 
       {/* Contenido con Scroll */}
-      <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#000000', overflowY: 'auto' }}>
+      <DialogContent sx={{ p: { xs: 2.5, sm: 3.5 }, bgcolor: '#0B0B0E', overflowY: 'auto' }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 6 }}>
             <CircularProgress sx={{ color: '#34C759' }} />
@@ -199,32 +244,25 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
               sx={{
                 p: 2.5,
                 borderRadius: '20px',
-                bgcolor: '#1C1C1E',
-                border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                bgcolor: '#16161A',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontWeight: 600, mb: 1, display: 'block' }}>
-                Asignar a un Alumno
+              <Typography variant="caption" sx={{ color: '#ffffff', fontWeight: 700, mb: 1, display: 'block', fontSize: '0.82rem' }}>
+                Asignar Dieta a un Alumno
               </Typography>
               <Autocomplete
                 value={selectedUser}
                 onChange={(_, newValue) => setSelectedUser(newValue)}
                 options={availableUsers}
                 getOptionLabel={(option) => `${option.name} ${option.surname || ''} (${option.email})`}
+                componentsProps={{ paper: { sx: autocompletePaperSx } }}
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    placeholder="Buscar alumno..."
-                    InputProps={{
-                      ...params.InputProps,
-                      sx: {
-                        color: '#ffffff',
-                        bgcolor: '#2C2C2E',
-                        borderRadius: '12px',
-                        fontSize: '16px',
-                        '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-                      },
-                    }}
+                    placeholder="Buscar alumno por nombre o email..."
+                    size="small"
+                    sx={textFieldSx}
                   />
                 )}
                 noOptionsText="No hay otros usuarios disponibles"
@@ -236,11 +274,11 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
                 disabled={!selectedUser || isSubmitting}
                 startIcon={<UserPlus size={16} />}
                 sx={{
-                  mt: 1.5,
+                  mt: 2,
                   height: 44,
                   bgcolor: '#34C759',
                   color: '#000000',
-                  fontWeight: 700,
+                  fontWeight: 800,
                   borderRadius: '12px',
                   textTransform: 'none',
                   fontSize: '0.9rem',
@@ -249,7 +287,7 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
                 }}
                 fullWidth
               >
-                Asignar Plan
+                Asignar Plan Nutricional
               </Button>
             </Box>
 
@@ -258,16 +296,16 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
               sx={{
                 p: 2.5,
                 borderRadius: '20px',
-                bgcolor: '#1C1C1E',
-                border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                bgcolor: '#16161A',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff', mb: 1.5 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#ffffff', mb: 1.5 }}>
                 Alumnos Siguiendo esta Dieta ({assignedUsers.length})
               </Typography>
 
               {assignedUsers.length === 0 ? (
-                <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.5)', py: 2, textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', py: 2, textAlign: 'center' }}>
                   No hay alumnos asignados a esta pauta nutricional.
                 </Typography>
               ) : (
@@ -276,19 +314,20 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
                     <Box
                       key={user.id}
                       sx={{
-                        p: 1.5,
-                        borderRadius: '12px',
-                        bgcolor: '#2C2C2E',
+                        p: 1.8,
+                        borderRadius: '14px',
+                        bgcolor: '#1C1C20',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'space-between',
                       }}
                     >
                       <Box sx={{ minWidth: 0, flex: 1, pr: 1 }}>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 600, color: '#ffffff' }} noWrap>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#ffffff' }} noWrap>
                           {user.name} {user.surname || ''}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.5)' }} noWrap>
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }} noWrap>
                           {user.email}
                         </Typography>
                       </Box>
@@ -312,12 +351,12 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
       {/* Footer */}
       <DialogActions
         sx={{
-          px: { xs: 2, sm: 3 },
-          py: 2,
-          borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
-          bgcolor: 'rgba(28, 28, 30, 0.8)',
+          px: { xs: 2.5, sm: 3 },
+          py: 2.2,
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          bgcolor: 'rgba(22, 22, 26, 0.9)',
           backdropFilter: 'blur(20px)',
-          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 12px)' : 2,
+          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 14px)' : 2.2,
         }}
       >
         <Button
@@ -328,7 +367,7 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
             borderRadius: '12px',
             bgcolor: '#007AFF',
             color: '#ffffff',
-            fontWeight: 700,
+            fontWeight: 800,
             textTransform: 'none',
             fontSize: '0.95rem',
             '&:hover': { bgcolor: '#0062cc' },
