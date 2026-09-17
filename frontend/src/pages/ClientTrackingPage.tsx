@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Container,
-  Grid,
   Card,
   CardContent,
   Avatar,
@@ -11,9 +9,19 @@ import {
   TextField,
   InputAdornment,
   Chip,
-  Alert
+  Alert,
+  CircularProgress,
+  Stack
 } from '@mui/material';
-import { Iconify } from '../utils/iconify';
+import {
+  Search,
+  ArrowLeft,
+  Activity,
+  Calendar,
+  ChevronRight,
+  TrendingUp,
+  UserCheck
+} from 'lucide-react';
 import { User } from '../types/User';
 import * as userService from '../services/userService';
 import ClientTrackingDashboard from '../components/Client/ClientTrackingDashboard';
@@ -45,8 +53,8 @@ const ClientTrackingPage: React.FC = () => {
       }
 
       setClients(clientUsers);
-    } catch (error: any) {
-      console.error('Error al cargar clientes:', error);
+    } catch (err: any) {
+      console.error('Error al cargar clientes:', err);
       setError('Error al cargar la lista de clientes');
     } finally {
       setLoading(false);
@@ -55,11 +63,12 @@ const ClientTrackingPage: React.FC = () => {
 
   const filteredClients = clients.filter(client =>
     client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    client.surname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (client.surname && client.surname.toLowerCase().includes(searchTerm.toLowerCase())) ||
     client.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const calculateAge = (birthDate: string): number => {
+  const calculateAge = (birthDate?: string): number | null => {
+    if (!birthDate) return null;
     const today = new Date();
     const birth = new Date(birthDate);
     let age = today.getFullYear() - birth.getFullYear();
@@ -69,169 +78,230 @@ const ClientTrackingPage: React.FC = () => {
       age--;
     }
     
-    return age;
+    return age > 0 ? age : null;
   };
 
-  const getInitials = (name: string, surname: string): string => {
-    return `${name.charAt(0)}${surname.charAt(0)}`.toUpperCase();
+  const getInitials = (name: string, surname?: string): string => {
+    const first = name ? name.charAt(0) : 'U';
+    const second = surname ? surname.charAt(0) : '';
+    return `${first}${second}`.toUpperCase();
   };
 
   if (selectedClient) {
     return (
-      <Container maxWidth="xl">
-        <Box sx={{ mb: 3 }}>
+      <Box sx={{ width: '100%', maxWidth: 1280, mx: 'auto', p: { xs: 1.5, sm: 2.5, md: 3 }, boxSizing: 'border-box', overflowX: 'hidden' }}>
+        <Box sx={{ mb: 2.5 }}>
           <Button
             variant="outlined"
             onClick={() => setSelectedClient(null)}
-            sx={{ mb: 2 }}
+            startIcon={<ArrowLeft size={16} />}
+            sx={{
+              borderRadius: '12px',
+              textTransform: 'none',
+              fontWeight: 600,
+              color: '#ffffff',
+              borderColor: 'rgba(255, 255, 255, 0.15)',
+              '&:hover': { borderColor: '#ffffff', bgcolor: 'rgba(255, 255, 255, 0.05)' }
+            }}
           >
-            ← Volver a la Lista
+            Volver a la Lista de Alumnos
           </Button>
         </Box>
         <ClientTrackingDashboard user={selectedClient} />
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="xl">
-      <Box sx={{ py: 4 }}>
-        <Typography variant="h4" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Iconify icon="solar:dumbbell-bold-duotone" width={32} />
-          Seguimiento de Clientes
-        </Typography>
-
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-          Gestiona el seguimiento semanal y mensual de tus clientes
-        </Typography>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
-          </Alert>
-        )}
-
-        {/* Barra de búsqueda */}
-        <Box sx={{ mb: 4 }}>
-          <TextField
-            fullWidth
-            placeholder="Buscar clientes por nombre, apellido o email..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" width={20} />
-                </InputAdornment>
-              ),
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: 1280,
+        mx: 'auto',
+        p: { xs: 1.5, sm: 2.5, md: 3 },
+        boxSizing: 'border-box',
+        overflowX: 'hidden'
+      }}
+    >
+      {/* Header */}
+      <Box mb={3}>
+        <Box display="flex" alignItems="center" gap={1.2} mb={0.5}>
+          <Box
+            sx={{
+              width: 32,
+              height: 32,
+              borderRadius: '9px',
+              bgcolor: 'rgba(0, 122, 255, 0.15)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#007AFF'
             }}
-            sx={{ maxWidth: 600 }}
-          />
+          >
+            <Activity size={18} />
+          </Box>
+          <Typography variant="h4" fontWeight="800" sx={{ color: '#ffffff', letterSpacing: '-0.02em', fontSize: { xs: '1.4rem', sm: '1.85rem' } }}>
+            Seguimiento de Clientes
+          </Typography>
         </Box>
 
-        {/* Lista de clientes */}
-        {loading ? (
-          <Typography>Cargando clientes...</Typography>
-        ) : filteredClients.length === 0 ? (
-          <Alert severity="info">
-            {searchTerm ? 'No se encontraron clientes con ese criterio de búsqueda.' : 'No hay clientes registrados.'}
-          </Alert>
-        ) : (
-          <Grid container spacing={3}>
-            {filteredClients.map((client) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 3 }} key={client.id}>
-                <Card 
-                  sx={{ 
-                    height: '100%',
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: 4
-                    }
-                  }}
-                  onClick={() => setSelectedClient(client)}
-                >
-                  <CardContent>
-                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                      <Avatar sx={{ mr: 2, bgcolor: 'primary.main' }}>
-                        {getInitials(client.name, client.surname)}
-                      </Avatar>
-                      <Box sx={{ flexGrow: 1 }}>
-                        <Typography variant="h6" noWrap>
-                          {client.name} {client.surname}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary" noWrap>
-                          {client.email}
-                        </Typography>
-                      </Box>
-                    </Box>
+        <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', maxWidth: 620 }}>
+          Supervisa el pesaje semanal, evolución de pliegues/medidas y fotos de progreso de tus alumnos.
+        </Typography>
+      </Box>
 
-                    <Box sx={{ mb: 2 }}>
-                      <Chip
-                        icon={<Iconify icon="solar:user-bold" width={16} />}
-                        label="Cliente"
-                        size="small"
-                        color="primary"
-                        variant="outlined"
-                        sx={{ mr: 1 }}
-                      />
-                      {client.birth_date && (
-                        <Chip
-                          label={`${calculateAge(client.birth_date)} años`}
-                          size="small"
-                          variant="outlined"
-                        />
-                      )}
-                    </Box>
+      {error && (
+        <Alert severity="error" sx={{ mb: 3, borderRadius: '14px' }}>
+          {error}
+        </Alert>
+      )}
 
-                    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Typography variant="body2" color="text.secondary">
-                        Cliente desde: {new Date(client.created_at).toLocaleDateString('es-ES')}
-                      </Typography>
-                    </Box>
+      {/* Barra de búsqueda */}
+      <Box sx={{ mb: 3 }}>
+        <TextField
+          fullWidth
+          placeholder="Buscar alumnos por nombre o email..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Search size={16} color="rgba(255, 255, 255, 0.4)" />
+              </InputAdornment>
+            ),
+            sx: {
+              bgcolor: 'rgba(255, 255, 255, 0.03)',
+              borderRadius: '14px',
+              color: '#ffffff',
+              fontSize: '14px'
+            }
+          }}
+          sx={{ maxWidth: 500 }}
+        />
+      </Box>
 
-                    {/* Información adicional */}
-                    {(client.weight || client.height) && (
-                      <Box sx={{ mt: 2, pt: 2, borderTop: 1, borderColor: 'divider' }}>
-                        <Grid container spacing={1}>
-                          {client.weight && (
-                            <Grid size={{ xs: 6 }}>
-                              <Typography variant="body2" color="text.secondary">
-                                Peso: {client.weight} kg
-                              </Typography>
-                            </Grid>
-                          )}
-                          {client.height && (
-                            <Grid size={{ xs: 6 }}>
-                              <Typography variant="body2" color="text.secondary">
-                                Altura: {client.height} cm
-                              </Typography>
-                            </Grid>
-                          )}
-                        </Grid>
-                      </Box>
-                    )}
-
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      sx={{ mt: 2 }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedClient(client);
+      {/* Grid de clientes */}
+      {loading ? (
+        <Box py={6} display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+          <CircularProgress size={32} sx={{ color: '#007AFF', mb: 2 }} />
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+            Cargando expedientes de clientes...
+          </Typography>
+        </Box>
+      ) : filteredClients.length === 0 ? (
+        <Box
+          sx={{
+            p: 4,
+            borderRadius: '20px',
+            bgcolor: 'var(--bg-card, #18181b)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            textAlign: 'center'
+          }}
+        >
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+            {searchTerm ? 'No se encontraron alumnos con ese criterio de búsqueda.' : 'No tienes alumnos asignados actualmente.'}
+          </Typography>
+        </Box>
+      ) : (
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)', lg: 'repeat(4, 1fr)' },
+            gap: 2,
+            width: '100%',
+            minWidth: 0
+          }}
+        >
+          {filteredClients.map((client) => {
+            const age = calculateAge(client.birth_date);
+            return (
+              <Card
+                key={client.id}
+                onClick={() => setSelectedClient(client)}
+                sx={{
+                  borderRadius: '18px',
+                  bgcolor: 'var(--bg-card, #18181b)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    borderColor: 'rgba(0, 122, 255, 0.4)',
+                    boxShadow: '0 8px 30px rgba(0, 122, 255, 0.15)'
+                  }
+                }}
+              >
+                <CardContent sx={{ p: 2.2, '&:last-child': { pb: 2.2 } }}>
+                  <Box display="flex" alignItems="center" gap={1.2} mb={1.5}>
+                    <Avatar
+                      sx={{
+                        width: 42,
+                        height: 42,
+                        bgcolor: '#007AFF',
+                        color: '#ffffff',
+                        fontWeight: 700,
+                        fontSize: '0.95rem'
                       }}
                     >
-                      Ver Seguimiento
-                    </Button>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        )}
-      </Box>
-    </Container>
+                      {getInitials(client.name, client.surname)}
+                    </Avatar>
+
+                    <Box sx={{ minWidth: 0, flex: 1 }}>
+                      <Typography variant="subtitle2" fontWeight="700" noWrap sx={{ color: '#ffffff', fontSize: '0.9rem' }}>
+                        {client.name} {client.surname}
+                      </Typography>
+                      <Typography variant="caption" noWrap sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', fontSize: '0.72rem' }}>
+                        {client.email}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Stack direction="row" spacing={0.8} mb={1.8} flexWrap="wrap" gap={0.5}>
+                    <Chip
+                      label="Alumno"
+                      size="small"
+                      sx={{
+                        height: 20,
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        bgcolor: 'rgba(0, 122, 255, 0.15)',
+                        color: '#007AFF'
+                      }}
+                    />
+                    {age && (
+                      <Chip
+                        label={`${age} años`}
+                        size="small"
+                        sx={{
+                          height: 20,
+                          fontSize: '0.65rem',
+                          bgcolor: 'rgba(255, 255, 255, 0.05)',
+                          color: 'rgba(255, 255, 255, 0.7)'
+                        }}
+                      />
+                    )}
+                  </Stack>
+
+                  <Box
+                    pt={1.2}
+                    borderTop="1px solid rgba(255, 255, 255, 0.06)"
+                    display="flex"
+                    justifyContent="space-between"
+                    alignItems="center"
+                  >
+                    <Typography variant="caption" sx={{ color: '#007AFF', fontWeight: 600, fontSize: '0.75rem' }}>
+                      Ver Evolución 360°
+                    </Typography>
+                    <ChevronRight size={15} color="#007AFF" />
+                  </Box>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </Box>
+      )}
+    </Box>
   );
 };
 

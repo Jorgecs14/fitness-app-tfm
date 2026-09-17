@@ -7,7 +7,6 @@ import {
   Container,
   Chip,
   Stack,
-  Grid,
   Avatar,
 } from '@mui/material';
 import {
@@ -21,13 +20,16 @@ import {
   ChevronRight,
   TrendingUp,
   AlertCircle,
-  Plus
+  Plus,
+  Wallet,
+  UserPlus
 } from 'lucide-react';
 
 import { Chart } from '../utils/chart';
 import * as userService from '../services/userService';
 import * as dietService from '../services/dietService';
 import * as workoutService from '../services/workoutService';
+import { billingService, TrainerBillingSummary } from '../services/billingService';
 import { User } from '../types/User';
 
 interface DashboardStats {
@@ -75,6 +77,7 @@ export const HomePage = () => {
       categories: []
     }
   });
+  const [billingSummary, setBillingSummary] = useState<TrainerBillingSummary | null>(null);
   const [clientsList, setClientsList] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -163,10 +166,13 @@ export const HomePage = () => {
 
       const clientIds = clients.map((c) => c.id);
 
-      const [allDiets, allWorkouts] = await Promise.all([
+      const [allDiets, allWorkouts, billSummary] = await Promise.all([
         dietService.getDiets().catch(() => []),
         workoutService.getWorkouts().catch(() => []),
+        billingService.getTrainerSummary().catch(() => null),
       ]);
+
+      setBillingSummary(billSummary);
 
       const trainerWorkouts = allWorkouts.filter(
         (w: any) =>
@@ -296,21 +302,32 @@ export const HomePage = () => {
   ];
 
   return (
-    <Container maxWidth="xl" sx={{ pb: 8, pt: { xs: 1, sm: 2 } }}>
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: 1280,
+        mx: 'auto',
+        p: { xs: 1.5, sm: 2.5, md: 3 },
+        boxSizing: 'border-box',
+        overflowX: 'hidden'
+      }}
+    >
       {/* Apple Cockpit Header */}
       <Box
-        className="apple-card"
         sx={{
-          p: { xs: 2.5, md: 4 },
+          p: { xs: 2, sm: 3, md: 3.5 },
           mb: 3,
-          position: 'relative',
-          overflow: 'hidden',
-          background: 'linear-gradient(180deg, #1C1C1E 0%, #161618 100%)',
+          borderRadius: '20px',
+          bgcolor: 'var(--bg-card, #18181b)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+          boxSizing: 'border-box',
+          overflow: 'hidden'
         }}
       >
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
-          <Box>
-            <Stack direction="row" spacing={1.5} alignItems="center" mb={1}>
+          <Box sx={{ minWidth: 0, flex: 1 }}>
+            <Stack direction="row" spacing={1.2} alignItems="center" mb={1} flexWrap="wrap">
               <Chip
                 label="Cockpit Entrenador"
                 size="small"
@@ -323,23 +340,23 @@ export const HomePage = () => {
                   height: 24,
                 }}
               />
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500 }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500, fontSize: '0.78rem' }}>
                 {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </Typography>
             </Stack>
 
-            <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.02em', mb: 0.5, color: '#FFFFFF' }}>
+            <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.02em', mb: 0.5, color: '#FFFFFF', fontSize: { xs: '1.4rem', sm: '1.85rem' } }}>
               Centro de Mando 360°
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', maxWidth: 680 }}>
-              Supervisión en tiempo real de tus atletas, adherencia a planes y alertas de seguimiento.
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', maxWidth: 680, fontSize: '0.85rem' }}>
+              Supervisión en tiempo real de tus atletas, adherencia a planes, cobros y alertas de seguimiento.
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1.5} flexWrap="wrap" gap={1}>
+          <Stack direction="row" spacing={1.2} flexWrap="wrap" sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Button
               variant="outlined"
-              startIcon={<Users size={16} />}
+              startIcon={<Users size={15} />}
               onClick={() => navigate('/dashboard/users')}
               sx={{
                 borderRadius: '12px',
@@ -348,57 +365,271 @@ export const HomePage = () => {
                 fontWeight: 600,
                 textTransform: 'none',
                 px: 2,
+                py: 0.8,
+                fontSize: '0.84rem',
+                flex: { xs: 1, sm: 'none' },
                 '&:hover': {
                   borderColor: 'rgba(255, 255, 255, 0.3)',
                   background: 'rgba(255, 255, 255, 0.05)',
                 }
               }}
             >
-              Directorio Alumnos
+              Mis Alumnos
             </Button>
 
             <Button
               variant="contained"
-              startIcon={<Plus size={16} />}
-              onClick={() => navigate('/dashboard/workouts')}
-              className="apple-button-primary"
+              startIcon={<Wallet size={15} />}
+              onClick={() => navigate('/dashboard/billing')}
               sx={{
                 borderRadius: '12px',
                 fontWeight: 700,
                 textTransform: 'none',
-                px: 2.5,
+                bgcolor: '#007AFF',
+                px: 2.2,
+                py: 0.8,
+                fontSize: '0.84rem',
+                flex: { xs: 1, sm: 'none' },
+                boxShadow: '0 4px 14px rgba(0, 122, 255, 0.35)'
               }}
             >
-              Diseñar Rutina
+              Facturación
             </Button>
           </Stack>
         </Box>
       </Box>
 
       {/* 4 Inset Grouped Primary Metric Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' },
+          gap: 2,
+          mb: 3,
+          width: '100%',
+          minWidth: 0
+        }}
+      >
         {/* Card 1: Alumnos Activos */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box
-            className="apple-card"
-            sx={{
-              p: 2.5,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              height: '100%',
-              transition: 'transform 0.2s ease',
-              '&:hover': { transform: 'translateY(-2px)' },
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Alumnos Activos
-              </Typography>
+        <Box
+          sx={{
+            p: 2.2,
+            borderRadius: '18px',
+            bgcolor: 'var(--bg-card, #18181b)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            boxSizing: 'border-box'
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem' }}>
+              Alumnos Asignados
+            </Typography>
+            <Box
+              sx={{
+                width: 30,
+                height: 30,
+                borderRadius: '8px',
+                background: 'rgba(0, 122, 255, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Users size={16} color="#007AFF" />
+            </Box>
+          </Box>
+
+          <Typography variant="h4" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.3, letterSpacing: '-0.03em', fontSize: '1.6rem' }}>
+            {loading ? '...' : stats.totalClients}
+          </Typography>
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Chip label="Bajo tu tutela" size="small" sx={{ background: 'rgba(0, 122, 255, 0.15)', color: '#007AFF', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.72rem' }}>
+              100% aislados
+            </Typography>
+          </Stack>
+        </Box>
+
+        {/* Card 2: Sesiones Esta Semana */}
+        <Box
+          sx={{
+            p: 2.2,
+            borderRadius: '18px',
+            bgcolor: 'var(--bg-card, #18181b)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            boxSizing: 'border-box'
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem' }}>
+              Sesiones Completadas
+            </Typography>
+            <Box
+              sx={{
+                width: 30,
+                height: 30,
+                borderRadius: '8px',
+                background: 'rgba(52, 199, 89, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Dumbbell size={16} color="#34C759" />
+            </Box>
+          </Box>
+
+          <Typography variant="h4" fontWeight="800" sx={{ color: '#34C759', mb: 0.3, letterSpacing: '-0.03em', fontSize: '1.6rem' }}>
+            {loading ? '...' : stats.workoutsCompletedThisWeek}
+          </Typography>
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Chip label="94% objetivo" size="small" sx={{ background: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.72rem' }}>
+              {stats.totalWorkouts} rutinas activas
+            </Typography>
+          </Stack>
+        </Box>
+
+        {/* Card 3: Adherencia Nutricional */}
+        <Box
+          sx={{
+            p: 2.2,
+            borderRadius: '18px',
+            bgcolor: 'var(--bg-card, #18181b)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            boxSizing: 'border-box'
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem' }}>
+              Adherencia Dieta
+            </Typography>
+            <Box
+              sx={{
+                width: 30,
+                height: 30,
+                borderRadius: '8px',
+                background: 'rgba(255, 149, 0, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <UtensilsCrossed size={16} color="#FF9500" />
+            </Box>
+          </Box>
+
+          <Typography variant="h4" fontWeight="800" sx={{ color: '#FF9500', mb: 0.3, letterSpacing: '-0.03em', fontSize: '1.6rem' }}>
+            {stats.weeklyAdherenceRate}%
+          </Typography>
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Chip label="Excelente" size="small" sx={{ background: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.72rem' }}>
+              {stats.totalDiets} planes activos
+            </Typography>
+          </Stack>
+        </Box>
+
+        {/* Card 4: Facturación / MRR */}
+        <Box
+          sx={{
+            p: 2.2,
+            borderRadius: '18px',
+            bgcolor: 'var(--bg-card, #18181b)',
+            border: '1px solid rgba(56, 189, 248, 0.25)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            boxSizing: 'border-box',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            '&:hover': { transform: 'translateY(-2px)' }
+          }}
+          onClick={() => navigate('/dashboard/billing')}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
+            <Typography variant="caption" sx={{ color: '#38bdf8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem' }}>
+              MRR Cuotas
+            </Typography>
+            <Box
+              sx={{
+                width: 30,
+                height: 30,
+                borderRadius: '8px',
+                background: 'rgba(56, 189, 248, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <Wallet size={16} color="#38bdf8" />
+            </Box>
+          </Box>
+
+          <Typography variant="h4" fontWeight="900" sx={{ color: '#38bdf8', mb: 0.3, letterSpacing: '-0.02em', fontSize: '1.6rem' }}>
+            {billingSummary ? `${billingSummary.mrr.toFixed(2)} €` : `${(stats.totalClients * 50).toFixed(2)} €`}
+          </Typography>
+
+          <Stack direction="row" spacing={1} alignItems="center">
+            <Chip
+              label={`${billingSummary?.pending_payments || 0} pendientes`}
+              size="small"
+              sx={{
+                background: (billingSummary?.pending_payments || 0) > 0 ? 'rgba(255, 149, 0, 0.15)' : 'rgba(52, 199, 89, 0.15)',
+                color: (billingSummary?.pending_payments || 0) > 0 ? '#FF9500' : '#34C759',
+                fontWeight: 700,
+                height: 20,
+                fontSize: '0.68rem'
+              }}
+            />
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.72rem' }}>
+              Ver Hub →
+            </Typography>
+          </Stack>
+        </Box>
+      </Box>
+
+      {/* Main Grid: Activity Pulse & Analytics Chart */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', lg: '1fr 1.4fr' },
+          gap: 2.5,
+          width: '100%',
+          minWidth: 0
+        }}
+      >
+        {/* Left Column: Activity Pulse (En Vivo) */}
+        <Box
+          sx={{
+            p: { xs: 2, sm: 2.5 },
+            borderRadius: '20px',
+            bgcolor: 'var(--bg-card, #18181b)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            display: 'flex',
+            flexDirection: 'column',
+            boxSizing: 'border-box',
+            minWidth: 0
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+            <Box display="flex" alignItems="center" gap={1}>
               <Box
                 sx={{
-                  width: 32,
-                  height: 32,
+                  width: 30,
+                  height: 30,
                   borderRadius: '8px',
                   background: 'rgba(0, 122, 255, 0.15)',
                   display: 'flex',
@@ -406,428 +637,247 @@ export const HomePage = () => {
                   justifyContent: 'center',
                 }}
               >
-                <Users size={18} color="#007AFF" />
+                <Activity size={16} color="#007AFF" />
               </Box>
+              <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: '0.98rem' }}>
+                Activity Pulse
+              </Typography>
             </Box>
 
-            <Typography variant="h3" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5, letterSpacing: '-0.03em' }}>
-              {loading ? '...' : stats.totalClients}
-            </Typography>
-
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Chip label="+4 este mes" size="small" sx={{ background: 'rgba(0, 122, 255, 0.15)', color: '#007AFF', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-                de {stats.totalUsers} en total
-              </Typography>
-            </Stack>
+            <Chip label="En Vivo" size="small" sx={{ background: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
           </Box>
-        </Grid>
 
-        {/* Card 2: Sesiones Esta Semana */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box
-            className="apple-card"
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 2, fontSize: '0.75rem' }}>
+            Hitos recientes registrados por tus atletas:
+          </Typography>
+
+          <Stack spacing={1.2} sx={{ flexGrow: 1, overflowY: 'auto' }}>
+            {activityEvents.map((evt) => {
+              const IconComponent = evt.badgeIcon;
+              return (
+                <Box
+                  key={evt.id}
+                  sx={{
+                    p: 1.5,
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    border: '0.5px solid rgba(255, 255, 255, 0.06)',
+                    boxSizing: 'border-box'
+                  }}
+                >
+                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={0.3}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Avatar
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          background: `${evt.badgeColor}20`,
+                          color: evt.badgeColor,
+                          fontWeight: 700,
+                          fontSize: '0.75rem',
+                        }}
+                      >
+                        <IconComponent size={14} />
+                      </Avatar>
+                      <Box>
+                        <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', fontSize: '0.84rem' }}>
+                          {evt.userName}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: evt.badgeColor, fontWeight: 600, fontSize: '0.72rem' }}>
+                          {evt.title}
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.68rem' }}>
+                      {evt.timeAgo}
+                    </Typography>
+                  </Box>
+
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', pl: 4.5, fontSize: '0.75rem' }}>
+                    {evt.description}
+                  </Typography>
+                </Box>
+              );
+            })}
+          </Stack>
+
+          <Button
+            variant="outlined"
+            size="small"
+            fullWidth
+            onClick={() => navigate('/dashboard/client-tracking')}
+            endIcon={<ChevronRight size={15} />}
             sx={{
-              p: 2.5,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              height: '100%',
-              transition: 'transform 0.2s ease',
-              '&:hover': { transform: 'translateY(-2px)' },
+              mt: 2,
+              borderRadius: '10px',
+              borderColor: 'rgba(255, 255, 255, 0.12)',
+              color: '#FFFFFF',
+              textTransform: 'none',
+              fontWeight: 600,
+              py: 0.8,
+              fontSize: '0.8rem'
+            }}
+          >
+            Ver Todas las Actividades
+          </Button>
+        </Box>
+
+        {/* Right Column: Evolution Chart & Quick Actions */}
+        <Stack spacing={2.5} sx={{ minWidth: 0 }}>
+          {/* Chart Card */}
+          <Box
+            sx={{
+              p: { xs: 2, sm: 2.5 },
+              borderRadius: '20px',
+              bgcolor: 'var(--bg-card, #18181b)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              overflow: 'hidden',
+              minWidth: 0,
+              boxSizing: 'border-box'
             }}
           >
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Sesiones Esta Semana
-              </Typography>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '8px',
-                  background: 'rgba(52, 199, 89, 0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Dumbbell size={18} color="#34C759" />
-              </Box>
-            </Box>
-
-            <Typography variant="h3" fontWeight="800" sx={{ color: '#34C759', mb: 0.5, letterSpacing: '-0.03em' }}>
-              {loading ? '...' : stats.workoutsCompletedThisWeek}
-            </Typography>
-
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Chip label="94% objetivo" size="small" sx={{ background: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-                {stats.totalWorkouts} rutinas activas
-              </Typography>
-            </Stack>
-          </Box>
-        </Grid>
-
-        {/* Card 3: Adherencia Nutricional */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box
-            className="apple-card"
-            sx={{
-              p: 2.5,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              height: '100%',
-              transition: 'transform 0.2s ease',
-              '&:hover': { transform: 'translateY(-2px)' },
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Adherencia Dieta
-              </Typography>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '8px',
-                  background: 'rgba(255, 149, 0, 0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <UtensilsCrossed size={18} color="#FF9500" />
-              </Box>
-            </Box>
-
-            <Typography variant="h3" fontWeight="800" sx={{ color: '#FF9500', mb: 0.5, letterSpacing: '-0.03em' }}>
-              {stats.weeklyAdherenceRate}%
-            </Typography>
-
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Chip label="Excelente" size="small" sx={{ background: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-                {stats.totalDiets} planes activos
-              </Typography>
-            </Stack>
-          </Box>
-        </Grid>
-
-        {/* Card 4: Alerta de Inactividad */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box
-            className="apple-card"
-            sx={{
-              p: 2.5,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              height: '100%',
-              transition: 'transform 0.2s ease',
-              '&:hover': { transform: 'translateY(-2px)' },
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-              <Typography variant="caption" sx={{ color: '#FF453A', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                Alerta Inactividad
-              </Typography>
-              <Box
-                sx={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: '8px',
-                  background: 'rgba(255, 59, 48, 0.15)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <AlertCircle size={18} color="#FF3B30" />
-              </Box>
-            </Box>
-
-            <Typography variant="h3" fontWeight="800" sx={{ color: '#FF3B30', mb: 0.5, letterSpacing: '-0.03em' }}>
-              {loading ? '...' : stats.inactiveClientsCount}
-            </Typography>
-
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Chip label="> 5 días sin log" size="small" sx={{ background: 'rgba(255, 59, 48, 0.15)', color: '#FF3B30', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
-              <Typography
-                variant="caption"
-                sx={{ color: '#007AFF', cursor: 'pointer', fontWeight: 600 }}
-                onClick={() => navigate('/dashboard/client-tracking')}
-              >
-                Revisar →
-              </Typography>
-            </Stack>
-          </Box>
-        </Grid>
-      </Grid>
-
-      {/* Main Grid: Activity Pulse & Analytics Chart */}
-      <Grid container spacing={3}>
-        {/* Left Column: Activity Pulse (En Vivo) */}
-        <Grid size={{ xs: 12, lg: 5 }}>
-          <Box
-            className="apple-card"
-            sx={{
-              p: 3,
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Box display="flex" alignItems="center" gap={1.2}>
+              <Box display="flex" alignItems="center" gap={1}>
                 <Box
                   sx={{
-                    width: 32,
-                    height: 32,
+                    width: 30,
+                    height: 30,
                     borderRadius: '8px',
-                    background: 'rgba(0, 122, 255, 0.15)',
+                    background: 'rgba(52, 199, 89, 0.15)',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <Activity size={18} color="#007AFF" />
+                  <TrendingUp size={16} color="#34C759" />
                 </Box>
-                <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF' }}>
-                  Activity Pulse
+                <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: '0.98rem' }}>
+                  Evolución & Sesiones
                 </Typography>
               </Box>
 
-              <Chip label="En Vivo" size="small" sx={{ background: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, height: 22 }} />
+              <Chip label="Últimos 6 Meses" size="small" sx={{ background: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 255, 255, 0.5)', height: 20, fontSize: '0.68rem' }} />
             </Box>
 
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 2 }}>
-              Hitos recientes registrados por tus atletas:
+            <Box sx={{ height: 260, width: '100%', minWidth: 0, overflow: 'hidden' }}>
+              <Chart options={chartOptions} series={chartSeries} type="area" height="100%" />
+            </Box>
+          </Box>
+
+          {/* Quick Actions Grid */}
+          <Box
+            sx={{
+              p: { xs: 2, sm: 2.5 },
+              borderRadius: '20px',
+              bgcolor: 'var(--bg-card, #18181b)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+              boxSizing: 'border-box'
+            }}
+          >
+            <Typography variant="subtitle2" fontWeight="700" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.72rem' }}>
+              Accesos Directos
             </Typography>
 
-            <Stack spacing={1.5} sx={{ flexGrow: 1, overflowY: 'auto' }}>
-              {activityEvents.map((evt) => {
-                const IconComponent = evt.badgeIcon;
-                return (
-                  <Box
-                    key={evt.id}
-                    sx={{
-                      p: 1.8,
-                      borderRadius: '12px',
-                      background: 'rgba(255, 255, 255, 0.03)',
-                      border: '0.5px solid rgba(255, 255, 255, 0.06)',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        background: 'rgba(255, 255, 255, 0.06)',
-                      },
-                    }}
-                  >
-                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={0.5}>
-                      <Box display="flex" alignItems="center" gap={1.2}>
-                        <Avatar
-                          sx={{
-                            width: 32,
-                            height: 32,
-                            background: `${evt.badgeColor}20`,
-                            color: evt.badgeColor,
-                            fontWeight: 700,
-                            fontSize: '0.8rem',
-                          }}
-                        >
-                          <IconComponent size={16} />
-                        </Avatar>
-                        <Box>
-                          <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF' }}>
-                            {evt.userName}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: evt.badgeColor, fontWeight: 600 }}>
-                            {evt.title}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.7rem' }}>
-                        {evt.timeAgo}
-                      </Typography>
-                    </Box>
-
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', pl: 5.2 }}>
-                      {evt.description}
-                    </Typography>
-                  </Box>
-                );
-              })}
-            </Stack>
-
-            <Button
-              variant="outlined"
-              size="small"
-              fullWidth
-              onClick={() => navigate('/dashboard/client-tracking')}
-              endIcon={<ChevronRight size={16} />}
+            <Box
               sx={{
-                mt: 2,
-                borderRadius: '10px',
-                borderColor: 'rgba(255, 255, 255, 0.12)',
-                color: '#FFFFFF',
-                textTransform: 'none',
-                fontWeight: 600,
-                py: 1,
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr 1fr', sm: 'repeat(4, 1fr)' },
+                gap: 1.5
               }}
             >
-              Ver Todas las Actividades
-            </Button>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => navigate('/dashboard/users')}
+                startIcon={<Users size={17} color="#007AFF" />}
+                sx={{
+                  p: 1.5,
+                  borderRadius: '12px',
+                  flexDirection: 'column',
+                  gap: 0.6,
+                  borderColor: 'rgba(255, 255, 255, 0.08)',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  color: '#FFFFFF',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  '&:hover': { background: 'rgba(0, 122, 255, 0.1)', borderColor: '#007AFF' },
+                }}
+              >
+                Mis Alumnos
+              </Button>
+
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => navigate('/dashboard/workouts')}
+                startIcon={<Dumbbell size={17} color="#34C759" />}
+                sx={{
+                  p: 1.5,
+                  borderRadius: '12px',
+                  flexDirection: 'column',
+                  gap: 0.6,
+                  borderColor: 'rgba(255, 255, 255, 0.08)',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  color: '#FFFFFF',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  '&:hover': { background: 'rgba(52, 199, 89, 0.1)', borderColor: '#34C759' },
+                }}
+              >
+                Rutinas
+              </Button>
+
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => navigate('/dashboard/diets')}
+                startIcon={<UtensilsCrossed size={17} color="#FF9500" />}
+                sx={{
+                  p: 1.5,
+                  borderRadius: '12px',
+                  flexDirection: 'column',
+                  gap: 0.6,
+                  borderColor: 'rgba(255, 255, 255, 0.08)',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  color: '#FFFFFF',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  '&:hover': { background: 'rgba(255, 149, 0, 0.1)', borderColor: '#FF9500' },
+                }}
+              >
+                Dietas
+              </Button>
+
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => navigate('/dashboard/billing')}
+                startIcon={<Wallet size={17} color="#38bdf8" />}
+                sx={{
+                  p: 1.5,
+                  borderRadius: '12px',
+                  flexDirection: 'column',
+                  gap: 0.6,
+                  borderColor: 'rgba(255, 255, 255, 0.08)',
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  color: '#FFFFFF',
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  '&:hover': { background: 'rgba(56, 189, 248, 0.1)', borderColor: '#38bdf8' },
+                }}
+              >
+                Facturación
+              </Button>
+            </Box>
           </Box>
-        </Grid>
-
-        {/* Right Column: Evolution Chart & Quick Actions */}
-        <Grid size={{ xs: 12, lg: 7 }}>
-          <Stack spacing={3}>
-            {/* Chart Card */}
-            <Box
-              className="apple-card"
-              sx={{
-                p: 3,
-              }}
-            >
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <Box display="flex" alignItems="center" gap={1.2}>
-                  <Box
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      borderRadius: '8px',
-                      background: 'rgba(52, 199, 89, 0.15)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <TrendingUp size={18} color="#34C759" />
-                  </Box>
-                  <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF' }}>
-                    Evolución & Sesiones
-                  </Typography>
-                </Box>
-
-                <Chip label="Últimos 6 Meses" size="small" sx={{ background: 'rgba(255, 255, 255, 0.05)', color: 'rgba(255, 255, 255, 0.5)', height: 22 }} />
-              </Box>
-
-              <Box sx={{ height: 280, width: '100%' }}>
-                <Chart options={chartOptions} series={chartSeries} type="area" height="100%" />
-              </Box>
-            </Box>
-
-            {/* Quick Actions Grid */}
-            <Box
-              className="apple-card"
-              sx={{
-                p: 2.5,
-              }}
-            >
-              <Typography variant="subtitle2" fontWeight="700" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 1.5, textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                Accesos Directos
-              </Typography>
-
-              <Grid container spacing={1.5}>
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => navigate('/dashboard/users')}
-                    startIcon={<Users size={18} color="#007AFF" />}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: '12px',
-                      flexDirection: 'column',
-                      gap: 0.8,
-                      borderColor: 'rgba(255, 255, 255, 0.08)',
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      color: '#FFFFFF',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      '&:hover': { background: 'rgba(0, 122, 255, 0.1)', borderColor: '#007AFF' },
-                    }}
-                  >
-                    Alumnos
-                  </Button>
-                </Grid>
-
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => navigate('/dashboard/workouts')}
-                    startIcon={<Dumbbell size={18} color="#34C759" />}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: '12px',
-                      flexDirection: 'column',
-                      gap: 0.8,
-                      borderColor: 'rgba(255, 255, 255, 0.08)',
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      color: '#FFFFFF',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      '&:hover': { background: 'rgba(52, 199, 89, 0.1)', borderColor: '#34C759' },
-                    }}
-                  >
-                    Rutinas
-                  </Button>
-                </Grid>
-
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => navigate('/dashboard/diets')}
-                    startIcon={<UtensilsCrossed size={18} color="#FF9500" />}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: '12px',
-                      flexDirection: 'column',
-                      gap: 0.8,
-                      borderColor: 'rgba(255, 255, 255, 0.08)',
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      color: '#FFFFFF',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      '&:hover': { background: 'rgba(255, 149, 0, 0.1)', borderColor: '#FF9500' },
-                    }}
-                  >
-                    Dietas
-                  </Button>
-                </Grid>
-
-                <Grid size={{ xs: 6, sm: 3 }}>
-                  <Button
-                    variant="outlined"
-                    fullWidth
-                    onClick={() => navigate('/dashboard/client-tracking')}
-                    startIcon={<Camera size={18} color="#AF52DE" />}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: '12px',
-                      flexDirection: 'column',
-                      gap: 0.8,
-                      borderColor: 'rgba(255, 255, 255, 0.08)',
-                      background: 'rgba(255, 255, 255, 0.02)',
-                      color: '#FFFFFF',
-                      textTransform: 'none',
-                      fontWeight: 600,
-                      '&:hover': { background: 'rgba(175, 82, 222, 0.1)', borderColor: '#AF52DE' },
-                    }}
-                  >
-                    Seguimiento
-                  </Button>
-                </Grid>
-              </Grid>
-            </Box>
-          </Stack>
-        </Grid>
-      </Grid>
-    </Container>
+        </Stack>
+      </Box>
+    </Box>
   );
 };
 
