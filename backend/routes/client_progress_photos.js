@@ -156,4 +156,46 @@ router.delete('/:id', async (req, res) => {
   }
 })
 
+// Resetear fotos iniciales (reemplazar la línea de base inicial de un usuario)
+router.post('/reset-baseline', async (req, res) => {
+  try {
+    const { user_id, photos } = req.body
+    if (!user_id || !Array.isArray(photos)) {
+      return res.status(400).json({ message: 'user_id y photos son requeridos' })
+    }
+
+    // 1. Eliminar fotos previas del usuario si se solicitó un reinicio completo
+    await supabase.from('client_progress_photos').delete().eq('user_id', user_id)
+
+    // 2. Insertar las nuevas fotos de referencia inicial
+    const inserted = []
+    for (const p of photos) {
+      if (p.photo_type && p.photo_url && p.photo_date) {
+        const { data, error } = await supabase
+          .from('client_progress_photos')
+          .insert([{
+            user_id,
+            photo_type: p.photo_type,
+            photo_url: p.photo_url,
+            photo_date: p.photo_date
+          }])
+          .select()
+          .single()
+        if (!error && data) inserted.push(data)
+      }
+    }
+
+    // 3. Volver a bloquear can_reset_initial_photos en el usuario
+    await supabaseAdmin
+      .from('users')
+      .update({ can_reset_initial_photos: false })
+      .eq('id', user_id)
+
+    res.json({ message: 'Fotos iniciales actualizadas con éxito', data: inserted })
+  } catch (error) {
+    console.error('Error al resetear fotos iniciales:', error)
+    res.status(500).json({ message: 'Error al actualizar fotos iniciales' })
+  }
+})
+
 module.exports = router

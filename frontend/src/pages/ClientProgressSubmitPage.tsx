@@ -16,7 +16,9 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  CircularProgress
+  CircularProgress,
+  FormControlLabel,
+  Switch
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -29,10 +31,11 @@ import {
   Send,
   User,
   Activity,
-  ChevronRight,
   Sparkles,
+  Unlock,
+  RefreshCw
 } from 'lucide-react';
-import { getCurrentUser } from '../services/userService';
+import { getCurrentUser, updateUser } from '../services/userService';
 import { weeklyTrackingService } from '../services/weeklyTrackingService';
 import { clientProgressPhotoService } from '../services/clientProgressPhotoService';
 import { ClientProgressPhoto } from '../types/ClientProgressPhoto';
@@ -43,6 +46,8 @@ export const ClientProgressSubmitPage: React.FC = () => {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<number | null>(null);
   const [userName, setUserName] = useState<string>('');
+  const [canResetInitial, setCanResetInitial] = useState(false);
+  const [isResettingBaseline, setIsResettingBaseline] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +87,9 @@ export const ClientProgressSubmitPage: React.FC = () => {
       const user = await getCurrentUser();
       setUserId(user.id);
       setUserName(user.name);
+      const isUnlocked = Boolean(user.can_reset_initial_photos);
+      setCanResetInitial(isUnlocked);
+      setIsResettingBaseline(isUnlocked);
 
       try {
         const [photos, trackings] = await Promise.all([
@@ -105,10 +113,10 @@ export const ClientProgressSubmitPage: React.FC = () => {
   const handleFileUpload = async (angle: 'front' | 'side' | 'back', file: File) => {
     try {
       setUploadingPhoto(angle);
-      const url = await clientProgressPhotoService.uploadPhoto(file);
-      if (angle === 'front') setPhotoFront(url);
-      if (angle === 'side') setPhotoSide(url);
-      if (angle === 'back') setPhotoBack(url);
+      const res = await clientProgressPhotoService.uploadPhoto(file);
+      if (angle === 'front') setPhotoFront(res.url);
+      if (angle === 'side') setPhotoSide(res.url);
+      if (angle === 'back') setPhotoBack(res.url);
     } catch (err: any) {
       setError(err.message || 'Error al subir la imagen');
     } finally {
@@ -123,7 +131,51 @@ export const ClientProgressSubmitPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
+      const todayDate = new Date().toISOString().split('T')[0];
 
+      // MODO 1: Si está desbloqueado por el entrenador y el cliente quiere actualizar fotos iniciales (Antes)
+      if (canResetInitial && isResettingBaseline) {
+        const baselinePhotos: any[] = [];
+        if (photoFront) {
+          baselinePhotos.push({
+            user_id: userId,
+            photo_type: 'front_arms_cross',
+            photo_url: photoFront,
+            photo_date: todayDate,
+          });
+        }
+        if (photoSide) {
+          baselinePhotos.push({
+            user_id: userId,
+            photo_type: 'side_arms_front',
+            photo_url: photoSide,
+            photo_date: todayDate,
+          });
+        }
+        if (photoBack) {
+          baselinePhotos.push({
+            user_id: userId,
+            photo_type: 'back_arms_cross',
+            photo_url: photoBack,
+            photo_date: todayDate,
+          });
+        }
+
+        if (baselinePhotos.length === 0) {
+          setError('Por favor, sube al menos 1 foto para guardar tu nueva línea base de referencia.');
+          setLoading(false);
+          return;
+        }
+
+        await clientProgressPhotoService.resetBaseline(userId, baselinePhotos);
+        setCanResetInitial(false);
+        setIsResettingBaseline(false);
+        setSubmitted(true);
+        await loadUserData();
+        return;
+      }
+
+      // MODO 2: Reporte semanal estándar (Check-in de progreso)
       const trackingPayload: Partial<WeeklyTracking> = {
         user_id: userId,
         weight: form.weight ? Number(form.weight) : undefined,
@@ -141,7 +193,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
         training_days_completed: Number(form.training_days_completed),
         diet_deviations: form.diet_deviations || undefined,
         self_rating: Number(form.self_rating),
-        date: new Date().toISOString().split('T')[0],
+        date: todayDate,
       };
 
       const tracking = await weeklyTrackingService.create(trackingPayload);
@@ -151,10 +203,9 @@ export const ClientProgressSubmitPage: React.FC = () => {
         photoPromises.push(
           clientProgressPhotoService.create({
             user_id: userId,
-            tracking_id: tracking.id,
+            photo_type: 'front_arms_cross',
             photo_url: photoFront,
-            angle: 'front',
-            taken_at: new Date().toISOString(),
+            photo_date: todayDate,
           })
         );
       }
@@ -162,10 +213,9 @@ export const ClientProgressSubmitPage: React.FC = () => {
         photoPromises.push(
           clientProgressPhotoService.create({
             user_id: userId,
-            tracking_id: tracking.id,
+            photo_type: 'side_arms_front',
             photo_url: photoSide,
-            angle: 'side',
-            taken_at: new Date().toISOString(),
+            photo_date: todayDate,
           })
         );
       }
@@ -173,17 +223,18 @@ export const ClientProgressSubmitPage: React.FC = () => {
         photoPromises.push(
           clientProgressPhotoService.create({
             user_id: userId,
-            tracking_id: tracking.id,
+            photo_type: 'back_arms_cross',
             photo_url: photoBack,
-            angle: 'back',
-            taken_at: new Date().toISOString(),
+            photo_date: todayDate,
           })
         );
       }
 
       await Promise.all(photoPromises);
       setSubmitted(true);
+      await loadUserData();
     } catch (err: any) {
+      console.error('Error enviando progreso:', err);
       setError(err.message || 'Error al enviar el reporte semanal');
     } finally {
       setLoading(false);
@@ -195,12 +246,12 @@ export const ClientProgressSubmitPage: React.FC = () => {
 
   if (submitted) {
     return (
-      <Box sx={{ p: 4, maxWidth: 640, mx: 'auto', textAlign: 'center', mt: 4 }}>
+      <Box sx={{ p: { xs: 2, sm: 4 }, maxWidth: 640, mx: 'auto', textAlign: 'center', mt: 4 }}>
         <Box
           className="apple-card"
           sx={{
-            p: 5,
-            border: '0.5px solid rgba(52, 199, 89, 0.3)',
+            p: { xs: 3.5, sm: 5 },
+            border: '0.5px solid rgba(52, 199, 89, 0.4)',
           }}
         >
           <Box
@@ -214,15 +265,18 @@ export const ClientProgressSubmitPage: React.FC = () => {
               justifyContent: 'center',
               mx: 'auto',
               mb: 2.5,
+              border: '1px solid rgba(52, 199, 89, 0.3)',
             }}
           >
             <CheckCircle2 size={36} color="#34C759" />
           </Box>
-          <Typography variant="h4" fontWeight="800" gutterBottom sx={{ color: '#FFFFFF' }}>
-            Reporte Semanal Enviado
+          <Typography variant="h4" fontWeight="800" gutterBottom sx={{ color: '#FFFFFF', fontSize: { xs: '1.5rem', sm: '2rem' } }}>
+            {isResettingBaseline ? 'Línea de Base Inicial Actualizada' : 'Reporte Semanal Enviado'}
           </Typography>
-          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 3.5, lineHeight: 1.6 }}>
-            Tus datos antropométricos, fotos y hábitos han sido sincronizados en la nube. Tu entrenador revisará el progreso para ajustar tus próximas pautas.
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.65)', mb: 3.5, lineHeight: 1.6 }}>
+            {isResettingBaseline
+              ? 'Tus fotos iniciales de referencia (Antes) han sido reemplazadas correctamente. A partir de ahora servirán como punto de partida.'
+              : 'Tus datos biométricos, fotos y sensaciones semanales han sido sincronizados. Tu entrenador revisará el progreso para ajustar tus cargas y calorías.'}
           </Typography>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} justifyContent="center">
             <Button
@@ -233,20 +287,27 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 borderRadius: '12px',
                 fontWeight: 700,
                 px: 3,
+                py: 1.2,
               }}
             >
               Volver a Mi Panel
             </Button>
             <Button
               variant="outlined"
-              onClick={() => setSubmitted(false)}
+              onClick={() => {
+                setSubmitted(false);
+                setPhotoFront('');
+                setPhotoSide('');
+                setPhotoBack('');
+              }}
               sx={{
                 borderRadius: '12px',
                 borderColor: 'rgba(255, 255, 255, 0.15)',
                 color: '#FFFFFF',
+                py: 1.2,
               }}
             >
-              Enviar Otro Registro
+              Nuevo Registro
             </Button>
           </Stack>
         </Box>
@@ -255,19 +316,19 @@ export const ClientProgressSubmitPage: React.FC = () => {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1100, mx: 'auto', pb: 8 }}>
+    <Box sx={{ p: { xs: 1.5, sm: 3 }, maxWidth: 1100, mx: 'auto', pb: 8 }}>
       {/* Header Apple Inset Grouped */}
       <Box
         className="apple-card"
         sx={{
-          p: { xs: 2.5, md: 4 },
+          p: { xs: 2.5, sm: 3.5 },
           mb: 3,
           background: 'linear-gradient(180deg, #1C1C1E 0%, #161618 100%)',
         }}
       >
         <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
           <Box>
-            <Stack direction="row" spacing={1.5} alignItems="center" mb={1}>
+            <Stack direction="row" spacing={1.2} alignItems="center" mb={1} flexWrap="wrap">
               <Chip
                 label="Check-in Semanal"
                 size="small"
@@ -280,29 +341,31 @@ export const ClientProgressSubmitPage: React.FC = () => {
                   height: 24,
                 }}
               />
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
                 {new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
               </Typography>
             </Stack>
-            <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.02em', mb: 0.5, color: '#FFFFFF' }}>
+            <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.02em', mb: 0.5, color: '#FFFFFF', fontSize: { xs: '1.4rem', sm: '1.85rem' } }}>
               Reporte de Biometría & Fotos
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', maxWidth: 680 }}>
-              Hola {userName || 'Atleta'}. Registra tus medidas y fotos para que tu entrenador ajuste tus calorías y cargas de entrenamiento.
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', maxWidth: 680, fontSize: '0.85rem' }}>
+              Hola {userName || 'Atleta'}. Registra tus medidas y fotos para que tu entrenador calibre tus calorías y cargas de entrenamiento.
             </Typography>
           </Box>
 
           <Button
             variant="outlined"
             onClick={() => setSilhouetteModalOpen(true)}
-            startIcon={<Camera size={16} />}
+            startIcon={<Camera size={15} />}
             sx={{
               borderRadius: '12px',
               borderColor: 'rgba(255, 255, 255, 0.15)',
               color: '#FFFFFF',
               fontWeight: 600,
               textTransform: 'none',
-              fontSize: '0.82rem',
+              fontSize: '0.8rem',
+              py: 0.7,
+              px: 1.8,
               '&:hover': {
                 borderColor: 'rgba(255, 255, 255, 0.3)',
                 background: 'rgba(255, 255, 255, 0.05)',
@@ -313,6 +376,65 @@ export const ClientProgressSubmitPage: React.FC = () => {
           </Button>
         </Box>
       </Box>
+
+      {/* Trainer Baseline Re-upload Alert Banner */}
+      {canResetInitial && (
+        <Box
+          className="apple-card"
+          sx={{
+            p: { xs: 2, sm: 2.5 },
+            mb: 3,
+            background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(6, 182, 212, 0.12) 100%)',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            borderRadius: '16px',
+            boxShadow: '0 8px 30px rgba(245, 158, 11, 0.15)',
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={1.5}>
+            <Box display="flex" alignItems="flex-start" gap={1.5}>
+              <Box
+                sx={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: '10px',
+                  background: 'rgba(245, 158, 11, 0.25)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  border: '1px solid rgba(245, 158, 11, 0.5)',
+                }}
+              >
+                <Unlock size={18} color="#f59e0b" />
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#fbbf24', fontSize: '0.9rem' }}>
+                  Re-subida de Fotos Iniciales (Antes) Desbloqueada por tu Entrenador
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', display: 'block', mt: 0.3 }}>
+                  Tu entrenador ha habilitado esta opción por si subiste tus primeras fotos borrosas o con mala postura. Las fotos que envíes sustituirán tu referencia inicial (Antes).
+                </Typography>
+              </Box>
+            </Box>
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isResettingBaseline}
+                  onChange={(e) => setIsResettingBaseline(e.target.checked)}
+                  color="warning"
+                />
+              }
+              label={
+                <Typography variant="caption" sx={{ fontWeight: 700, color: '#fbbf24', fontSize: '0.78rem' }}>
+                  Modo: Guardar como Antes (Inicio)
+                </Typography>
+              }
+              sx={{ m: 0 }}
+            />
+          </Box>
+        </Box>
+      )}
 
       {error && <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }}>{error}</Alert>}
 
@@ -328,10 +450,10 @@ export const ClientProgressSubmitPage: React.FC = () => {
           <Box
             className="apple-card"
             sx={{
-              p: { xs: 2.5, sm: 3 },
+              p: { xs: 2, sm: 3 },
             }}
           >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} flexWrap="wrap" gap={1}>
               <Box display="flex" alignItems="center" gap={1.2}>
                 <Box
                   sx={{
@@ -342,11 +464,12 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
                   <Scale size={18} color="#34C759" />
                 </Box>
-                <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF' }}>
+                <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: { xs: '0.95rem', sm: '1.05rem' } }}>
                   Peso Corporal & Medidas (cm)
                 </Typography>
               </Box>
@@ -358,7 +481,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                   sx={{
                     fontWeight: 700,
                     height: 22,
-                    fontSize: '0.72rem',
+                    fontSize: '0.7rem',
                     bgcolor: weightDiff <= 0 ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 149, 0, 0.15)',
                     color: weightDiff <= 0 ? '#34C759' : '#FF9500',
                   }}
@@ -377,7 +500,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                   value={form.weight}
                   onChange={handleChange('weight')}
                   fullWidth
-                  required
+                  required={!isResettingBaseline}
                   placeholder="ej. 75.4"
                   helperText={previousWeight ? `Último peso: ${previousWeight} kg` : 'Pésate en ayunas al levantarte'}
                 />
@@ -459,7 +582,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
           <Box
             className="apple-card"
             sx={{
-              p: { xs: 2.5, sm: 3 },
+              p: { xs: 2, sm: 3 },
             }}
           >
             <Box display="flex" alignItems="center" gap={1.2} mb={1.5}>
@@ -472,11 +595,12 @@ export const ClientProgressSubmitPage: React.FC = () => {
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
+                  flexShrink: 0,
                 }}
               >
                 <Activity size={18} color="#007AFF" />
               </Box>
-              <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF' }}>
+              <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: { xs: '0.95rem', sm: '1.05rem' } }}>
                 Hábitos, Sueño & Adherencia
               </Typography>
             </Box>
@@ -586,10 +710,10 @@ export const ClientProgressSubmitPage: React.FC = () => {
           <Box
             className="apple-card"
             sx={{
-              p: { xs: 2.5, sm: 3 },
+              p: { xs: 2, sm: 3 },
             }}
           >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} flexWrap="wrap" gap={1}>
               <Box display="flex" alignItems="center" gap={1.2}>
                 <Box
                   sx={{
@@ -600,12 +724,13 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    flexShrink: 0,
                   }}
                 >
                   <Camera size={18} color="#AF52DE" />
                 </Box>
-                <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF' }}>
-                  Fotos de Progreso (3 Ángulos)
+                <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: { xs: '0.95rem', sm: '1.05rem' } }}>
+                  {isResettingBaseline ? 'Nuevas Fotos Iniciales (3 Ángulos)' : 'Fotos de Progreso (3 Ángulos)'}
                 </Typography>
               </Box>
 
@@ -641,7 +766,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     textAlign: 'center',
                   }}
                 >
-                  <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', mb: 1 }}>
+                  <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', mb: 1, fontSize: '0.85rem' }}>
                     Frente (Brazos en Cruz)
                   </Typography>
 
@@ -718,7 +843,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     textAlign: 'center',
                   }}
                 >
-                  <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', mb: 1 }}>
+                  <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', mb: 1, fontSize: '0.85rem' }}>
                     Perfil (Brazos al Frente)
                   </Typography>
 
@@ -795,7 +920,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                     textAlign: 'center',
                   }}
                 >
-                  <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', mb: 1 }}>
+                  <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', mb: 1, fontSize: '0.85rem' }}>
                     Espalda (Brazos en Cruz)
                   </Typography>
 
@@ -869,17 +994,24 @@ export const ClientProgressSubmitPage: React.FC = () => {
             variant="contained"
             size="large"
             disabled={loading}
-            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <Send size={18} />}
+            startIcon={loading ? <CircularProgress size={18} color="inherit" /> : isResettingBaseline ? <RefreshCw size={18} /> : <Send size={18} />}
             className="apple-button-primary"
             sx={{
-              py: 1.8,
+              py: 1.6,
               borderRadius: '14px',
-              fontSize: '1rem',
+              fontSize: '0.98rem',
               fontWeight: 700,
               textTransform: 'none',
+              background: isResettingBaseline
+                ? 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)'
+                : undefined,
             }}
           >
-            {loading ? 'Enviando Reporte...' : 'Enviar Reporte al Entrenador'}
+            {loading
+              ? 'Enviando...'
+              : isResettingBaseline
+              ? 'Guardar Nuevas Fotos de Referencia (Antes)'
+              : 'Enviar Reporte al Entrenador'}
           </Button>
         </Stack>
       </form>
@@ -904,7 +1036,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
         </DialogTitle>
         <DialogContent>
           <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 2 }}>
-            Para una comparación visual exacta y continua:
+            Para una comparación milimétrica y precisa:
           </Typography>
 
           <Stack spacing={1.5}>
@@ -913,7 +1045,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 1. Misma Iluminación y Distancia
               </Typography>
               <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                Coloca la cámara a la altura del ombligo (aprox. 1m de altura) a unos 2.5m de distancia con luz uniforme.
+                Coloca la cámara a la altura del pecho/ombligo (aprox. 1m de altura) a unos 2.5m de distancia con luz frontal uniforme.
               </Typography>
             </Box>
 
@@ -922,7 +1054,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 2. Misma Ropa Deportiva
               </Typography>
               <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                Usa ropa ajustada similar en cada registro para que el contorno y tono muscular sean comparables.
+                Usa la misma ropa ajustada en cada sesión para que los perímetros musculares sean visualmente contrastables.
               </Typography>
             </Box>
 
@@ -931,7 +1063,7 @@ export const ClientProgressSubmitPage: React.FC = () => {
                 3. Postura Neutra
               </Typography>
               <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                Brazos en cruz horizontales, respiración natural sin forzar ni meter el abdomen de manera extrema.
+                Brazos en cruz horizontales, respiración natural y postura erguida sin forzar ángulos artificiales.
               </Typography>
             </Box>
           </Stack>

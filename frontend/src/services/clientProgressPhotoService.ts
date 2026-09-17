@@ -36,5 +36,15 @@ export const clientProgressPhotoService = {
       },
     });
     return response.data;
+  },
+
+  // Resetear línea de base de fotos iniciales
+  resetBaseline: async (userId: number, photos: CreateClientProgressPhotoData[]): Promise<ClientProgressPhoto[]> => {
+    const response = await axios.post('/client-progress-photos/reset-baseline', {
+      user_id: userId,
+      photos,
+    });
+    return response.data;
   }
 };
+

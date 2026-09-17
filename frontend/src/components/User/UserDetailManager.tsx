@@ -61,7 +61,29 @@ export const UserDetailManager = () => {
   const [loggedSessions, setLoggedSessions] = useState<LoggedSessionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [togglingBaseline, setTogglingBaseline] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+
+  const handleToggleBaselineUnlock = async () => {
+    if (!user) return;
+    try {
+      setTogglingBaseline(true);
+      const nextStatus = !user.can_reset_initial_photos;
+      await userService.updateUser(user.id, {
+        can_reset_initial_photos: nextStatus
+      });
+      setUser({ ...user, can_reset_initial_photos: nextStatus });
+      setToastMessage(nextStatus
+        ? 'Re-subida de fotos iniciales DESBLOQUEADA para el alumno.'
+        : 'Re-subida de fotos iniciales BLOQUEADA.');
+    } catch (e: any) {
+      console.error('Error toggling baseline unlock:', e);
+      setErrorMessage(e.message || 'Error al actualizar permisos de fotos.');
+    } finally {
+      setTogglingBaseline(false);
+    }
+  };
 
   useEffect(() => {
     loadUserData();
@@ -647,6 +669,115 @@ export const UserDetailManager = () => {
       {/* TAB 3: Fotos & Progreso (Before/After Slider) */}
       {activeTab === 3 && (
         <Stack spacing={4}>
+          {toastMessage && (
+            <Alert
+              severity={user.can_reset_initial_photos ? "warning" : "success"}
+              onClose={() => setToastMessage(null)}
+              sx={{ borderRadius: 3 }}
+            >
+              {toastMessage}
+            </Alert>
+          )}
+
+          {/* Card de Desbloqueo de Fotos Iniciales (Permiso Entrenador) */}
+          <Box
+            className="liquid-glass-card"
+            sx={{
+              p: { xs: 2.5, sm: 3 },
+              borderRadius: 4,
+              border: user.can_reset_initial_photos
+                ? '1px solid rgba(245, 158, 11, 0.4)'
+                : '1px solid rgba(255, 255, 255, 0.08)',
+              background: user.can_reset_initial_photos
+                ? 'linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(6, 182, 212, 0.08) 100%)'
+                : 'rgba(255, 255, 255, 0.02)',
+            }}
+          >
+            <Box display="flex" justifyContent="space-between" alignItems="flex-start" flexWrap="wrap" gap={2}>
+              <Box display="flex" alignItems="flex-start" gap={1.8}>
+                <Box
+                  sx={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: '12px',
+                    background: user.can_reset_initial_photos
+                      ? 'rgba(245, 158, 11, 0.2)'
+                      : 'rgba(255, 255, 255, 0.06)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    border: user.can_reset_initial_photos
+                      ? '1px solid rgba(245, 158, 11, 0.5)'
+                      : '1px solid rgba(255, 255, 255, 0.1)',
+                  }}
+                >
+                  <Iconify
+                    icon={user.can_reset_initial_photos ? "solar:lock-unlocked-bold" : "solar:lock-keyhole-bold"}
+                    width={22}
+                    sx={{ color: user.can_reset_initial_photos ? "#fbbf24" : "#94a3b8" }}
+                  />
+                </Box>
+                <Box>
+                  <Stack direction="row" spacing={1.2} alignItems="center" mb={0.5} flexWrap="wrap">
+                    <Typography variant="h6" fontWeight="800" sx={{ fontSize: '1.05rem' }}>
+                      Fotos de Inicio (Línea de Base 'Antes')
+                    </Typography>
+                    <Chip
+                      label={user.can_reset_initial_photos ? "Re-subida Habilitada" : "Bloqueado"}
+                      size="small"
+                      sx={{
+                        background: user.can_reset_initial_photos
+                          ? 'rgba(245, 158, 11, 0.2)'
+                          : 'rgba(52, 199, 89, 0.15)',
+                        color: user.can_reset_initial_photos ? '#fbbf24' : '#34C759',
+                        fontWeight: 700,
+                        border: user.can_reset_initial_photos
+                          ? '1px solid rgba(245, 158, 11, 0.4)'
+                          : '1px solid rgba(52, 199, 89, 0.3)',
+                        fontSize: '0.72rem',
+                      }}
+                    />
+                  </Stack>
+                  <Typography variant="body2" sx={{ color: 'text.secondary', maxWidth: 620, fontSize: '0.84rem' }}>
+                    Si el alumno subió por error fotos borrosas, oscuras o con postura incorrecta en su primer registro, desbloquea esta opción para que pueda actualizar sus 3 fotos iniciales de referencia (Antes) desde su app.
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Button
+                variant={user.can_reset_initial_photos ? "outlined" : "contained"}
+                color={user.can_reset_initial_photos ? "warning" : "primary"}
+                disabled={togglingBaseline}
+                onClick={handleToggleBaselineUnlock}
+                startIcon={
+                  togglingBaseline ? (
+                    <CircularProgress size={16} color="inherit" />
+                  ) : (
+                    <Iconify
+                      icon={user.can_reset_initial_photos ? "solar:lock-keyhole-bold" : "solar:lock-unlocked-bold"}
+                      width={18}
+                    />
+                  )
+                }
+                sx={{
+                  borderRadius: '16px',
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  px: 2.5,
+                  py: 1,
+                  background: !user.can_reset_initial_photos
+                    ? 'linear-gradient(135deg, #06b6d4, #3b82f6)'
+                    : undefined,
+                }}
+              >
+                {user.can_reset_initial_photos
+                  ? 'Bloquear Re-subida'
+                  : 'Desbloquear Re-subida de Fotos de Inicio'}
+              </Button>
+            </Box>
+          </Box>
+
           <Box>
             <Typography variant="h5" fontWeight="800" gutterBottom>
               Comparador Fotográfico de Transformación

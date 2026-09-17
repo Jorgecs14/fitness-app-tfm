@@ -327,9 +327,9 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const { email, name, surname, birth_date, role, trainer_id, weight, height } = req.body
+    const { email, name, surname, birth_date, role, trainer_id, weight, height, can_reset_initial_photos } = req.body
 
-    const updateFields = { email, name, surname, birth_date, role, trainer_id, weight, height }
+    const updateFields = { email, name, surname, birth_date, role, trainer_id, weight, height, can_reset_initial_photos }
     Object.keys(updateFields).forEach(key => updateFields[key] === undefined && delete updateFields[key])
 
     const { data, error } = await supabaseAdmin

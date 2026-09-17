@@ -3,8 +3,6 @@ import {
   Box,
   Typography,
   Chip,
-  IconButton,
-  Tooltip,
   ToggleButtonGroup,
   ToggleButton,
   Select,
@@ -57,16 +55,17 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
   const [selectedAngle, setSelectedAngle] = useState<'front_arms_cross' | 'side_arms_front' | 'back_arms_cross'>(initialAngle);
   const [showSilhouette, setShowSilhouette] = useState<boolean>(false);
   const [viewMode, setViewMode] = useState<'slider' | 'side-by-side'>('slider');
-  const [useDemoMode, setUseDemoMode] = useState<boolean>(photos.length < 2);
+
+  // Filter photos by selected angle and sort chronologically (earliest to latest)
+  const anglePhotos = photos
+    .filter(p => p.photo_type === selectedAngle)
+    .sort((a, b) => new Date(a.photo_date).getTime() - new Date(b.photo_date).getTime() || a.id - b.id);
+
+  const [useDemoMode, setUseDemoMode] = useState<boolean>(anglePhotos.length < 2);
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Filter photos by selected angle
-  const anglePhotos = photos
-    .filter(p => p.photo_type === selectedAngle)
-    .sort((a, b) => new Date(a.photo_date).getTime() - new Date(b.photo_date).getTime());
-
-  // Date selection states
+  // Date selection states: beforeId is ALWAYS the 1st photo (baseline), afterId defaults to latest photo
   const [beforeId, setBeforeId] = useState<number | ''>('');
   const [afterId, setAfterId] = useState<number | ''>('');
 
@@ -74,29 +73,37 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
     if (anglePhotos.length >= 2) {
       setBeforeId(anglePhotos[0].id);
       setAfterId(anglePhotos[anglePhotos.length - 1].id);
+      setUseDemoMode(false);
     } else if (anglePhotos.length === 1) {
       setBeforeId(anglePhotos[0].id);
       setAfterId(anglePhotos[0].id);
+    } else {
+      setBeforeId('');
+      setAfterId('');
     }
-  }, [selectedAngle, photos]);
+  }, [selectedAngle, photos.length]);
 
-  const selectedBeforePhoto = anglePhotos.find(p => p.id === beforeId);
-  const selectedAfterPhoto = anglePhotos.find(p => p.id === afterId);
+  const selectedBeforePhoto = anglePhotos.find(p => p.id === beforeId) || anglePhotos[0];
+  const selectedAfterPhoto = anglePhotos.find(p => p.id === afterId) || anglePhotos[anglePhotos.length - 1];
 
   // Resolved URLs and dates
-  const hasRealPhotos = !useDemoMode && selectedBeforePhoto && selectedAfterPhoto;
+  const hasRealPhotos = !useDemoMode && selectedBeforePhoto && selectedAfterPhoto && anglePhotos.length >= 2;
   const beforeUrl = hasRealPhotos
     ? selectedBeforePhoto.photo_url
+    : anglePhotos.length === 1 && !useDemoMode
+    ? anglePhotos[0].photo_url
     : DEMO_PHOTOS[selectedAngle].before;
-  const beforeLabel = hasRealPhotos
-    ? new Date(selectedBeforePhoto.photo_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+
+  const beforeLabel = hasRealPhotos || (!useDemoMode && anglePhotos.length === 1)
+    ? `${new Date(selectedBeforePhoto?.photo_date || anglePhotos[0]?.photo_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} (Inicio)`
     : DEMO_PHOTOS[selectedAngle].beforeDate;
 
   const afterUrl = hasRealPhotos
     ? selectedAfterPhoto.photo_url
     : DEMO_PHOTOS[selectedAngle].after;
+
   const afterLabel = hasRealPhotos
-    ? new Date(selectedAfterPhoto.photo_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+    ? `${new Date(selectedAfterPhoto.photo_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })} (Actual)`
     : DEMO_PHOTOS[selectedAngle].afterDate;
 
   // Handle Dragging
@@ -154,38 +161,39 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       className="liquid-glass-card"
       sx={{
         p: { xs: 2, sm: 3 },
-        borderRadius: 4,
+        borderRadius: { xs: 3, sm: 4 },
         position: 'relative',
         overflow: 'hidden',
         boxShadow: '0 20px 50px rgba(0, 0, 0, 0.35)',
       }}
     >
-      {/* Top Header & Controls */}
+      {/* Top Header & Mode Controls */}
       <Stack
         direction={{ xs: 'column', md: 'row' }}
         justifyContent="space-between"
         alignItems={{ xs: 'flex-start', md: 'center' }}
         spacing={2}
-        sx={{ mb: 3 }}
+        sx={{ mb: 2.5 }}
       >
         <Box>
-          <Box display="flex" alignItems="center" gap={1.5} mb={0.5}>
+          <Box display="flex" alignItems="center" gap={1.5} mb={0.5} flexWrap="wrap">
             <Box
               sx={{
-                width: 36,
-                height: 36,
-                borderRadius: '12px',
+                width: 34,
+                height: 34,
+                borderRadius: '10px',
                 background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.4))',
                 border: '1px solid rgba(6, 182, 212, 0.4)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 boxShadow: '0 0 15px rgba(6, 182, 212, 0.35)',
+                flexShrink: 0,
               }}
             >
-              <Iconify icon="solar:gallery-wide-bold" width={20} sx={{ color: '#22d3ee' }} />
+              <Iconify icon="solar:gallery-wide-bold" width={18} sx={{ color: '#22d3ee' }} />
             </Box>
-            <Typography variant="h5" fontWeight="800" sx={{ letterSpacing: '-0.02em' }}>
+            <Typography variant="h6" fontWeight="800" sx={{ letterSpacing: '-0.02em', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
               Comparador Antes & Después
             </Typography>
             <Chip
@@ -196,17 +204,18 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 color: '#22d3ee',
                 border: '1px solid rgba(6, 182, 212, 0.3)',
                 fontWeight: 700,
-                fontSize: '0.72rem',
+                fontSize: '0.68rem',
+                height: 22,
               }}
             />
           </Box>
-          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            Desliza la barra divisoria para comparar milimétricamente tu cambio físico y composición muscular.
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: 'block', maxWidth: 640 }}>
+            La 1ª foto se conserva como referencia inicial (Antes) y se compara automáticamente con tu último progreso (Después).
           </Typography>
         </Box>
 
         {/* View Mode & Toggle Controls */}
-        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap">
+        <Stack direction="row" spacing={1.5} alignItems="center" flexWrap="wrap" sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
           <ToggleButtonGroup
             value={viewMode}
             exclusive
@@ -215,14 +224,15 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
             sx={{
               background: 'rgba(255, 255, 255, 0.05)',
               border: '1px solid rgba(255, 255, 255, 0.12)',
-              borderRadius: '24px',
+              borderRadius: '20px',
               p: '2px',
               '& .MuiToggleButton-root': {
-                borderRadius: '20px',
-                px: 1.5,
-                py: 0.5,
+                borderRadius: '16px',
+                px: { xs: 1.2, sm: 1.6 },
+                py: 0.4,
                 border: 'none',
                 color: 'text.secondary',
+                fontSize: '0.75rem',
                 '&.Mui-selected': {
                   background: 'linear-gradient(135deg, rgba(6, 182, 212, 0.3), rgba(59, 130, 246, 0.3))',
                   color: '#22d3ee',
@@ -232,16 +242,16 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
             }}
           >
             <ToggleButton value="slider">
-              <Iconify icon="solar:slider-vertical-bold" width={16} sx={{ mr: 0.5 }} />
+              <Iconify icon="solar:slider-vertical-bold" width={14} sx={{ mr: 0.5 }} />
               Deslizador
             </ToggleButton>
             <ToggleButton value="side-by-side">
-              <Iconify icon="solar:mirror-left-bold" width={16} sx={{ mr: 0.5 }} />
+              <Iconify icon="solar:mirror-left-bold" width={14} sx={{ mr: 0.5 }} />
               Lado a Lado
             </ToggleButton>
           </ToggleButtonGroup>
 
-          {photos.length < 2 && (
+          {anglePhotos.length < 2 && (
             <FormControlLabel
               control={
                 <Switch
@@ -252,8 +262,8 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 />
               }
               label={
-                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
-                  Modo Demo
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.75rem' }}>
+                  Demo
                 </Typography>
               }
               sx={{ m: 0 }}
@@ -269,10 +279,11 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
               sx={{
                 background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
                 boxShadow: '0 4px 15px rgba(6, 182, 212, 0.4)',
-                borderRadius: '20px',
+                borderRadius: '18px',
                 fontWeight: 700,
                 textTransform: 'none',
-                px: 2,
+                px: 1.8,
+                fontSize: '0.78rem',
               }}
             >
               Subir Foto
@@ -287,7 +298,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
         justifyContent="space-between"
         alignItems={{ xs: 'stretch', sm: 'center' }}
         spacing={1.5}
-        sx={{ mb: 2.5 }}
+        sx={{ mb: 2 }}
       >
         <ToggleButtonGroup
           value={selectedAngle}
@@ -295,19 +306,23 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           onChange={(_, val) => val && setSelectedAngle(val)}
           size="small"
           sx={{
-            background: 'rgba(0, 0, 0, 0.25)',
+            background: 'rgba(0, 0, 0, 0.3)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '16px',
+            borderRadius: '14px',
             p: '3px',
+            display: 'flex',
+            width: { xs: '100%', sm: 'auto' },
             '& .MuiToggleButton-root': {
-              borderRadius: '12px',
-              px: 2,
-              py: 0.8,
+              flex: { xs: 1, sm: 'initial' },
+              borderRadius: '10px',
+              px: { xs: 1.5, sm: 2 },
+              py: 0.7,
               border: 'none',
               color: 'text.secondary',
               textTransform: 'none',
               fontWeight: 600,
-              fontSize: '0.85rem',
+              fontSize: '0.8rem',
+              justifyContent: 'center',
               '&.Mui-selected': {
                 background: 'rgba(255, 255, 255, 0.12)',
                 color: '#fff',
@@ -317,15 +332,15 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           }}
         >
           <ToggleButton value="front_arms_cross">
-            <Iconify icon="solar:user-bold" width={16} sx={{ mr: 0.8, color: '#38bdf8' }} />
+            <Iconify icon="solar:user-bold" width={15} sx={{ mr: 0.6, color: '#38bdf8' }} />
             Frente
           </ToggleButton>
           <ToggleButton value="side_arms_front">
-            <Iconify icon="solar:walking-bold" width={16} sx={{ mr: 0.8, color: '#10b981' }} />
+            <Iconify icon="solar:walking-bold" width={15} sx={{ mr: 0.6, color: '#10b981' }} />
             Perfil
           </ToggleButton>
           <ToggleButton value="back_arms_cross">
-            <Iconify icon="solar:dumbbell-large-minimalistic-bold" width={16} sx={{ mr: 0.8, color: '#a855f7' }} />
+            <Iconify icon="solar:dumbbell-large-minimalistic-bold" width={15} sx={{ mr: 0.6, color: '#a855f7' }} />
             Espalda
           </ToggleButton>
         </ToggleButtonGroup>
@@ -337,9 +352,10 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           onClick={() => setShowSilhouette(!showSilhouette)}
           startIcon={<Iconify icon="solar:tuning-bold" />}
           sx={{
-            borderRadius: '14px',
+            borderRadius: '12px',
             textTransform: 'none',
-            fontSize: '0.8rem',
+            fontSize: '0.75rem',
+            py: 0.6,
             borderColor: showSilhouette ? 'transparent' : 'rgba(255, 255, 255, 0.15)',
             background: showSilhouette ? 'rgba(6, 182, 212, 0.25)' : 'transparent',
             color: showSilhouette ? '#22d3ee' : 'text.secondary',
@@ -352,44 +368,26 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
         </Button>
       </Stack>
 
-      {/* Date Pickers (only if user has real photos for this angle) */}
-      {!useDemoMode && anglePhotos.length > 1 && (
-        <Stack direction="row" spacing={2} sx={{ mb: 2.5 }} flexWrap="wrap">
-          <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel id="before-photo-label" sx={{ color: 'text.secondary' }}>Foto Antes</InputLabel>
+      {/* Date Pickers (if user has 3+ real photos for this angle to compare different check-ins against baseline) */}
+      {!useDemoMode && anglePhotos.length > 2 && (
+        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 2 }} alignItems={{ xs: 'stretch', sm: 'center' }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
+            Comparando Línea Base (Antes) con Reporte:
+          </Typography>
+          <FormControl size="small" sx={{ minWidth: 220 }}>
             <Select
-              labelId="before-photo-label"
-              value={beforeId}
-              label="Foto Antes"
-              onChange={(e) => setBeforeId(Number(e.target.value))}
-              sx={{
-                borderRadius: '12px',
-                background: 'rgba(255, 255, 255, 0.04)',
-              }}
-            >
-              {anglePhotos.map((p) => (
-                <MenuItem key={`before-${p.id}`} value={p.id}>
-                  {new Date(p.photo_date).toLocaleDateString('es-ES')} (ID #{p.id})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl size="small" sx={{ minWidth: 200 }}>
-            <InputLabel id="after-photo-label" sx={{ color: 'text.secondary' }}>Foto Después</InputLabel>
-            <Select
-              labelId="after-photo-label"
               value={afterId}
-              label="Foto Después"
               onChange={(e) => setAfterId(Number(e.target.value))}
               sx={{
-                borderRadius: '12px',
+                borderRadius: '10px',
                 background: 'rgba(255, 255, 255, 0.04)',
+                fontSize: '0.8rem',
+                height: 36,
               }}
             >
-              {anglePhotos.map((p) => (
-                <MenuItem key={`after-${p.id}`} value={p.id}>
-                  {new Date(p.photo_date).toLocaleDateString('es-ES')} (ID #{p.id})
+              {anglePhotos.slice(1).map((p) => (
+                <MenuItem key={`after-${p.id}`} value={p.id} sx={{ fontSize: '0.8rem' }}>
+                  {new Date(p.photo_date).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' })}
                 </MenuItem>
               ))}
             </Select>
@@ -406,11 +404,12 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           sx={{
             position: 'relative',
             width: '100%',
-            height: { xs: 420, sm: 540, md: 620 },
+            height: { xs: 360, sm: 480, md: 560 },
             borderRadius: 3,
             overflow: 'hidden',
             cursor: isDragging ? 'ew-resize' : 'default',
             userSelect: 'none',
+            touchAction: 'none',
             background: '#090d16',
             boxShadow: 'inset 0 0 20px rgba(0,0,0,0.8)',
             border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -524,8 +523,8 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 top: '50%',
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                width: 44,
-                height: 44,
+                width: { xs: 38, sm: 44 },
+                height: { xs: 38, sm: 44 },
                 borderRadius: '50%',
                 background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(200, 240, 255, 0.85))',
                 backdropFilter: 'blur(12px)',
@@ -543,75 +542,103 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 },
               }}
             >
-              <Iconify icon="solar:double-alt-arrow-right-bold-duotone" width={22} sx={{ color: '#0891b2' }} />
+              <Iconify icon="solar:double-alt-arrow-right-bold-duotone" width={20} sx={{ color: '#0891b2' }} />
             </Box>
           </Box>
 
-          {/* Floating Badges */}
-          {/* Before Badge */}
+          {/* Clean Non-Overlapping Responsive Top Badges */}
           <Box
             sx={{
               position: 'absolute',
-              top: 16,
-              left: 16,
-              background: 'rgba(15, 23, 42, 0.75)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              borderRadius: '12px',
-              px: 1.8,
-              py: 0.8,
-              pointerEvents: 'none',
-              zIndex: 5,
+              top: { xs: 10, sm: 14 },
+              left: { xs: 10, sm: 14 },
+              right: { xs: 10, sm: 14 },
               display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
+              pointerEvents: 'none',
+              zIndex: 8,
               gap: 1,
             }}
           >
+            {/* Before Badge */}
             <Box
               sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: '#94a3b8',
+                background: 'rgba(15, 23, 42, 0.82)',
+                backdropFilter: 'blur(14px)',
+                border: '1px solid rgba(255, 255, 255, 0.18)',
+                borderRadius: '10px',
+                px: { xs: 1.2, sm: 1.8 },
+                py: 0.5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.8,
+                maxWidth: '48%',
+                boxShadow: '0 4px 14px rgba(0,0,0,0.5)',
               }}
-            />
-            <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: '0.05em', color: '#cbd5e1' }}>
-              ANTES: {beforeLabel}
-            </Typography>
-          </Box>
+            >
+              <Box
+                sx={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  background: '#94a3b8',
+                  flexShrink: 0,
+                }}
+              />
+              <Typography
+                variant="caption"
+                noWrap
+                sx={{
+                  fontWeight: 800,
+                  letterSpacing: '0.02em',
+                  color: '#f1f5f9',
+                  fontSize: { xs: '0.68rem', sm: '0.78rem' },
+                }}
+              >
+                ANTES • {beforeLabel}
+              </Typography>
+            </Box>
 
-          {/* After Badge */}
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 16,
-              right: 16,
-              background: 'rgba(6, 182, 212, 0.25)',
-              backdropFilter: 'blur(12px)',
-              border: '1px solid rgba(6, 182, 212, 0.5)',
-              borderRadius: '12px',
-              px: 1.8,
-              py: 0.8,
-              pointerEvents: 'none',
-              zIndex: 5,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1,
-              boxShadow: '0 0 15px rgba(6, 182, 212, 0.3)',
-            }}
-          >
+            {/* After Badge */}
             <Box
               sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '50%',
-                background: '#22d3ee',
-                boxShadow: '0 0 8px #22d3ee',
+                background: 'rgba(6, 182, 212, 0.32)',
+                backdropFilter: 'blur(14px)',
+                border: '1px solid rgba(6, 182, 212, 0.65)',
+                borderRadius: '10px',
+                px: { xs: 1.2, sm: 1.8 },
+                py: 0.5,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.8,
+                maxWidth: '48%',
+                boxShadow: '0 4px 18px rgba(6, 182, 212, 0.4)',
               }}
-            />
-            <Typography variant="caption" sx={{ fontWeight: 800, letterSpacing: '0.05em', color: '#22d3ee' }}>
-              DESPUÉS: {afterLabel}
-            </Typography>
+            >
+              <Box
+                sx={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  background: '#22d3ee',
+                  boxShadow: '0 0 8px #22d3ee',
+                  flexShrink: 0,
+                }}
+              />
+              <Typography
+                variant="caption"
+                noWrap
+                sx={{
+                  fontWeight: 800,
+                  letterSpacing: '0.02em',
+                  color: '#22d3ee',
+                  fontSize: { xs: '0.68rem', sm: '0.78rem' },
+                }}
+              >
+                DESPUÉS • {afterLabel}
+              </Typography>
+            </Box>
           </Box>
         </Box>
       ) : (
@@ -620,7 +647,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           <Box
             sx={{
               flex: 1,
-              height: { xs: 350, sm: 480 },
+              height: { xs: 280, sm: 400, md: 480 },
               borderRadius: 3,
               overflow: 'hidden',
               position: 'relative',
@@ -632,17 +659,17 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
             <Box
               sx={{
                 position: 'absolute',
-                top: 16,
-                left: 16,
-                background: 'rgba(15, 23, 42, 0.75)',
+                top: 12,
+                left: 12,
+                background: 'rgba(15, 23, 42, 0.8)',
                 backdropFilter: 'blur(12px)',
-                borderRadius: '12px',
-                px: 1.8,
-                py: 0.8,
+                borderRadius: '10px',
+                px: 1.5,
+                py: 0.5,
                 border: '1px solid rgba(255, 255, 255, 0.15)',
               }}
             >
-              <Typography variant="caption" fontWeight="800" color="#cbd5e1">
+              <Typography variant="caption" fontWeight="800" color="#cbd5e1" sx={{ fontSize: '0.72rem' }}>
                 ANTES • {beforeLabel}
               </Typography>
             </Box>
@@ -651,12 +678,12 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           <Box
             sx={{
               flex: 1,
-              height: { xs: 350, sm: 480 },
+              height: { xs: 280, sm: 400, md: 480 },
               borderRadius: 3,
               overflow: 'hidden',
               position: 'relative',
               background: '#090d16',
-              border: '1px solid rgba(6, 182, 212, 0.3)',
+              border: '1px solid rgba(6, 182, 212, 0.35)',
               boxShadow: '0 0 20px rgba(6, 182, 212, 0.2)',
             }}
           >
@@ -664,17 +691,17 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
             <Box
               sx={{
                 position: 'absolute',
-                top: 16,
-                right: 16,
-                background: 'rgba(6, 182, 212, 0.3)',
+                top: 12,
+                right: 12,
+                background: 'rgba(6, 182, 212, 0.35)',
                 backdropFilter: 'blur(12px)',
-                borderRadius: '12px',
-                px: 1.8,
-                py: 0.8,
+                borderRadius: '10px',
+                px: 1.5,
+                py: 0.5,
                 border: '1px solid rgba(6, 182, 212, 0.5)',
               }}
             >
-              <Typography variant="caption" fontWeight="800" color="#22d3ee">
+              <Typography variant="caption" fontWeight="800" color="#22d3ee" sx={{ fontSize: '0.72rem' }}>
                 DESPUÉS • {afterLabel}
               </Typography>
             </Box>
@@ -685,7 +712,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
       {/* Bottom Summary / Instruction strip */}
       <Box
         sx={{
-          mt: 2.5,
+          mt: 2,
           p: 1.5,
           borderRadius: 2.5,
           background: 'rgba(255, 255, 255, 0.03)',
@@ -698,15 +725,15 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
         }}
       >
         <Stack direction="row" spacing={1} alignItems="center">
-          <Iconify icon="solar:info-circle-bold" width={18} sx={{ color: '#22d3ee' }} />
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+          <Iconify icon="solar:info-circle-bold" width={16} sx={{ color: '#22d3ee', flexShrink: 0 }} />
+          <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.74rem' }}>
             {useDemoMode
-              ? 'Mostrando transformación demo interactiva. Sube al menos 2 fotos en tus reportes semanales para activar tu propio visor.'
-              : `Comparando registros de ${beforeLabel} frente a ${afterLabel}. Arrastra el círculo central para deslizar.`}
+              ? 'Modo demo ilustrativo. Tus fotos reales reemplazarán esta muestra en tus check-ins semanales.'
+              : `Comparando línea base (${beforeLabel}) con tu registro (${afterLabel}). Desliza el cursor central.`}
           </Typography>
         </Stack>
-        <Typography variant="caption" sx={{ color: '#38bdf8', fontWeight: 700 }}>
-          Posición: {Math.round(sliderPosition)}%
+        <Typography variant="caption" sx={{ color: '#38bdf8', fontWeight: 700, fontSize: '0.74rem' }}>
+          Visor: {Math.round(sliderPosition)}%
         </Typography>
       </Box>
     </Box>

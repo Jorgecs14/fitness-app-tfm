@@ -12,5 +12,6 @@ export interface User {
   height?: number;
   trainer_id?: number | null;
   trainer?: User;
+  can_reset_initial_photos?: boolean;
 }
 
