@@ -80,8 +80,8 @@ export const FloatingMobileDock: React.FC<FloatingMobileDockProps> = ({
       icon: Home,
     },
     {
-      label: 'Alumnos',
-      path: '/dashboard/users',
+      label: 'Clientes',
+      path: '/dashboard/crm',
       icon: Users,
     },
     {
@@ -95,9 +95,9 @@ export const FloatingMobileDock: React.FC<FloatingMobileDockProps> = ({
       icon: UtensilsCrossed,
     },
     {
-      label: 'CRM',
-      path: '/dashboard/crm',
-      icon: MessageSquareShare,
+      label: 'Progresos',
+      path: '/dashboard/progress',
+      icon: TrendingUp,
     },
     {
       label: 'Chat IA',

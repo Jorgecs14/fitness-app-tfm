@@ -10,7 +10,12 @@ import {
   Stack,
   TextField,
   InputAdornment,
-  CircularProgress
+  CircularProgress,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -19,18 +24,28 @@ import {
   HeartPulse,
   Camera,
   Search,
-  Wallet,
-  Activity
+  ChevronRight,
+  Trash2,
+  Edit2,
+  TrendingUp,
+  FileText
 } from 'lucide-react';
-import { getUsers, getCurrentUser, getTrainerClients } from '../services/userService';
+import { getUsers, getCurrentUser, getTrainerClients, createUser, updateUser, deleteUser } from '../services/userService';
 import { User } from '../types/User';
+import { UserForm } from '../components/User/UserForm';
 
 export const CrmPage = () => {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // Modal states
+  const [formOpen, setFormOpen] = useState(false);
+  const [userToEdit, setUserToEdit] = useState<User | null>(null);
+  const [deleteConfirmUser, setDeleteConfirmUser] = useState<User | null>(null);
 
   useEffect(() => {
     loadUsers();
@@ -39,26 +54,63 @@ export const CrmPage = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const currentUser = await getCurrentUser();
-      if (currentUser && (currentUser.role === 'client' || currentUser.role === 'cliente')) {
+      setError(null);
+      const user = await getCurrentUser();
+      setCurrentUser(user);
+
+      if (user && (user.role === 'client' || user.role === 'cliente')) {
         navigate('/dashboard/client-home', { replace: true });
         return;
       }
 
       let clients: User[] = [];
-      if (currentUser && (currentUser.role === 'trainer' || currentUser.role === 'entrenador')) {
-        clients = await getTrainerClients(currentUser.id);
+      if (user && (user.role === 'trainer' || user.role === 'entrenador')) {
+        clients = await getTrainerClients(user.id);
       } else {
         const userData = await getUsers();
         clients = userData.filter((u) => u.role === 'client' || u.role === 'cliente');
       }
 
-      setUsers(clients);
-    } catch (err) {
-      setError('Error al cargar los clientes');
+      setUsers(Array.isArray(clients) ? clients : []);
+    } catch (err: any) {
+      setError(err.message || 'Error al cargar la lista de clientes');
       console.error('Error loading users:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveUser = async (userData: Omit<User, 'id' | 'created_at'>) => {
+    try {
+      if (userToEdit) {
+        await updateUser(userToEdit.id, userData);
+      } else {
+        const payload = {
+          ...userData,
+          trainer_id: (currentUser?.role === 'trainer' || currentUser?.role === 'entrenador')
+            ? currentUser.id
+            : userData.trainer_id || null,
+        };
+        await createUser(payload);
+      }
+      setFormOpen(false);
+      setUserToEdit(null);
+      await loadUsers();
+    } catch (err: any) {
+      console.error('Error saving user:', err);
+      throw err;
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!deleteConfirmUser) return;
+    try {
+      await deleteUser(deleteConfirmUser.id);
+      setDeleteConfirmUser(null);
+      await loadUsers();
+    } catch (err: any) {
+      console.error('Error deleting user:', err);
+      setError('Error al eliminar el cliente');
     }
   };
 
@@ -101,7 +153,7 @@ export const CrmPage = () => {
           <Box sx={{ minWidth: 0, flex: 1 }}>
             <Stack direction="row" spacing={1.2} alignItems="center" mb={1} flexWrap="wrap">
               <Chip
-                label="CRM & Expedientes"
+                label="Gestión de Clientes"
                 size="small"
                 sx={{
                   background: 'rgba(0, 122, 255, 0.15)',
@@ -113,21 +165,24 @@ export const CrmPage = () => {
                 }}
               />
               <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.78rem' }}>
-                Gestión Integral de Alumnos
+                Directorio Unificado
               </Typography>
             </Stack>
 
             <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.02em', mb: 0.5, color: '#FFFFFF', fontSize: { xs: '1.4rem', sm: '1.85rem' } }}>
-              Expedientes de Alumnos
+              Clientes
             </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', maxWidth: 680, fontSize: '0.85rem' }}>
-              Acceso a historiales de salud, lesiones, mediciones antropométricas, cobros y fichas técnicas completas.
+              Directorio de alumnos en cartera, expedientes de salud, métricas biométricas y acceso directo a fichas 360°.
             </Typography>
           </Box>
 
           <Button
             variant="contained"
-            onClick={() => navigate('/dashboard/users')}
+            onClick={() => {
+              setUserToEdit(null);
+              setFormOpen(true);
+            }}
             startIcon={<UserPlus size={16} />}
             sx={{
               bgcolor: '#007AFF',
@@ -140,7 +195,7 @@ export const CrmPage = () => {
               width: { xs: '100%', sm: 'auto' }
             }}
           >
-            Añadir Nuevo Alumno
+            Añadir Nuevo Cliente
           </Button>
         </Box>
       </Box>
@@ -168,7 +223,7 @@ export const CrmPage = () => {
           <Box display="flex" alignItems="center" gap={1.2} mb={1}>
             <Users size={18} color="#007AFF" />
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.72rem' }}>
-              Total Alumnos en Cartera
+              Total Clientes en Cartera
             </Typography>
           </Box>
           <Typography variant="h4" fontWeight="800" sx={{ color: '#FFFFFF', letterSpacing: '-0.02em', fontSize: '1.6rem' }}>
@@ -188,7 +243,7 @@ export const CrmPage = () => {
           <Box display="flex" alignItems="center" gap={1.2} mb={1}>
             <HeartPulse size={18} color="#34C759" />
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.72rem' }}>
-              Fichas Médicas Activas
+              Fichas Médicas & Salud
             </Typography>
           </Box>
           <Typography variant="h4" fontWeight="800" sx={{ color: '#34C759', letterSpacing: '-0.02em', fontSize: '1.6rem' }}>
@@ -206,9 +261,9 @@ export const CrmPage = () => {
           }}
         >
           <Box display="flex" alignItems="center" gap={1.2} mb={1}>
-            <Camera size={18} color="#AF52DE" />
+            <TrendingUp size={18} color="#AF52DE" />
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.04em', fontSize: '0.72rem' }}>
-              Seguimiento y Fotos
+              Supervisión de Progreso
             </Typography>
           </Box>
           <Typography variant="h4" fontWeight="800" sx={{ color: '#AF52DE', letterSpacing: '-0.02em', fontSize: '1.6rem' }}>
@@ -221,7 +276,7 @@ export const CrmPage = () => {
       <Box sx={{ mb: 3 }}>
         <TextField
           size="small"
-          placeholder="Buscar alumno por nombre o email..."
+          placeholder="Buscar cliente por nombre o email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           fullWidth
@@ -246,13 +301,13 @@ export const CrmPage = () => {
       {loading ? (
         <Box display="flex" flexDirection="column" justifyContent="center" alignItems="center" minHeight={200}>
           <CircularProgress size={32} sx={{ color: '#007AFF', mb: 2 }} />
-          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Cargando expedientes...</Typography>
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>Cargando clientes...</Typography>
         </Box>
       ) : error ? (
-        <Alert severity="error" sx={{ borderRadius: '14px' }}>{error}</Alert>
+        <Alert severity="error" sx={{ borderRadius: '14px', mb: 3 }}>{error}</Alert>
       ) : filteredClients.length === 0 ? (
         <Box sx={{ p: 4, borderRadius: '20px', bgcolor: 'var(--bg-card, #18181b)', border: '1px solid rgba(255, 255, 255, 0.08)', textAlign: 'center' }}>
-          <Typography color="rgba(255, 255, 255, 0.5)">No se encontraron alumnos en el CRM.</Typography>
+          <Typography color="rgba(255, 255, 255, 0.5)">No se encontraron clientes registrados en tu cartera.</Typography>
         </Box>
       ) : (
         <Box
@@ -307,17 +362,25 @@ export const CrmPage = () => {
                   </Box>
                 </Box>
 
-                <Chip
-                  label="Alumno"
-                  size="small"
-                  sx={{
-                    background: 'rgba(0, 122, 255, 0.15)',
-                    color: '#007AFF',
-                    fontWeight: 700,
-                    fontSize: '0.68rem',
-                    height: 22,
-                  }}
-                />
+                <Stack direction="row" spacing={0.5} alignItems="center">
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      setUserToEdit(client);
+                      setFormOpen(true);
+                    }}
+                    sx={{ color: 'rgba(255, 255, 255, 0.5)', '&:hover': { color: '#007AFF' } }}
+                  >
+                    <Edit2 size={16} />
+                  </IconButton>
+                  <IconButton
+                    size="small"
+                    onClick={() => setDeleteConfirmUser(client)}
+                    sx={{ color: 'rgba(255, 255, 255, 0.5)', '&:hover': { color: '#f43f5e' } }}
+                  >
+                    <Trash2 size={16} />
+                  </IconButton>
+                </Stack>
               </Box>
 
               <Divider sx={{ my: 1.5, borderColor: 'rgba(255, 255, 255, 0.06)' }} />
@@ -328,6 +391,7 @@ export const CrmPage = () => {
                   variant="contained"
                   size="small"
                   onClick={() => navigate(`/dashboard/users/${client.id}`)}
+                  startIcon={<FileText size={14} />}
                   sx={{
                     bgcolor: '#007AFF',
                     borderRadius: '10px',
@@ -345,6 +409,7 @@ export const CrmPage = () => {
                   variant="outlined"
                   size="small"
                   onClick={() => navigate(`/dashboard/users/${client.id}/medical-info`)}
+                  startIcon={<HeartPulse size={14} />}
                   sx={{
                     borderRadius: '10px',
                     borderColor: 'rgba(255, 255, 255, 0.15)',
@@ -363,7 +428,8 @@ export const CrmPage = () => {
                 <Button
                   variant="outlined"
                   size="small"
-                  onClick={() => navigate(`/dashboard/client-tracking`)}
+                  onClick={() => navigate('/dashboard/progress')}
+                  startIcon={<TrendingUp size={14} />}
                   sx={{
                     borderRadius: '10px',
                     borderColor: 'rgba(255, 255, 255, 0.15)',
@@ -376,13 +442,61 @@ export const CrmPage = () => {
                     '&:hover': { borderColor: '#AF52DE', color: '#AF52DE', background: 'rgba(175, 82, 222, 0.1)' },
                   }}
                 >
-                  Seguimiento
+                  Progresos
                 </Button>
               </Stack>
             </Box>
           ))}
         </Box>
       )}
+
+      {/* User Create/Edit Modal */}
+      <UserForm
+        open={formOpen}
+        onClose={() => {
+          setFormOpen(false);
+          setUserToEdit(null);
+        }}
+        onSubmit={handleSaveUser}
+        userToEdit={userToEdit}
+      />
+
+      {/* Delete Confirmation Modal */}
+      <Dialog
+        open={!!deleteConfirmUser}
+        onClose={() => setDeleteConfirmUser(null)}
+        PaperProps={{
+          sx: {
+            bgcolor: '#18181b',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            borderRadius: '18px',
+            color: '#FFFFFF',
+            p: 1
+          }
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 800 }}>Confirmar Eliminación</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+            ¿Estás seguro de que deseas eliminar al cliente <strong>{deleteConfirmUser?.name} {deleteConfirmUser?.surname}</strong>? Esta acción no se puede deshacer.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button
+            onClick={() => setDeleteConfirmUser(null)}
+            sx={{ color: 'rgba(255, 255, 255, 0.6)', textTransform: 'none' }}
+          >
+            Cancelar
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleDeleteUser}
+            sx={{ bgcolor: '#f43f5e', color: '#FFFFFF', textTransform: 'none', borderRadius: '10px', fontWeight: 700 }}
+          >
+            Eliminar Cliente
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

@@ -11,7 +11,18 @@ import {
   Stack,
   Button
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import {
+  Image as ImageIcon,
+  Sliders,
+  Columns,
+  Camera,
+  User,
+  MoveHorizontal,
+  Dumbbell,
+  SlidersHorizontal,
+  ChevronsRight,
+  Info
+} from 'lucide-react';
 import { ClientProgressPhoto } from '../../types/ClientProgressPhoto';
 
 interface BeforeAfterSliderProps {
@@ -153,7 +164,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 flexShrink: 0,
               }}
             >
-              <Iconify icon="solar:gallery-wide-bold" width={18} sx={{ color: '#22d3ee' }} />
+              <ImageIcon size={18} color="#22d3ee" />
             </Box>
             <Typography variant="h6" fontWeight="800" sx={{ letterSpacing: '-0.02em', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
               Comparador Antes & Después
@@ -205,11 +216,11 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
               }}
             >
               <ToggleButton value="slider">
-                <Iconify icon="solar:slider-vertical-bold" width={14} sx={{ mr: 0.5 }} />
+                <Sliders size={14} style={{ marginRight: 4 }} />
                 Deslizador
               </ToggleButton>
               <ToggleButton value="side-by-side">
-                <Iconify icon="solar:mirror-left-bold" width={14} sx={{ mr: 0.5 }} />
+                <Columns size={14} style={{ marginRight: 4 }} />
                 Lado a Lado
               </ToggleButton>
             </ToggleButtonGroup>
@@ -220,7 +231,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
               variant="contained"
               size="small"
               onClick={onUploadClick}
-              startIcon={<Iconify icon="solar:camera-add-bold" />}
+              startIcon={<Camera size={16} />}
               sx={{
                 background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
                 boxShadow: '0 4px 15px rgba(6, 182, 212, 0.4)',
@@ -277,15 +288,15 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           }}
         >
           <ToggleButton value="front_arms_cross">
-            <Iconify icon="solar:user-bold" width={15} sx={{ mr: 0.6, color: '#38bdf8' }} />
+            <User size={15} color="#38bdf8" style={{ marginRight: 6 }} />
             Frente
           </ToggleButton>
           <ToggleButton value="side_arms_front">
-            <Iconify icon="solar:walking-bold" width={15} sx={{ mr: 0.6, color: '#10b981' }} />
+            <MoveHorizontal size={15} color="#10b981" style={{ marginRight: 6 }} />
             Perfil
           </ToggleButton>
           <ToggleButton value="back_arms_cross">
-            <Iconify icon="solar:dumbbell-large-minimalistic-bold" width={15} sx={{ mr: 0.6, color: '#a855f7' }} />
+            <Dumbbell size={15} color="#a855f7" style={{ marginRight: 6 }} />
             Espalda
           </ToggleButton>
         </ToggleButtonGroup>
@@ -296,7 +307,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
             size="small"
             variant={showSilhouette ? 'contained' : 'outlined'}
             onClick={() => setShowSilhouette(!showSilhouette)}
-            startIcon={<Iconify icon="solar:tuning-bold" />}
+            startIcon={<SlidersHorizontal size={14} />}
             sx={{
               borderRadius: '12px',
               textTransform: 'none',
@@ -372,7 +383,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
               color: '#22d3ee',
             }}
           >
-            <Iconify icon="solar:camera-minimalistic-bold" width={28} />
+            <Camera size={28} />
           </Box>
           <Typography variant="subtitle1" fontWeight="700">
             Sin fotos de {selectedAngle === 'front_arms_cross' ? 'Frente' : selectedAngle === 'side_arms_front' ? 'Perfil' : 'Espalda'}
@@ -577,7 +588,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
                 },
               }}
             >
-              <Iconify icon="solar:double-alt-arrow-right-bold-duotone" width={20} sx={{ color: '#0891b2' }} />
+              <ChevronsRight size={20} color="#0891b2" />
             </Box>
           </Box>
 
@@ -761,7 +772,7 @@ export const BeforeAfterSlider: React.FC<BeforeAfterSliderProps> = ({
           }}
         >
           <Stack direction="row" spacing={1} alignItems="center">
-            <Iconify icon="solar:info-circle-bold" width={16} sx={{ color: '#22d3ee', flexShrink: 0 }} />
+            <Info size={16} color="#22d3ee" style={{ flexShrink: 0 }} />
             <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.74rem' }}>
               Comparando línea base ({beforeLabel}) con tu registro ({afterLabel}). Desliza el cursor central.
             </Typography>

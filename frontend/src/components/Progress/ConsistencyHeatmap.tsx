@@ -8,7 +8,7 @@ import {
   ToggleButtonGroup,
   ToggleButton
 } from '@mui/material';
-import { Iconify } from '../../utils/iconify';
+import { Flame, Trophy, Dumbbell, Target } from 'lucide-react';
 
 interface DayActivity {
   date: string; // YYYY-MM-DD
@@ -166,7 +166,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({
               sx={{
                 width: 36,
                 height: 36,
-                borderRadius: '12px',
+                borderRadius: '10px',
                 background: 'linear-gradient(135deg, rgba(244, 63, 94, 0.3), rgba(245, 158, 11, 0.3))',
                 border: '1px solid rgba(244, 63, 94, 0.4)',
                 display: 'flex',
@@ -175,7 +175,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({
                 boxShadow: '0 0 15px rgba(244, 63, 94, 0.35)',
               }}
             >
-              <Iconify icon="solar:flame-bold" width={20} sx={{ color: '#f43f5e' }} />
+              <Flame size={20} color="#f43f5e" />
             </Box>
             <Typography variant="h5" fontWeight="800" sx={{ letterSpacing: '-0.02em' }}>
               Consistencia de Entrenamiento
@@ -252,7 +252,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({
           }}
         >
           <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-            <Iconify icon="solar:fire-bold" width={18} sx={{ color: '#f43f5e' }} />
+            <Flame size={18} color="#f43f5e" />
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
               Racha Actual
             </Typography>
@@ -273,7 +273,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({
           }}
         >
           <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-            <Iconify icon="solar:cup-star-bold" width={18} sx={{ color: '#f59e0b' }} />
+            <Trophy size={18} color="#f59e0b" />
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
               Mejor Racha
             </Typography>
@@ -294,7 +294,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({
           }}
         >
           <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-            <Iconify icon="solar:dumbbell-large-bold" width={18} sx={{ color: '#06b6d4' }} />
+            <Dumbbell size={18} color="#06b6d4" />
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
               Sesiones Totales
             </Typography>
@@ -315,7 +315,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({
           }}
         >
           <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-            <Iconify icon="solar:target-bold" width={18} sx={{ color: '#10b981' }} />
+            <Target size={18} color="#10b981" />
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
               Adherencia
             </Typography>

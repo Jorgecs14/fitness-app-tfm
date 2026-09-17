@@ -4,10 +4,10 @@ import {
   Box,
   Typography,
   Button,
-  Container,
   Chip,
   Stack,
   Avatar,
+  CircularProgress,
 } from '@mui/material';
 import {
   Users,
@@ -19,28 +19,24 @@ import {
   Camera,
   ChevronRight,
   TrendingUp,
-  AlertCircle,
-  Plus,
   Wallet,
-  UserPlus
+  TrendingDown,
 } from 'lucide-react';
 
 import { Chart } from '../utils/chart';
 import * as userService from '../services/userService';
 import * as dietService from '../services/dietService';
 import * as workoutService from '../services/workoutService';
+import { weeklyTrackingService } from '../services/weeklyTrackingService';
 import { billingService, TrainerBillingSummary } from '../services/billingService';
 import { User } from '../types/User';
 
 interface DashboardStats {
   totalUsers: number;
   totalClients: number;
-  totalTrainers: number;
   totalDiets: number;
   totalWorkouts: number;
-  inactiveClientsCount: number;
-  weeklyAdherenceRate: number;
-  workoutsCompletedThisWeek: number;
+  activeTrackingsCount: number;
   monthlyData: {
     users: number[];
     workouts: number[];
@@ -51,7 +47,6 @@ interface DashboardStats {
 interface ActivityEvent {
   id: string;
   userName: string;
-  userAvatar?: string;
   type: 'pr' | 'workout' | 'weight' | 'diet' | 'photo';
   title: string;
   description: string;
@@ -65,75 +60,18 @@ export const HomePage = () => {
   const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     totalClients: 0,
-    totalTrainers: 0,
     totalDiets: 0,
     totalWorkouts: 0,
-    inactiveClientsCount: 0,
-    weeklyAdherenceRate: 86,
-    workoutsCompletedThisWeek: 42,
+    activeTrackingsCount: 0,
     monthlyData: {
-      users: [],
-      workouts: [],
+      users: [0, 0, 0, 0, 0, 0],
+      workouts: [0, 0, 0, 0, 0, 0],
       categories: []
     }
   });
   const [billingSummary, setBillingSummary] = useState<TrainerBillingSummary | null>(null);
-  const [clientsList, setClientsList] = useState<User[]>([]);
+  const [activityEvents, setActivityEvents] = useState<ActivityEvent[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Activity Pulse feed events (real-time stream of athlete achievements)
-  const activityEvents: ActivityEvent[] = [
-    {
-      id: '1',
-      userName: 'Carlos Méndez',
-      type: 'pr',
-      title: 'Nuevo Récord Personal (PR)',
-      description: 'Press de Banca: 110 kg x 3 reps (1RM est. 118 kg)',
-      timeAgo: 'Hace 12 min',
-      badgeColor: '#FF9500',
-      badgeIcon: Award,
-    },
-    {
-      id: '2',
-      userName: 'Laura Gómez',
-      type: 'workout',
-      title: 'Sesión Completada',
-      description: 'Completó "Tirón e Hipertrofia Espalda" (55 min, 9.420 kg volumen)',
-      timeAgo: 'Hace 35 min',
-      badgeColor: '#34C759',
-      badgeIcon: Dumbbell,
-    },
-    {
-      id: '3',
-      userName: 'Marcos Pascual',
-      type: 'weight',
-      title: 'Reporte de Pesaje Semanal',
-      description: 'Peso actual: 74.2 kg (-650g respecto a semana anterior)',
-      timeAgo: 'Hace 2 horas',
-      badgeColor: '#007AFF',
-      badgeIcon: Scale,
-    },
-    {
-      id: '4',
-      userName: 'Elena Rodríguez',
-      type: 'diet',
-      title: 'Cumplimiento Nutricional',
-      description: 'Cerró los 3 anillos de macronutrientes al 100% hoy',
-      timeAgo: 'Hace 4 horas',
-      badgeColor: '#FF2D55',
-      badgeIcon: UtensilsCrossed,
-    },
-    {
-      id: '5',
-      userName: 'Javier Santos',
-      type: 'photo',
-      title: 'Nuevas Fotos de Progreso',
-      description: 'Subió 3 poses del mes (Frente, Perfil, Espalda)',
-      timeAgo: 'Hace 6 horas',
-      badgeColor: '#AF52DE',
-      badgeIcon: Camera,
-    },
-  ];
 
   useEffect(() => {
     checkUserRoleAndLoadStats();
@@ -156,7 +94,7 @@ export const HomePage = () => {
     try {
       setLoading(true);
 
-      let clients: any[] = [];
+      let clients: User[] = [];
       if (currentUser && (currentUser.role === 'trainer' || currentUser.role === 'entrenador')) {
         clients = await userService.getTrainerClients(currentUser.id).catch(() => []);
       } else {
@@ -181,19 +119,54 @@ export const HomePage = () => {
           clientIds.includes(w.user_id)
       );
 
-      setClientsList(clients);
+      // Cargar eventos de actividad reales de los clientes del entrenador
+      const events: ActivityEvent[] = [];
+      let totalActiveTrackings = 0;
+
+      // Obtener seguimientos recientes de los primeros clientes
+      const trackingPromises = clients.slice(0, 15).map(async (client) => {
+        try {
+          const trackings = await weeklyTrackingService.getByUserId(client.id);
+          if (trackings && trackings.length > 0) {
+            totalActiveTrackings += trackings.length;
+            const sorted = [...trackings].sort(
+              (a, b) => new Date(b.week_start_date).getTime() - new Date(a.week_start_date).getTime()
+            );
+            const latest = sorted[0];
+            const dateObj = new Date(latest.week_start_date);
+            const daysAgo = Math.max(0, Math.floor((new Date().getTime() - dateObj.getTime()) / (1000 * 60 * 60 * 24)));
+            const timeAgoStr = daysAgo === 0 ? 'Hoy' : daysAgo === 1 ? 'Ayer' : `Hace ${daysAgo} días`;
+
+            if (latest.weight) {
+              events.push({
+                id: `weight-${client.id}-${latest.id}`,
+                userName: `${client.name} ${client.surname || ''}`.trim(),
+                type: 'weight',
+                title: 'Reporte de Pesaje',
+                description: `Peso registrado: ${latest.weight} kg ${latest.waist_measurement ? `• Cintura: ${latest.waist_measurement} cm` : ''}`,
+                timeAgo: timeAgoStr,
+                badgeColor: '#007AFF',
+                badgeIcon: Scale,
+              });
+            }
+          }
+        } catch {}
+      });
+
+      await Promise.all(trackingPromises);
+
+      // Ordenar eventos de más reciente a más antiguo
+      events.sort((a, b) => a.id.localeCompare(b.id));
+      setActivityEvents(events.slice(0, 6));
 
       const monthlyData = calculateMonthlyData(clients, trainerWorkouts);
 
       setStats({
         totalUsers: clients.length,
         totalClients: clients.length,
-        totalTrainers: 1,
         totalDiets: allDiets.length,
         totalWorkouts: trainerWorkouts.length,
-        inactiveClientsCount: Math.max(0, Math.round(clients.length * 0.15)),
-        weeklyAdherenceRate: clients.length > 0 ? 92 : 0,
-        workoutsCompletedThisWeek: Math.max(trainerWorkouts.length * 2, clients.length * 3),
+        activeTrackingsCount: totalActiveTrackings,
         monthlyData,
       });
     } catch (error) {
@@ -204,9 +177,9 @@ export const HomePage = () => {
   };
 
   const calculateMonthlyData = (users: any[], workouts: any[]) => {
-    const months = [];
-    const userCounts = [];
-    const workoutCounts = [];
+    const months: string[] = [];
+    const userCounts: number[] = [];
+    const workoutCounts: number[] = [];
 
     for (let i = 5; i >= 0; i--) {
       const date = new Date();
@@ -275,7 +248,8 @@ export const HomePage = () => {
         style: {
           colors: 'rgba(255, 255, 255, 0.5)',
           fontSize: '12px',
-        }
+        },
+        formatter: (val) => Math.round(val).toString(),
       }
     },
     grid: {
@@ -297,8 +271,8 @@ export const HomePage = () => {
   };
 
   const chartSeries = [
-    { name: 'Nuevos Alumnos', data: stats.monthlyData.users.length > 0 ? stats.monthlyData.users : [4, 7, 12, 15, 22, 28] },
-    { name: 'Sesiones Completadas', data: stats.monthlyData.workouts.length > 0 ? stats.monthlyData.workouts : [18, 32, 45, 68, 85, 114] },
+    { name: 'Nuevos Clientes', data: stats.monthlyData.users },
+    { name: 'Rutinas Creadas', data: stats.monthlyData.workouts },
   ];
 
   return (
@@ -329,7 +303,7 @@ export const HomePage = () => {
           <Box sx={{ minWidth: 0, flex: 1 }}>
             <Stack direction="row" spacing={1.2} alignItems="center" mb={1} flexWrap="wrap">
               <Chip
-                label="Cockpit Entrenador"
+                label="Panel Central de Entrenador"
                 size="small"
                 sx={{
                   background: 'rgba(0, 122, 255, 0.15)',
@@ -346,10 +320,10 @@ export const HomePage = () => {
             </Stack>
 
             <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.02em', mb: 0.5, color: '#FFFFFF', fontSize: { xs: '1.4rem', sm: '1.85rem' } }}>
-              Centro de Mando 360°
+              Centro de Control 360°
             </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', maxWidth: 680, fontSize: '0.85rem' }}>
-              Supervisión en tiempo real de tus atletas, adherencia a planes, cobros y alertas de seguimiento.
+              Supervisión en tiempo real de tus clientes, rutinas, dietas y facturación mensual.
             </Typography>
           </Box>
 
@@ -357,7 +331,7 @@ export const HomePage = () => {
             <Button
               variant="outlined"
               startIcon={<Users size={15} />}
-              onClick={() => navigate('/dashboard/users')}
+              onClick={() => navigate('/dashboard/crm')}
               sx={{
                 borderRadius: '12px',
                 borderColor: 'rgba(255, 255, 255, 0.15)',
@@ -374,7 +348,7 @@ export const HomePage = () => {
                 }
               }}
             >
-              Mis Alumnos
+              Ver Clientes
             </Button>
 
             <Button
@@ -410,7 +384,7 @@ export const HomePage = () => {
           minWidth: 0
         }}
       >
-        {/* Card 1: Alumnos Activos */}
+        {/* Card 1: Clientes Activos */}
         <Box
           sx={{
             p: 2.2,
@@ -420,12 +394,16 @@ export const HomePage = () => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            '&:hover': { borderColor: 'rgba(0, 122, 255, 0.4)', transform: 'translateY(-2px)' }
           }}
+          onClick={() => navigate('/dashboard/crm')}
         >
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem' }}>
-              Alumnos Asignados
+              Clientes en Cartera
             </Typography>
             <Box
               sx={{
@@ -449,12 +427,12 @@ export const HomePage = () => {
           <Stack direction="row" spacing={1} alignItems="center">
             <Chip label="Bajo tu tutela" size="small" sx={{ background: 'rgba(0, 122, 255, 0.15)', color: '#007AFF', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.72rem' }}>
-              100% aislados
+              Acceso Clientes →
             </Typography>
           </Stack>
         </Box>
 
-        {/* Card 2: Sesiones Esta Semana */}
+        {/* Card 2: Rutinas */}
         <Box
           sx={{
             p: 2.2,
@@ -464,12 +442,16 @@ export const HomePage = () => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            '&:hover': { borderColor: 'rgba(52, 199, 89, 0.4)', transform: 'translateY(-2px)' }
           }}
+          onClick={() => navigate('/dashboard/workouts')}
         >
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem' }}>
-              Sesiones Completadas
+              Rutinas Creadas
             </Typography>
             <Box
               sx={{
@@ -487,18 +469,18 @@ export const HomePage = () => {
           </Box>
 
           <Typography variant="h4" fontWeight="800" sx={{ color: '#34C759', mb: 0.3, letterSpacing: '-0.03em', fontSize: '1.6rem' }}>
-            {loading ? '...' : stats.workoutsCompletedThisWeek}
+            {loading ? '...' : stats.totalWorkouts}
           </Typography>
 
           <Stack direction="row" spacing={1} alignItems="center">
-            <Chip label="94% objetivo" size="small" sx={{ background: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
+            <Chip label="Biblioteca" size="small" sx={{ background: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.72rem' }}>
-              {stats.totalWorkouts} rutinas activas
+              Ver Rutinas →
             </Typography>
           </Stack>
         </Box>
 
-        {/* Card 3: Adherencia Nutricional */}
+        {/* Card 3: Dietas */}
         <Box
           sx={{
             p: 2.2,
@@ -508,12 +490,16 @@ export const HomePage = () => {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            boxSizing: 'border-box'
+            boxSizing: 'border-box',
+            cursor: 'pointer',
+            transition: 'all 0.2s ease',
+            '&:hover': { borderColor: 'rgba(255, 149, 0, 0.4)', transform: 'translateY(-2px)' }
           }}
+          onClick={() => navigate('/dashboard/diets')}
         >
           <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em', fontSize: '0.72rem' }}>
-              Adherencia Dieta
+              Planes Dietéticos
             </Typography>
             <Box
               sx={{
@@ -531,13 +517,13 @@ export const HomePage = () => {
           </Box>
 
           <Typography variant="h4" fontWeight="800" sx={{ color: '#FF9500', mb: 0.3, letterSpacing: '-0.03em', fontSize: '1.6rem' }}>
-            {stats.weeklyAdherenceRate}%
+            {loading ? '...' : stats.totalDiets}
           </Typography>
 
           <Stack direction="row" spacing={1} alignItems="center">
-            <Chip label="Excelente" size="small" sx={{ background: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
+            <Chip label="Configurados" size="small" sx={{ background: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.72rem' }}>
-              {stats.totalDiets} planes activos
+              Ver Dietas →
             </Typography>
           </Stack>
         </Box>
@@ -555,7 +541,7 @@ export const HomePage = () => {
             boxSizing: 'border-box',
             cursor: 'pointer',
             transition: 'all 0.2s ease',
-            '&:hover': { transform: 'translateY(-2px)' }
+            '&:hover': { borderColor: 'rgba(56, 189, 248, 0.5)', transform: 'translateY(-2px)' }
           }}
           onClick={() => navigate('/dashboard/billing')}
         >
@@ -579,7 +565,7 @@ export const HomePage = () => {
           </Box>
 
           <Typography variant="h4" fontWeight="900" sx={{ color: '#38bdf8', mb: 0.3, letterSpacing: '-0.02em', fontSize: '1.6rem' }}>
-            {billingSummary ? `${billingSummary.mrr.toFixed(2)} €` : `${(stats.totalClients * 50).toFixed(2)} €`}
+            {billingSummary ? `${billingSummary.mrr.toFixed(2)} €` : '0.00 €'}
           </Typography>
 
           <Stack direction="row" spacing={1} alignItems="center">
@@ -595,13 +581,13 @@ export const HomePage = () => {
               }}
             />
             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.72rem' }}>
-              Ver Hub →
+              Gestión Cobros →
             </Typography>
           </Stack>
         </Box>
       </Box>
 
-      {/* Main Grid: Activity Pulse & Analytics Chart */}
+      {/* Main Grid: Activity Feed & Analytics Chart */}
       <Box
         sx={{
           display: 'grid',
@@ -611,7 +597,7 @@ export const HomePage = () => {
           minWidth: 0
         }}
       >
-        {/* Left Column: Activity Pulse (En Vivo) */}
+        {/* Left Column: Activity Feed Real */}
         <Box
           sx={{
             p: { xs: 2, sm: 2.5 },
@@ -640,73 +626,94 @@ export const HomePage = () => {
                 <Activity size={16} color="#007AFF" />
               </Box>
               <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: '0.98rem' }}>
-                Activity Pulse
+                Actividad de Clientes
               </Typography>
             </Box>
 
-            <Chip label="En Vivo" size="small" sx={{ background: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
+            <Chip label="Directo BD" size="small" sx={{ background: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, height: 20, fontSize: '0.68rem' }} />
           </Box>
 
           <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mb: 2, fontSize: '0.75rem' }}>
-            Hitos recientes registrados por tus atletas:
+            Últimos registros biométricos y reportes de tus clientes:
           </Typography>
 
-          <Stack spacing={1.2} sx={{ flexGrow: 1, overflowY: 'auto' }}>
-            {activityEvents.map((evt) => {
-              const IconComponent = evt.badgeIcon;
-              return (
-                <Box
-                  key={evt.id}
-                  sx={{
-                    p: 1.5,
-                    borderRadius: '12px',
-                    background: 'rgba(255, 255, 255, 0.03)',
-                    border: '0.5px solid rgba(255, 255, 255, 0.06)',
-                    boxSizing: 'border-box'
-                  }}
-                >
-                  <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={0.3}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Avatar
-                        sx={{
-                          width: 28,
-                          height: 28,
-                          background: `${evt.badgeColor}20`,
-                          color: evt.badgeColor,
-                          fontWeight: 700,
-                          fontSize: '0.75rem',
-                        }}
-                      >
-                        <IconComponent size={14} />
-                      </Avatar>
-                      <Box>
-                        <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', fontSize: '0.84rem' }}>
-                          {evt.userName}
-                        </Typography>
-                        <Typography variant="caption" sx={{ color: evt.badgeColor, fontWeight: 600, fontSize: '0.72rem' }}>
-                          {evt.title}
-                        </Typography>
+          {loading ? (
+            <Box display="flex" justifyContent="center" alignItems="center" py={5}>
+              <CircularProgress size={28} sx={{ color: '#007AFF' }} />
+            </Box>
+          ) : activityEvents.length === 0 ? (
+            <Box
+              sx={{
+                p: 3,
+                borderRadius: '14px',
+                background: 'rgba(255, 255, 255, 0.02)',
+                border: '1px dashed rgba(255, 255, 255, 0.1)',
+                textAlign: 'center',
+                my: 'auto'
+              }}
+            >
+              <Typography variant="body2" color="rgba(255, 255, 255, 0.5)">
+                No hay registros recientes aún. Cuando tus clientes reporten su peso o completen progresos, aparecerán aquí.
+              </Typography>
+            </Box>
+          ) : (
+            <Stack spacing={1.2} sx={{ flexGrow: 1, overflowY: 'auto' }}>
+              {activityEvents.map((evt) => {
+                const IconComponent = evt.badgeIcon;
+                return (
+                  <Box
+                    key={evt.id}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: '12px',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      border: '0.5px solid rgba(255, 255, 255, 0.06)',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={0.3}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Avatar
+                          sx={{
+                            width: 28,
+                            height: 28,
+                            background: `${evt.badgeColor}20`,
+                            color: evt.badgeColor,
+                            fontWeight: 700,
+                            fontSize: '0.75rem',
+                          }}
+                        >
+                          <IconComponent size={14} />
+                        </Avatar>
+                        <Box>
+                          <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#FFFFFF', fontSize: '0.84rem' }}>
+                            {evt.userName}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: evt.badgeColor, fontWeight: 600, fontSize: '0.72rem' }}>
+                            {evt.title}
+                          </Typography>
+                        </Box>
                       </Box>
+
+                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.68rem' }}>
+                        {evt.timeAgo}
+                      </Typography>
                     </Box>
 
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.4)', fontSize: '0.68rem' }}>
-                      {evt.timeAgo}
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', pl: 4.5, fontSize: '0.75rem' }}>
+                      {evt.description}
                     </Typography>
                   </Box>
-
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', pl: 4.5, fontSize: '0.75rem' }}>
-                    {evt.description}
-                  </Typography>
-                </Box>
-              );
-            })}
-          </Stack>
+                );
+              })}
+            </Stack>
+          )}
 
           <Button
             variant="outlined"
             size="small"
             fullWidth
-            onClick={() => navigate('/dashboard/client-tracking')}
+            onClick={() => navigate('/dashboard/progress')}
             endIcon={<ChevronRight size={15} />}
             sx={{
               mt: 2,
@@ -716,10 +723,14 @@ export const HomePage = () => {
               textTransform: 'none',
               fontWeight: 600,
               py: 0.8,
-              fontSize: '0.8rem'
+              fontSize: '0.8rem',
+              '&:hover': {
+                borderColor: '#007AFF',
+                background: 'rgba(0, 122, 255, 0.1)',
+              }
             }}
           >
-            Ver Todas las Actividades
+            Ver Módulo de Progresos
           </Button>
         </Box>
 
@@ -753,7 +764,7 @@ export const HomePage = () => {
                   <TrendingUp size={16} color="#34C759" />
                 </Box>
                 <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: '0.98rem' }}>
-                  Evolución & Sesiones
+                  Evolución de Cartera & Rutinas
                 </Typography>
               </Box>
 
@@ -789,7 +800,7 @@ export const HomePage = () => {
               <Button
                 variant="outlined"
                 fullWidth
-                onClick={() => navigate('/dashboard/users')}
+                onClick={() => navigate('/dashboard/crm')}
                 startIcon={<Users size={17} color="#007AFF" />}
                 sx={{
                   p: 1.5,
@@ -805,7 +816,7 @@ export const HomePage = () => {
                   '&:hover': { background: 'rgba(0, 122, 255, 0.1)', borderColor: '#007AFF' },
                 }}
               >
-                Mis Alumnos
+                Clientes
               </Button>
 
               <Button

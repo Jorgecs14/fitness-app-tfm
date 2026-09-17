@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import Chart from 'react-apexcharts';
 import { estimate1RM, estimate1RMBrzycki, estimate1RMEpley } from '../../lib/onerm';
-import { Iconify } from '../../utils/iconify';
+import { BarChart3, Award, TrendingUp, Dumbbell, Info } from 'lucide-react';
 
 interface LoggedSetHistory {
   date: string;
@@ -245,7 +245,7 @@ export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ hi
                 boxShadow: '0 0 15px rgba(6, 182, 212, 0.35)',
               }}
             >
-              <Iconify icon="solar:chart-square-bold" width={20} sx={{ color: '#22d3ee' }} />
+              <BarChart3 size={20} color="#22d3ee" />
             </Box>
             <Typography variant="h5" fontWeight="800" sx={{ letterSpacing: '-0.02em' }}>
               Evolución de Fuerza y 1RM
@@ -386,7 +386,7 @@ export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ hi
           }}
         >
           <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-            <Iconify icon="solar:medal-ribbons-star-bold" width={18} sx={{ color: '#22d3ee' }} />
+            <Award size={18} color="#22d3ee" />
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
               Récord Personal (PR)
             </Typography>
@@ -407,7 +407,7 @@ export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ hi
           }}
         >
           <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-            <Iconify icon="solar:graph-up-bold" width={18} sx={{ color: '#10b981' }} />
+            <TrendingUp size={18} color="#10b981" />
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
               Ganancia Neta
             </Typography>
@@ -431,7 +431,7 @@ export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ hi
           }}
         >
           <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-            <Iconify icon="solar:dumbbell-large-bold" width={18} sx={{ color: '#f59e0b' }} />
+            <Dumbbell size={18} color="#f59e0b" />
             <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600 }}>
               Último 1RM
             </Typography>
@@ -461,7 +461,7 @@ export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ hi
             gap: 1.5,
           }}
         >
-          <Iconify icon="solar:info-circle-bold" width={18} sx={{ color: '#22d3ee' }} />
+          <Info size={18} color="#22d3ee" />
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
             Visualizando curva de proyección y progresión estimada. A medida que completes tus series en el Reproductor en Vivo, esta gráfica se nutrirá con tus datos reales.
           </Typography>

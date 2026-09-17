@@ -15,19 +15,9 @@ export const trainerNavData: NavItem[] = [
     icon: <Iconify icon='solar:home-2-bold-duotone' width={24} />
   },
   {
-    title: 'Mis Clientes',
-    path: '/dashboard/users',
-    icon: <Iconify icon='solar:users-group-two-rounded-bold-duotone' width={24} />
-  },
-  {
-    title: 'CRM Clientes',
+    title: 'Clientes',
     path: '/dashboard/crm',
-    icon: <Iconify icon='solar:user-speak-bold-duotone' width={24} />
-  },
-  {
-    title: 'Seguimiento Clientes',
-    path: '/dashboard/client-tracking',
-    icon: <Iconify icon='solar:chart-line-duotone' width={24} />
+    icon: <Iconify icon='solar:users-group-two-rounded-bold-duotone' width={24} />
   },
   {
     title: 'Progresos',
