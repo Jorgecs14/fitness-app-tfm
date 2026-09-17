@@ -23,7 +23,20 @@ export const FloatingMobileDock: React.FC<FloatingMobileDockProps> = ({
   onOpenChat,
 }) => {
   const location = useLocation();
-  const isClient = userRole === 'client' || userRole === 'cliente';
+  
+  let effectiveRole = userRole;
+  if (!effectiveRole) {
+    try {
+      const cached = localStorage.getItem('user');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        effectiveRole = parsed.role;
+      }
+    } catch {}
+  }
+
+  const isTrainer = effectiveRole === 'trainer' || effectiveRole === 'entrenador' || effectiveRole === 'admin';
+  const isClient = !isTrainer;
 
   const clientItems = [
     {

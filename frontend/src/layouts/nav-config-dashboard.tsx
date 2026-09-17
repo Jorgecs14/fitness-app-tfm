@@ -89,12 +89,24 @@ export const clientNavData: NavItem[] = [
   }
 ]
 
-export const navData = trainerNavData
+export const navData = clientNavData
 
 export function getNavDataByRole(role?: string): NavItem[] {
+  if (role === 'trainer' || role === 'entrenador' || role === 'admin') {
+    return trainerNavData
+  }
   if (role === 'client' || role === 'cliente') {
     return clientNavData
   }
-  return trainerNavData
+  try {
+    const cached = localStorage.getItem('user')
+    if (cached) {
+      const parsed = JSON.parse(cached)
+      if (parsed.role === 'trainer' || parsed.role === 'entrenador' || parsed.role === 'admin') {
+        return trainerNavData
+      }
+    }
+  } catch {}
+  return clientNavData
 }
 
