@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Grid,
   Stack,
   Chip,
   Button,
@@ -25,25 +24,16 @@ import {
   CircularProgress,
   Alert,
   Avatar,
-  Divider,
 } from '@mui/material';
 import {
   DollarSign,
   TrendingUp,
   Users,
   AlertCircle,
-  CheckCircle2,
   Plus,
-  CreditCard,
   Receipt,
   Search,
-  Calendar,
-  Clock,
   Edit2,
-  Trash2,
-  ShieldCheck,
-  ArrowUpRight,
-  Filter
 } from 'lucide-react';
 import {
   billingService,
@@ -225,7 +215,7 @@ export const TrainerBillingPage: React.FC = () => {
 
   if (loading) {
     return (
-      <Box p={4} display="flex" flexDirection="column" alignItems="center" justifyContent="center">
+      <Box p={4} display="flex" flexDirection="column" alignItems="center" justifyContent="center" width="100%">
         <CircularProgress size={36} sx={{ color: '#007AFF', mb: 2 }} />
         <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
           Cargando panel de facturación y cuotas...
@@ -235,14 +225,23 @@ export const TrainerBillingPage: React.FC = () => {
   }
 
   return (
-    <Box className="apple-content-container">
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: 1200,
+        mx: 'auto',
+        p: { xs: 1.5, sm: 2.5, md: 3 },
+        boxSizing: 'border-box',
+        overflowX: 'hidden'
+      }}
+    >
       {/* Header */}
-      <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3.5} flexWrap="wrap" gap={2}>
-        <Box>
-          <Typography variant="h4" fontWeight="800" sx={{ color: '#ffffff', letterSpacing: '-0.03em' }}>
+      <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={3} flexWrap="wrap" gap={2}>
+        <Box sx={{ minWidth: 0, flex: 1 }}>
+          <Typography variant="h4" fontWeight="800" sx={{ color: '#ffffff', letterSpacing: '-0.03em', fontSize: { xs: '1.4rem', sm: '1.85rem' } }}>
             Facturación y Cobros
           </Typography>
-          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5, maxWidth: 620 }}>
+          <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5, fontSize: '0.85rem' }}>
             Controla las cuotas mensuales de tus clientes, suscripciones automatizadas con Stripe y cobros manuales (Bizum / efectivo).
           </Typography>
         </Box>
@@ -250,7 +249,7 @@ export const TrainerBillingPage: React.FC = () => {
         <Button
           variant="contained"
           onClick={() => setPlanModalOpen(true)}
-          startIcon={<Plus size={18} />}
+          startIcon={<Plus size={17} />}
           sx={{
             bgcolor: '#007AFF',
             borderRadius: '12px',
@@ -259,6 +258,7 @@ export const TrainerBillingPage: React.FC = () => {
             px: 2.5,
             py: 1,
             boxShadow: '0 4px 14px rgba(0, 122, 255, 0.35)',
+            width: { xs: '100%', sm: 'auto' }
           }}
         >
           Crear Nueva Tarifa / Plan
@@ -266,185 +266,219 @@ export const TrainerBillingPage: React.FC = () => {
       </Box>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }} onClose={() => setError(null)}>
+        <Alert severity="error" sx={{ mb: 2.5, borderRadius: '12px' }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
 
       {successMsg && (
-        <Alert severity="success" sx={{ mb: 3, borderRadius: '12px' }} onClose={() => setSuccessMsg(null)}>
+        <Alert severity="success" sx={{ mb: 2.5, borderRadius: '12px' }} onClose={() => setSuccessMsg(null)}>
           {successMsg}
         </Alert>
       )}
 
       {/* 4 KPIs Financieros */}
-      <Grid container spacing={2.5} mb={4}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', lg: 'repeat(4, 1fr)' },
+          gap: 2,
+          mb: 3,
+          width: '100%',
+          minWidth: 0
+        }}
+      >
         {/* KPI 1: Facturación del Mes */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box
-            className="apple-card"
-            sx={{
-              p: 2.5,
-              background: 'linear-gradient(180deg, rgba(0, 122, 255, 0.1) 0%, #1C1C1E 100%)',
-              border: '1px solid rgba(0, 122, 255, 0.25)',
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-              <Typography variant="caption" fontWeight="700" sx={{ color: 'rgba(255, 255, 255, 0.55)', textTransform: 'uppercase' }}>
-                Facturación Este Mes
-              </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(0, 122, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
-                <DollarSign size={18} />
-              </Box>
+        <Box
+          sx={{
+            p: 2.2,
+            borderRadius: '18px',
+            background: 'linear-gradient(180deg, rgba(0, 122, 255, 0.1) 0%, #1C1C1E 100%)',
+            border: '1px solid rgba(0, 122, 255, 0.25)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
+            <Typography variant="caption" fontWeight="700" sx={{ color: 'rgba(255, 255, 255, 0.55)', textTransform: 'uppercase', fontSize: '0.72rem' }}>
+              Facturación Este Mes
+            </Typography>
+            <Box sx={{ width: 30, height: 30, borderRadius: '8px', bgcolor: 'rgba(0, 122, 255, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#38bdf8' }}>
+              <DollarSign size={16} />
             </Box>
-            <Typography variant="h4" fontWeight="900" sx={{ color: '#ffffff', letterSpacing: '-0.02em' }}>
-              {formatEuro(summary?.monthly_revenue)}
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mt: 0.5, display: 'block' }}>
-              {summary?.paid_invoices_count || 0} recibos cobrados este mes
-            </Typography>
           </Box>
-        </Grid>
+          <Typography variant="h4" fontWeight="900" sx={{ color: '#ffffff', letterSpacing: '-0.02em', fontSize: '1.6rem' }}>
+            {formatEuro(summary?.monthly_revenue)}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mt: 0.4, display: 'block', fontSize: '0.72rem' }}>
+            {summary?.paid_invoices_count || 0} recibos cobrados este mes
+          </Typography>
+        </Box>
 
         {/* KPI 2: MRR Ingresos Recurrentes */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box
-            className="apple-card"
-            sx={{
-              p: 2.5,
-              background: 'linear-gradient(180deg, rgba(52, 199, 89, 0.1) 0%, #1C1C1E 100%)',
-              border: '1px solid rgba(52, 199, 89, 0.25)',
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-              <Typography variant="caption" fontWeight="700" sx={{ color: 'rgba(255, 255, 255, 0.55)', textTransform: 'uppercase' }}>
-                Ingresos Recurrentes (MRR)
-              </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(52, 199, 89, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#34C759' }}>
-                <TrendingUp size={18} />
-              </Box>
+        <Box
+          sx={{
+            p: 2.2,
+            borderRadius: '18px',
+            background: 'linear-gradient(180deg, rgba(52, 199, 89, 0.1) 0%, #1C1C1E 100%)',
+            border: '1px solid rgba(52, 199, 89, 0.25)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
+            <Typography variant="caption" fontWeight="700" sx={{ color: 'rgba(255, 255, 255, 0.55)', textTransform: 'uppercase', fontSize: '0.72rem' }}>
+              Ingresos Recurrentes (MRR)
+            </Typography>
+            <Box sx={{ width: 30, height: 30, borderRadius: '8px', bgcolor: 'rgba(52, 199, 89, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#34C759' }}>
+              <TrendingUp size={16} />
             </Box>
-            <Typography variant="h4" fontWeight="900" sx={{ color: '#34C759', letterSpacing: '-0.02em' }}>
-              {formatEuro(summary?.mrr)}
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mt: 0.5, display: 'block' }}>
-              Potencial mensual activo
-            </Typography>
           </Box>
-        </Grid>
+          <Typography variant="h4" fontWeight="900" sx={{ color: '#34C759', letterSpacing: '-0.02em', fontSize: '1.6rem' }}>
+            {formatEuro(summary?.mrr)}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mt: 0.4, display: 'block', fontSize: '0.72rem' }}>
+            Potencial mensual activo
+          </Typography>
+        </Box>
 
         {/* KPI 3: Clientes al Día */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box
-            className="apple-card"
-            sx={{
-              p: 2.5,
-              background: 'linear-gradient(180deg, rgba(168, 85, 247, 0.1) 0%, #1C1C1E 100%)',
-              border: '1px solid rgba(168, 85, 247, 0.25)',
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-              <Typography variant="caption" fontWeight="700" sx={{ color: 'rgba(255, 255, 255, 0.55)', textTransform: 'uppercase' }}>
-                Alumnos al Día
-              </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(168, 85, 247, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc' }}>
-                <Users size={18} />
-              </Box>
+        <Box
+          sx={{
+            p: 2.2,
+            borderRadius: '18px',
+            background: 'linear-gradient(180deg, rgba(168, 85, 247, 0.1) 0%, #1C1C1E 100%)',
+            border: '1px solid rgba(168, 85, 247, 0.25)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
+            <Typography variant="caption" fontWeight="700" sx={{ color: 'rgba(255, 255, 255, 0.55)', textTransform: 'uppercase', fontSize: '0.72rem' }}>
+              Alumnos al Día
+            </Typography>
+            <Box sx={{ width: 30, height: 30, borderRadius: '8px', bgcolor: 'rgba(168, 85, 247, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c084fc' }}>
+              <Users size={16} />
             </Box>
-            <Typography variant="h4" fontWeight="900" sx={{ color: '#ffffff', letterSpacing: '-0.02em' }}>
-              {summary?.active_subscriptions || 0}
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mt: 0.5, display: 'block' }}>
-              De {summary?.total_clients || 0} alumnos asignados
-            </Typography>
           </Box>
-        </Grid>
+          <Typography variant="h4" fontWeight="900" sx={{ color: '#ffffff', letterSpacing: '-0.02em', fontSize: '1.6rem' }}>
+            {summary?.active_subscriptions || 0}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mt: 0.4, display: 'block', fontSize: '0.72rem' }}>
+            De {summary?.total_clients || 0} alumnos asignados
+          </Typography>
+        </Box>
 
         {/* KPI 4: Pagos Pendientes */}
-        <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-          <Box
-            className="apple-card"
-            sx={{
-              p: 2.5,
-              background: 'linear-gradient(180deg, rgba(255, 149, 0, 0.1) 0%, #1C1C1E 100%)',
-              border: '1px solid rgba(255, 149, 0, 0.25)',
-            }}
-          >
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5}>
-              <Typography variant="caption" fontWeight="700" sx={{ color: 'rgba(255, 255, 255, 0.55)', textTransform: 'uppercase' }}>
-                Cuotas Pendientes
-              </Typography>
-              <Box sx={{ width: 32, height: 32, borderRadius: '8px', bgcolor: 'rgba(255, 149, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF9500' }}>
-                <AlertCircle size={18} />
-              </Box>
+        <Box
+          sx={{
+            p: 2.2,
+            borderRadius: '18px',
+            background: 'linear-gradient(180deg, rgba(255, 149, 0, 0.1) 0%, #1C1C1E 100%)',
+            border: '1px solid rgba(255, 149, 0, 0.25)',
+            boxSizing: 'border-box'
+          }}
+        >
+          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2}>
+            <Typography variant="caption" fontWeight="700" sx={{ color: 'rgba(255, 255, 255, 0.55)', textTransform: 'uppercase', fontSize: '0.72rem' }}>
+              Cuotas Pendientes
+            </Typography>
+            <Box sx={{ width: 30, height: 30, borderRadius: '8px', bgcolor: 'rgba(255, 149, 0, 0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FF9500' }}>
+              <AlertCircle size={16} />
             </Box>
-            <Typography variant="h4" fontWeight="900" sx={{ color: '#FF9500', letterSpacing: '-0.02em' }}>
-              {summary?.pending_payments || 0}
-            </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mt: 0.5, display: 'block' }}>
-              Requieren cobro manual o recordatorio
-            </Typography>
           </Box>
-        </Grid>
-      </Grid>
+          <Typography variant="h4" fontWeight="900" sx={{ color: '#FF9500', letterSpacing: '-0.02em', fontSize: '1.6rem' }}>
+            {summary?.pending_payments || 0}
+          </Typography>
+          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', mt: 0.4, display: 'block', fontSize: '0.72rem' }}>
+            Requieren cobro manual
+          </Typography>
+        </Box>
+      </Box>
 
       {/* Planes y Tarifas Propias del Entrenador */}
-      <Box className="apple-card" sx={{ p: { xs: 2.5, sm: 3 }, mb: 4, background: '#18181b', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+      <Box
+        sx={{
+          p: { xs: 2, sm: 2.5 },
+          mb: 3,
+          background: '#18181b',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '20px',
+          boxSizing: 'border-box'
+        }}
+      >
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Box>
-            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#ffffff' }}>
+            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#ffffff', fontSize: '0.98rem' }}>
               Tus Planes y Tarifas
             </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.75rem' }}>
               Cada plan se aplica exclusivamente a tus clientes.
             </Typography>
           </Box>
         </Box>
 
-        <Grid container spacing={2}>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' },
+            gap: 2,
+            width: '100%',
+            minWidth: 0
+          }}
+        >
           {plans.map((p) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={p.id}>
-              <Box
-                sx={{
-                  p: 2,
-                  borderRadius: '14px',
-                  background: 'rgba(255, 255, 255, 0.03)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <Box>
-                  <Typography variant="subtitle2" fontWeight="700" sx={{ color: '#ffffff' }}>
-                    {p.name}
+            <Box
+              key={p.id}
+              sx={{
+                p: 2,
+                borderRadius: '14px',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                minWidth: 0,
+                boxSizing: 'border-box'
+              }}
+            >
+              <Box sx={{ minWidth: 0 }}>
+                <Typography variant="subtitle2" fontWeight="700" noWrap sx={{ color: '#ffffff', fontSize: '0.88rem' }}>
+                  {p.name}
+                </Typography>
+                <Typography variant="h6" fontWeight="900" sx={{ color: '#007AFF', my: 0.2, fontSize: '1.1rem' }}>
+                  {formatEuro(p.price)} <span style={{ fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500 }}>/ mes</span>
+                </Typography>
+                {p.description && (
+                  <Typography variant="caption" noWrap sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', fontSize: '0.72rem' }}>
+                    {p.description}
                   </Typography>
-                  <Typography variant="h6" fontWeight="900" sx={{ color: '#007AFF', my: 0.2 }}>
-                    {formatEuro(p.price)} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500 }}>/ mes</span>
-                  </Typography>
-                  {p.description && (
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', maxWidth: 220 }}>
-                      {p.description}
-                    </Typography>
-                  )}
-                </Box>
+                )}
               </Box>
-            </Grid>
+            </Box>
           ))}
-        </Grid>
+        </Box>
       </Box>
 
       {/* Tabla de Control de Alumnos y Cuotas */}
-      <Box className="apple-card" sx={{ p: { xs: 2.5, sm: 3 }, background: '#18181b', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2.5} flexWrap="wrap" gap={2}>
+      <Box
+        sx={{
+          p: { xs: 2, sm: 2.5 },
+          background: '#18181b',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '20px',
+          width: '100%',
+          maxWidth: '100%',
+          boxSizing: 'border-box',
+          overflow: 'hidden'
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2.5} flexWrap="wrap" gap={1.5}>
           <Box display="flex" alignItems="center" gap={1}>
-            <Users size={20} color="#007AFF" />
-            <Typography variant="h6" fontWeight="800" sx={{ color: '#ffffff', fontSize: '1.05rem' }}>
+            <Users size={19} color="#007AFF" />
+            <Typography variant="h6" fontWeight="800" sx={{ color: '#ffffff', fontSize: { xs: '0.98rem', sm: '1.05rem' } }}>
               Estado de Cuotas por Alumno
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1.5} alignItems="center">
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.2} alignItems={{ xs: 'stretch', sm: 'center' }} sx={{ width: { xs: '100%', sm: 'auto' } }}>
             {/* Filtros */}
             <Stack direction="row" spacing={0.8}>
               <Chip
@@ -456,6 +490,7 @@ export const TrainerBillingPage: React.FC = () => {
                   color: '#ffffff',
                   fontWeight: 600,
                   cursor: 'pointer',
+                  fontSize: '0.75rem'
                 }}
               />
               <Chip
@@ -467,6 +502,7 @@ export const TrainerBillingPage: React.FC = () => {
                   color: statusFilter === 'active' ? '#34C759' : 'rgba(255, 255, 255, 0.6)',
                   fontWeight: 600,
                   cursor: 'pointer',
+                  fontSize: '0.75rem'
                 }}
               />
               <Chip
@@ -478,6 +514,7 @@ export const TrainerBillingPage: React.FC = () => {
                   color: statusFilter === 'pending' ? '#FF9500' : 'rgba(255, 255, 255, 0.6)',
                   fontWeight: 600,
                   cursor: 'pointer',
+                  fontSize: '0.75rem'
                 }}
               />
             </Stack>
@@ -491,135 +528,250 @@ export const TrainerBillingPage: React.FC = () => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <Search size={16} color="rgba(255, 255, 255, 0.4)" />
+                    <Search size={15} color="rgba(255, 255, 255, 0.4)" />
                   </InputAdornment>
                 ),
-                sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '10px', fontSize: '13px' },
+                sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '10px', fontSize: '13px', color: '#ffffff' },
               }}
             />
           </Stack>
         </Box>
 
         {filteredClients.length === 0 ? (
-          <Box py={4} textAlign="center">
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+          <Box py={3} textAlign="center">
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.85rem' }}>
               No se encontraron alumnos con los filtros seleccionados.
             </Typography>
           </Box>
         ) : (
-          <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
-            <Table size="small">
-              <TableHead>
-                <TableRow sx={{ '& th': { borderColor: 'rgba(255, 255, 255, 0.08)', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 } }}>
-                  <TableCell>Alumno</TableCell>
-                  <TableCell>Tarifa / Cuota</TableCell>
-                  <TableCell>Modalidad</TableCell>
-                  <TableCell>Último Pago</TableCell>
-                  <TableCell>Próximo Vencimiento</TableCell>
-                  <TableCell align="center">Estado</TableCell>
-                  <TableCell align="right">Acciones de Cobro</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredClients.map((c) => {
-                  const isPaid = c.status === 'active';
-                  return (
-                    <TableRow key={c.client_id} sx={{ '& td': { borderColor: 'rgba(255, 255, 255, 0.05)', color: '#ffffff' } }}>
-                      <TableCell>
-                        <Box display="flex" alignItems="center" gap={1.2}>
-                          <Avatar sx={{ width: 32, height: 32, bgcolor: '#007AFF', fontSize: '0.85rem', fontWeight: 700 }}>
-                            {c.name.charAt(0)}
-                          </Avatar>
-                          <Box>
-                            <Typography variant="body2" fontWeight="700">
-                              {c.name} {c.surname}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                              {c.email}
-                            </Typography>
-                          </Box>
+          <>
+            {/* Vista Móvil: Cards */}
+            <Stack spacing={1.5} sx={{ display: { xs: 'flex', sm: 'none' }, width: '100%' }}>
+              {filteredClients.map((c) => {
+                const isPaid = c.status === 'active';
+                return (
+                  <Box
+                    key={c.client_id}
+                    sx={{
+                      p: 1.8,
+                      borderRadius: '14px',
+                      bgcolor: 'rgba(255, 255, 255, 0.03)',
+                      border: '1px solid rgba(255, 255, 255, 0.06)',
+                      boxSizing: 'border-box'
+                    }}
+                  >
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <Avatar sx={{ width: 28, height: 28, bgcolor: '#007AFF', fontSize: '0.75rem', fontWeight: 700 }}>
+                          {c.name.charAt(0)}
+                        </Avatar>
+                        <Box>
+                          <Typography variant="body2" fontWeight="700" sx={{ color: '#ffffff', fontSize: '0.85rem' }}>
+                            {c.name} {c.surname}
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.7rem' }}>
+                            {c.email}
+                          </Typography>
                         </Box>
-                      </TableCell>
+                      </Box>
+                      <Chip
+                        label={isPaid ? 'Al Día' : 'Pendiente'}
+                        size="small"
+                        sx={{
+                          height: 20,
+                          fontSize: '0.65rem',
+                          fontWeight: 700,
+                          bgcolor: isPaid ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 149, 0, 0.15)',
+                          color: isPaid ? '#34C759' : '#FF9500',
+                        }}
+                      />
+                    </Box>
 
-                      <TableCell>
-                        <Typography variant="body2" fontWeight="800" sx={{ color: '#38bdf8' }}>
-                          {formatEuro(c.monthly_amount)} <span style={{ fontSize: '0.75rem', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500 }}>/ mes</span>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" my={1}>
+                      <Box>
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', fontSize: '0.68rem' }}>
+                          Cuota
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
-                          {c.plan_name || 'Tarifa Base'}
+                        <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#38bdf8' }}>
+                          {formatEuro(c.monthly_amount)}
                         </Typography>
-                      </TableCell>
+                      </Box>
+                      <Box textAlign="right">
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', fontSize: '0.68rem' }}>
+                          Vencimiento
+                        </Typography>
+                        <Typography variant="caption" fontWeight="600" sx={{ color: isPaid ? '#34C759' : '#FF9500' }}>
+                          {formatDate(c.current_period_end)}
+                        </Typography>
+                      </Box>
+                    </Box>
 
-                      <TableCell>
-                        <Chip
-                          label={c.payment_type === 'stripe' ? 'In-App Tarjeta' : 'Manual / Externo'}
-                          size="small"
-                          sx={{
-                            height: 22,
-                            fontSize: '0.68rem',
-                            bgcolor: c.payment_type === 'stripe' ? 'rgba(0, 122, 255, 0.15)' : 'rgba(255, 255, 255, 0.06)',
-                            color: c.payment_type === 'stripe' ? '#38bdf8' : 'rgba(255, 255, 255, 0.7)',
-                            border: '1px solid rgba(255, 255, 255, 0.08)',
-                          }}
-                        />
-                      </TableCell>
+                    <Stack direction="row" spacing={1} mt={1.5} pt={1} borderTop="1px solid rgba(255, 255, 255, 0.06)">
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        fullWidth
+                        onClick={() => handleOpenManualPay(c)}
+                        startIcon={<Receipt size={13} />}
+                        sx={{
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          textTransform: 'none',
+                          color: '#34C759',
+                          borderColor: 'rgba(52, 199, 89, 0.3)',
+                          py: 0.5
+                        }}
+                      >
+                        Cobro Manual
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        fullWidth
+                        onClick={() => handleOpenEditFee(c)}
+                        startIcon={<Edit2 size={13} />}
+                        sx={{
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          textTransform: 'none',
+                          color: '#007AFF',
+                          borderColor: 'rgba(0, 122, 255, 0.3)',
+                          py: 0.5
+                        }}
+                      >
+                        Editar Cuota
+                      </Button>
+                    </Stack>
+                  </Box>
+                );
+              })}
+            </Stack>
 
-                      <TableCell>{formatDate(c.last_payment_date)}</TableCell>
+            {/* Vista Desktop: Tabla */}
+            <TableContainer
+              component={Paper}
+              sx={{
+                display: { xs: 'none', sm: 'block' },
+                bgcolor: 'transparent',
+                boxShadow: 'none',
+                width: '100%',
+                maxWidth: '100%',
+                overflowX: 'auto'
+              }}
+            >
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ '& th': { borderColor: 'rgba(255, 255, 255, 0.08)', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700, fontSize: '0.78rem' } }}>
+                    <TableCell>Alumno</TableCell>
+                    <TableCell>Tarifa / Cuota</TableCell>
+                    <TableCell>Modalidad</TableCell>
+                    <TableCell>Último Pago</TableCell>
+                    <TableCell>Próximo Vencimiento</TableCell>
+                    <TableCell align="center">Estado</TableCell>
+                    <TableCell align="right">Acciones de Cobro</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {filteredClients.map((c) => {
+                    const isPaid = c.status === 'active';
+                    return (
+                      <TableRow key={c.client_id} sx={{ '& td': { borderColor: 'rgba(255, 255, 255, 0.05)', color: '#ffffff', fontSize: '0.84rem' } }}>
+                        <TableCell>
+                          <Box display="flex" alignItems="center" gap={1.2}>
+                            <Avatar sx={{ width: 30, height: 30, bgcolor: '#007AFF', fontSize: '0.8rem', fontWeight: 700 }}>
+                              {c.name.charAt(0)}
+                            </Avatar>
+                            <Box>
+                              <Typography variant="body2" fontWeight="700">
+                                {c.name} {c.surname}
+                              </Typography>
+                              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                                {c.email}
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </TableCell>
 
-                      <TableCell sx={{ color: isPaid ? '#34C759' : '#FF9500', fontWeight: 600 }}>
-                        {formatDate(c.current_period_end)}
-                      </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" fontWeight="800" sx={{ color: '#38bdf8' }}>
+                            {formatEuro(c.monthly_amount)} <span style={{ fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 500 }}>/ mes</span>
+                          </Typography>
+                          <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                            {c.plan_name || 'Tarifa Base'}
+                          </Typography>
+                        </TableCell>
 
-                      <TableCell align="center">
-                        <Chip
-                          label={isPaid ? 'Al Día' : 'Pendiente'}
-                          size="small"
-                          sx={{
-                            height: 22,
-                            fontSize: '0.68rem',
-                            fontWeight: 700,
-                            bgcolor: isPaid ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 149, 0, 0.15)',
-                            color: isPaid ? '#34C759' : '#FF9500',
-                            border: `1px solid ${isPaid ? 'rgba(52, 199, 89, 0.3)' : 'rgba(255, 149, 0, 0.3)'}`,
-                          }}
-                        />
-                      </TableCell>
-
-                      <TableCell align="right">
-                        <Stack direction="row" spacing={1} justifyContent="flex-end">
-                          <Button
+                        <TableCell>
+                          <Chip
+                            label={c.payment_type === 'stripe' ? 'In-App Tarjeta' : 'Manual / Externo'}
                             size="small"
-                            variant="outlined"
-                            onClick={() => handleOpenManualPay(c)}
-                            startIcon={<Receipt size={14} />}
                             sx={{
-                              borderRadius: '8px',
-                              fontSize: '11px',
-                              textTransform: 'none',
-                              color: '#34C759',
-                              borderColor: 'rgba(52, 199, 89, 0.3)',
-                              '&:hover': { bgcolor: 'rgba(52, 199, 89, 0.1)', borderColor: '#34C759' },
+                              height: 20,
+                              fontSize: '0.66rem',
+                              bgcolor: c.payment_type === 'stripe' ? 'rgba(0, 122, 255, 0.15)' : 'rgba(255, 255, 255, 0.06)',
+                              color: c.payment_type === 'stripe' ? '#38bdf8' : 'rgba(255, 255, 255, 0.7)',
+                              border: '1px solid rgba(255, 255, 255, 0.08)',
                             }}
-                          >
-                            Cobro Manual
-                          </Button>
+                          />
+                        </TableCell>
 
-                          <IconButton
+                        <TableCell>{formatDate(c.last_payment_date)}</TableCell>
+
+                        <TableCell sx={{ color: isPaid ? '#34C759' : '#FF9500', fontWeight: 600 }}>
+                          {formatDate(c.current_period_end)}
+                        </TableCell>
+
+                        <TableCell align="center">
+                          <Chip
+                            label={isPaid ? 'Al Día' : 'Pendiente'}
                             size="small"
-                            onClick={() => handleOpenEditFee(c)}
-                            title="Modificar cuota personalizada"
-                            sx={{ color: 'rgba(255, 255, 255, 0.5)', '&:hover': { color: '#007AFF' } }}
-                          >
-                            <Edit2 size={15} />
-                          </IconButton>
-                        </Stack>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                            sx={{
+                              height: 20,
+                              fontSize: '0.66rem',
+                              fontWeight: 700,
+                              bgcolor: isPaid ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 149, 0, 0.15)',
+                              color: isPaid ? '#34C759' : '#FF9500',
+                              border: `1px solid ${isPaid ? 'rgba(52, 199, 89, 0.3)' : 'rgba(255, 149, 0, 0.3)'}`,
+                            }}
+                          />
+                        </TableCell>
+
+                        <TableCell align="right">
+                          <Stack direction="row" spacing={1} justifyContent="flex-end">
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={() => handleOpenManualPay(c)}
+                              startIcon={<Receipt size={13} />}
+                              sx={{
+                                borderRadius: '8px',
+                                fontSize: '11px',
+                                textTransform: 'none',
+                                color: '#34C759',
+                                borderColor: 'rgba(52, 199, 89, 0.3)',
+                                '&:hover': { bgcolor: 'rgba(52, 199, 89, 0.1)', borderColor: '#34C759' },
+                              }}
+                            >
+                              Cobro Manual
+                            </Button>
+
+                            <IconButton
+                              size="small"
+                              onClick={() => handleOpenEditFee(c)}
+                              title="Modificar cuota personalizada"
+                              sx={{ color: 'rgba(255, 255, 255, 0.5)', '&:hover': { color: '#007AFF' } }}
+                            >
+                              <Edit2 size={15} />
+                            </IconButton>
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </>
         )}
       </Box>
 
@@ -629,7 +781,7 @@ export const TrainerBillingPage: React.FC = () => {
         onClose={() => setManualPayModalOpen(false)}
         fullWidth
         maxWidth="xs"
-        PaperProps={{ sx: { bgcolor: '#18181b', color: '#ffffff', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.15)' } }}
+        PaperProps={{ sx: { bgcolor: '#18181b', color: '#ffffff', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.15)', m: 2 } }}
       >
         <form onSubmit={handleSubmitManualPay}>
           <DialogTitle sx={{ fontWeight: 800 }}>Registrar Pago de {selectedClientForPay?.name}</DialogTitle>
@@ -646,7 +798,7 @@ export const TrainerBillingPage: React.FC = () => {
                 required
                 value={manualPayForm.amount}
                 onChange={(e) => setManualPayForm({ ...manualPayForm, amount: e.target.value })}
-                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
+                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '14px', color: '#ffffff' } }}
               />
 
               <TextField
@@ -655,7 +807,7 @@ export const TrainerBillingPage: React.FC = () => {
                 fullWidth
                 value={manualPayForm.payment_method}
                 onChange={(e) => setManualPayForm({ ...manualPayForm, payment_method: e.target.value as any })}
-                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
+                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '14px', color: '#ffffff' } }}
               >
                 <MenuItem value="bizum">Bizum</MenuItem>
                 <MenuItem value="transfer">Transferencia Bancaria</MenuItem>
@@ -668,7 +820,7 @@ export const TrainerBillingPage: React.FC = () => {
                 placeholder="ej. Pago mes de Octubre recibido por Bizum"
                 value={manualPayForm.notes}
                 onChange={(e) => setManualPayForm({ ...manualPayForm, notes: e.target.value })}
-                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
+                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '14px', color: '#ffffff' } }}
               />
             </Stack>
           </DialogContent>
@@ -689,7 +841,7 @@ export const TrainerBillingPage: React.FC = () => {
         onClose={() => setPlanModalOpen(false)}
         fullWidth
         maxWidth="xs"
-        PaperProps={{ sx: { bgcolor: '#18181b', color: '#ffffff', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.15)' } }}
+        PaperProps={{ sx: { bgcolor: '#18181b', color: '#ffffff', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.15)', m: 2 } }}
       >
         <form onSubmit={handleCreatePlan}>
           <DialogTitle sx={{ fontWeight: 800 }}>Crear Tarifa Propia</DialogTitle>
@@ -706,7 +858,7 @@ export const TrainerBillingPage: React.FC = () => {
                 required
                 value={newPlanForm.name}
                 onChange={(e) => setNewPlanForm({ ...newPlanForm, name: e.target.value })}
-                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
+                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '14px', color: '#ffffff' } }}
               />
 
               <TextField
@@ -717,7 +869,7 @@ export const TrainerBillingPage: React.FC = () => {
                 placeholder="ej. 60.00"
                 value={newPlanForm.price}
                 onChange={(e) => setNewPlanForm({ ...newPlanForm, price: e.target.value })}
-                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
+                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '14px', color: '#ffffff' } }}
               />
 
               <TextField
@@ -728,7 +880,7 @@ export const TrainerBillingPage: React.FC = () => {
                 rows={2}
                 value={newPlanForm.description}
                 onChange={(e) => setNewPlanForm({ ...newPlanForm, description: e.target.value })}
-                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
+                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '14px', color: '#ffffff' } }}
               />
             </Stack>
           </DialogContent>
@@ -749,7 +901,7 @@ export const TrainerBillingPage: React.FC = () => {
         onClose={() => setEditFeeModalOpen(false)}
         fullWidth
         maxWidth="xs"
-        PaperProps={{ sx: { bgcolor: '#18181b', color: '#ffffff', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.15)' } }}
+        PaperProps={{ sx: { bgcolor: '#18181b', color: '#ffffff', borderRadius: '20px', border: '1px solid rgba(255, 255, 255, 0.15)', m: 2 } }}
       >
         <form onSubmit={handleSubmitEditFee}>
           <DialogTitle sx={{ fontWeight: 800 }}>Cuota de {selectedClientForFee?.name}</DialogTitle>
@@ -765,7 +917,7 @@ export const TrainerBillingPage: React.FC = () => {
               required
               value={customFeeAmount}
               onChange={(e) => setCustomFeeAmount(e.target.value)}
-              InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
+              InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '14px', color: '#ffffff' } }}
             />
           </DialogContent>
           <DialogActions sx={{ p: 2.5 }}>

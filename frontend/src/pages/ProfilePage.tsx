@@ -30,7 +30,6 @@ import {
   Lock,
   LogOut,
   Save,
-  CheckCircle2,
   Calendar,
   Mail,
   ShieldCheck,
@@ -247,7 +246,7 @@ export const ProfilePage = () => {
 
   if (loading) {
     return (
-      <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
         <LinearProgress sx={{ width: '100%', maxWidth: 300, borderRadius: 2 }} />
         <Typography sx={{ mt: 2, color: 'text.secondary', fontSize: '0.9rem' }}>
           Cargando tu perfil...
@@ -258,7 +257,7 @@ export const ProfilePage = () => {
 
   if (error || !currentUser) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 3, width: '100%', maxWidth: '100%', boxSizing: 'border-box' }}>
         <Alert severity='error' sx={{ borderRadius: '12px' }}>
           {error || 'No se pudo cargar la información del usuario'}
         </Alert>
@@ -269,64 +268,96 @@ export const ProfilePage = () => {
   const age = calculateAge(currentUser.birth_date)
 
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
+    <Box
+      sx={{
+        width: '100%',
+        maxWidth: 1180,
+        mx: 'auto',
+        p: { xs: 1.5, sm: 2.5, md: 3 },
+        boxSizing: 'border-box',
+        overflowX: 'hidden'
+      }}
+    >
       <ToastContainer />
 
       {/* Header Banner del Perfil */}
       <Card
         sx={{
           mb: 3,
+          width: '100%',
+          maxWidth: '100%',
           borderRadius: '20px',
           bgcolor: 'var(--bg-card, #18181b)',
           border: '1px solid rgba(255, 255, 255, 0.08)',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
           overflow: 'hidden',
-          position: 'relative'
+          boxSizing: 'border-box'
         }}
       >
         <Box
           sx={{
-            height: { xs: 80, sm: 100 },
+            height: { xs: 70, sm: 90 },
+            width: '100%',
             background: 'linear-gradient(135deg, rgba(0, 122, 255, 0.35) 0%, rgba(88, 86, 214, 0.2) 100%)',
             borderBottom: '1px solid rgba(255, 255, 255, 0.06)'
           }}
         />
 
-        <CardContent sx={{ p: { xs: 2.5, sm: 3 }, pt: 0, position: 'relative' }}>
+        <CardContent sx={{ p: { xs: 2, sm: 3 }, pt: 0, boxSizing: 'border-box' }}>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
-            spacing={{ xs: 2, sm: 3 }}
+            spacing={{ xs: 2, sm: 2.5 }}
             alignItems={{ xs: 'center', sm: 'flex-end' }}
-            sx={{ mt: { xs: -5, sm: -6 }, mb: 2 }}
+            sx={{ mt: { xs: -4.5, sm: -5 }, mb: 1.5 }}
           >
             <Avatar
               sx={{
-                width: { xs: 88, sm: 100 },
-                height: { xs: 88, sm: 100 },
+                width: { xs: 76, sm: 90 },
+                height: { xs: 76, sm: 90 },
                 bgcolor: '#007AFF',
                 color: '#ffffff',
-                fontSize: { xs: '1.75rem', sm: '2.1rem' },
+                fontSize: { xs: '1.6rem', sm: '1.9rem' },
                 fontWeight: 800,
                 border: '4px solid #18181b',
-                boxShadow: '0 6px 20px rgba(0,0,0,0.5)'
+                boxShadow: '0 6px 20px rgba(0,0,0,0.5)',
+                flexShrink: 0
               }}
             >
               {getInitials(currentUser.name, currentUser.surname)}
             </Avatar>
 
-            <Box sx={{ flex: 1, textAlign: { xs: 'center', sm: 'left' } }}>
+            <Box sx={{ flex: 1, minWidth: 0, width: '100%', textAlign: { xs: 'center', sm: 'left' } }}>
               <Typography
                 variant='h5'
                 fontWeight='800'
-                sx={{ color: '#ffffff', letterSpacing: '-0.02em', mb: 0.3 }}
+                noWrap
+                sx={{
+                  color: '#ffffff',
+                  letterSpacing: '-0.02em',
+                  mb: 0.3,
+                  fontSize: { xs: '1.25rem', sm: '1.5rem' },
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
               >
                 {currentUser.name} {currentUser.surname}
               </Typography>
               <Typography
                 variant='body2'
-                sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', sm: 'flex-start' }, gap: 0.8, mb: 1.2 }}
+                noWrap
+                sx={{
+                  color: 'rgba(255, 255, 255, 0.6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: { xs: 'center', sm: 'flex-start' },
+                  gap: 0.8,
+                  mb: 1.2,
+                  fontSize: '0.85rem',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis'
+                }}
               >
-                <Mail size={14} />
+                <Mail size={14} style={{ flexShrink: 0 }} />
                 {currentUser.email}
               </Typography>
 
@@ -370,12 +401,12 @@ export const ProfilePage = () => {
               </Stack>
             </Box>
 
-            <Box sx={{ mt: { xs: 2, sm: 0 } }}>
+            <Box sx={{ mt: { xs: 1.5, sm: 0 }, flexShrink: 0 }}>
               <Button
                 variant='outlined'
                 color='error'
                 size='small'
-                startIcon={<LogOut size={16} />}
+                startIcon={<LogOut size={15} />}
                 onClick={handleLogout}
                 sx={{
                   borderRadius: '12px',
@@ -383,6 +414,7 @@ export const ProfilePage = () => {
                   textTransform: 'none',
                   borderColor: 'rgba(239, 68, 68, 0.3)',
                   color: '#ef4444',
+                  whiteSpace: 'nowrap',
                   '&:hover': {
                     bgcolor: 'rgba(239, 68, 68, 0.1)',
                     borderColor: '#ef4444'
@@ -400,30 +432,41 @@ export const ProfilePage = () => {
       <Box
         sx={{
           mb: 3,
+          width: '100%',
+          maxWidth: '100%',
           borderRadius: '16px',
           bgcolor: 'var(--bg-card, #18181b)',
           p: 0.8,
-          border: '1px solid rgba(255, 255, 255, 0.08)'
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxSizing: 'border-box',
+          overflowX: 'auto'
         }}
       >
         <Tabs
           value={activeTab}
           onChange={(_, val) => setActiveTab(val)}
           variant='scrollable'
-          scrollButtons='auto'
+          scrollButtons={false}
+          allowScrollButtonsMobile={false}
           sx={{
-            minHeight: 44,
+            minHeight: 42,
+            maxWidth: '100%',
             '& .MuiTabs-indicator': {
               display: 'none'
             },
+            '& .MuiTabs-scroller': {
+              overflowX: 'auto !important'
+            },
             '& .MuiTab-root': {
-              minHeight: 40,
+              minHeight: 38,
               borderRadius: '12px',
               textTransform: 'none',
               fontWeight: 600,
-              fontSize: '0.875rem',
+              fontSize: { xs: '0.8rem', sm: '0.875rem' },
               color: 'rgba(255, 255, 255, 0.6)',
-              px: 2.5,
+              px: { xs: 1.5, sm: 2.5 },
+              py: 0.5,
+              whiteSpace: 'nowrap',
               transition: 'all 0.2s ease',
               '&.Mui-selected': {
                 color: '#ffffff',
@@ -435,25 +478,25 @@ export const ProfilePage = () => {
         >
           <Tab
             label='Datos Personales'
-            icon={<UserIcon size={17} />}
+            icon={<UserIcon size={16} />}
             iconPosition='start'
           />
           {!isTrainerOrAdmin ? (
             <Tab
               label='Suscripción y Pagos'
-              icon={<CreditCard size={17} />}
+              icon={<CreditCard size={16} />}
               iconPosition='start'
             />
           ) : (
             <Tab
               label='Estadísticas'
-              icon={<BarChart3 size={17} />}
+              icon={<BarChart3 size={16} />}
               iconPosition='start'
             />
           )}
           <Tab
             label='Seguridad'
-            icon={<Lock size={17} />}
+            icon={<Lock size={16} />}
             iconPosition='start'
           />
         </Tabs>
@@ -463,26 +506,31 @@ export const ProfilePage = () => {
       {activeTab === 0 && (
         <Card
           sx={{
+            width: '100%',
+            maxWidth: '100%',
             borderRadius: '20px',
             bgcolor: 'var(--bg-card, #18181b)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
-            p: { xs: 2.5, sm: 3.5 }
+            p: { xs: 2, sm: 3.5 },
+            boxSizing: 'border-box'
           }}
         >
           <Box display='flex' alignItems='center' gap={1.2} mb={3}>
-            <UserIcon size={22} color='#007AFF' />
-            <Typography variant='h6' fontWeight='800' sx={{ color: '#ffffff' }}>
+            <UserIcon size={20} color='#007AFF' />
+            <Typography variant='h6' fontWeight='800' sx={{ color: '#ffffff', fontSize: { xs: '1.05rem', sm: '1.2rem' } }}>
               Información de la Cuenta
             </Typography>
           </Box>
 
           <form onSubmit={handleProfileSubmit}>
-            <Stack spacing={3}>
+            <Stack spacing={2.5}>
               <Box
                 sx={{
                   display: 'grid',
                   gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
-                  gap: 2.5
+                  gap: 2,
+                  width: '100%',
+                  minWidth: 0
                 }}
               >
                 <TextField
@@ -563,14 +611,15 @@ export const ProfilePage = () => {
                   type='submit'
                   variant='contained'
                   disabled={saving}
-                  startIcon={saving ? null : <Save size={18} />}
+                  startIcon={saving ? null : <Save size={17} />}
                   sx={{
                     borderRadius: '12px',
                     fontWeight: 700,
                     textTransform: 'none',
                     bgcolor: '#007AFF',
-                    px: 3.5,
-                    py: 1.2
+                    px: { xs: 2.5, sm: 3.5 },
+                    py: 1.1,
+                    width: { xs: '100%', sm: 'auto' }
                   }}
                 >
                   {saving ? 'Guardando cambios...' : 'Guardar Cambios'}
@@ -587,62 +636,64 @@ export const ProfilePage = () => {
       )}
 
       {activeTab === 1 && isTrainerOrAdmin && (
-        <Stack spacing={3}>
+        <Stack spacing={3} sx={{ width: '100%', maxWidth: '100%', minWidth: 0, overflow: 'hidden' }}>
           {/* Métricas KPI */}
           <Box
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' },
-              gap: 2.5
+              gap: 2,
+              width: '100%',
+              minWidth: 0
             }}
           >
             <Card
               sx={{
-                p: 3,
+                p: 2.5,
                 borderRadius: '18px',
                 bgcolor: 'var(--bg-card, #18181b)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
                 textAlign: 'center'
               }}
             >
-              <Typography variant='h3' fontWeight='900' sx={{ color: '#007AFF' }}>
+              <Typography variant='h4' fontWeight='900' sx={{ color: '#007AFF' }}>
                 {stats.totalUsers}
               </Typography>
-              <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5 }}>
+              <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5, fontSize: '0.8rem' }}>
                 Total de Usuarios
               </Typography>
             </Card>
 
             <Card
               sx={{
-                p: 3,
+                p: 2.5,
                 borderRadius: '18px',
                 bgcolor: 'var(--bg-card, #18181b)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
                 textAlign: 'center'
               }}
             >
-              <Typography variant='h3' fontWeight='900' sx={{ color: '#34C759' }}>
+              <Typography variant='h4' fontWeight='900' sx={{ color: '#34C759' }}>
                 {stats.totalDiets}
               </Typography>
-              <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5 }}>
+              <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5, fontSize: '0.8rem' }}>
                 Planes Nutricionales
               </Typography>
             </Card>
 
             <Card
               sx={{
-                p: 3,
+                p: 2.5,
                 borderRadius: '18px',
                 bgcolor: 'var(--bg-card, #18181b)',
                 border: '1px solid rgba(255, 255, 255, 0.08)',
                 textAlign: 'center'
               }}
             >
-              <Typography variant='h3' fontWeight='900' sx={{ color: '#FF9500' }}>
+              <Typography variant='h4' fontWeight='900' sx={{ color: '#FF9500' }}>
                 {stats.totalWorkouts}
               </Typography>
-              <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5 }}>
+              <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5, fontSize: '0.8rem' }}>
                 Rutinas de Entrenamiento
               </Typography>
             </Card>
@@ -653,56 +704,66 @@ export const ProfilePage = () => {
             sx={{
               display: 'grid',
               gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
-              gap: 2.5
+              gap: 2.5,
+              width: '100%',
+              minWidth: 0
             }}
           >
             <Card
               sx={{
-                p: 3,
+                p: 2.5,
                 borderRadius: '18px',
                 bgcolor: 'var(--bg-card, #18181b)',
-                border: '1px solid rgba(255, 255, 255, 0.08)'
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                overflow: 'hidden',
+                minWidth: 0
               }}
             >
-              <Typography variant='subtitle1' fontWeight='800' sx={{ color: '#ffffff', mb: 2 }}>
+              <Typography variant='subtitle1' fontWeight='800' sx={{ color: '#ffffff', mb: 2, fontSize: '0.95rem' }}>
                 Distribución Global del Sistema
               </Typography>
-              <Chart
-                type='bar'
-                series={chartData.series}
-                options={{
-                  chart: { height: 260, toolbar: { show: false } },
-                  xaxis: { categories: chartData.categories },
-                  colors: ['#007AFF'],
-                  theme: { mode: 'dark' },
-                  plotOptions: { bar: { horizontal: false, columnWidth: '45%', borderRadius: 6 } }
-                }}
-                height={260}
-              />
+              <Box sx={{ width: '100%', minWidth: 0, overflow: 'hidden' }}>
+                <Chart
+                  type='bar'
+                  series={chartData.series}
+                  options={{
+                    chart: { height: 260, toolbar: { show: false } },
+                    xaxis: { categories: chartData.categories },
+                    colors: ['#007AFF'],
+                    theme: { mode: 'dark' },
+                    plotOptions: { bar: { horizontal: false, columnWidth: '45%', borderRadius: 6 } }
+                  }}
+                  height={260}
+                />
+              </Box>
             </Card>
 
             <Card
               sx={{
-                p: 3,
+                p: 2.5,
                 borderRadius: '18px',
                 bgcolor: 'var(--bg-card, #18181b)',
-                border: '1px solid rgba(255, 255, 255, 0.08)'
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                overflow: 'hidden',
+                minWidth: 0
               }}
             >
-              <Typography variant='subtitle1' fontWeight='800' sx={{ color: '#ffffff', mb: 2 }}>
+              <Typography variant='subtitle1' fontWeight='800' sx={{ color: '#ffffff', mb: 2, fontSize: '0.95rem' }}>
                 Usuarios por Rol
               </Typography>
-              <Chart
-                type='donut'
-                series={roleChartData.series}
-                options={{
-                  labels: roleChartData.labels,
-                  colors: ['#007AFF', '#34C759'],
-                  theme: { mode: 'dark' },
-                  legend: { position: 'bottom' }
-                }}
-                height={260}
-              />
+              <Box sx={{ width: '100%', minWidth: 0, overflow: 'hidden' }}>
+                <Chart
+                  type='donut'
+                  series={roleChartData.series}
+                  options={{
+                    labels: roleChartData.labels,
+                    colors: ['#007AFF', '#34C759'],
+                    theme: { mode: 'dark' },
+                    legend: { position: 'bottom' }
+                  }}
+                  height={260}
+                />
+              </Box>
             </Card>
           </Box>
         </Stack>
@@ -712,24 +773,27 @@ export const ProfilePage = () => {
       {activeTab === 2 && (
         <Card
           sx={{
+            width: '100%',
+            maxWidth: '100%',
             borderRadius: '20px',
             bgcolor: 'var(--bg-card, #18181b)',
             border: '1px solid rgba(255, 255, 255, 0.08)',
-            p: { xs: 2.5, sm: 3.5 }
+            p: { xs: 2, sm: 3.5 },
+            boxSizing: 'border-box'
           }}
         >
-          <Box display='flex' alignItems='center' gap={1.2} mb={2}>
-            <KeyRound size={22} color='#007AFF' />
-            <Typography variant='h6' fontWeight='800' sx={{ color: '#ffffff' }}>
+          <Box display='flex' alignItems='center' gap={1.2} mb={1.5}>
+            <KeyRound size={20} color='#007AFF' />
+            <Typography variant='h6' fontWeight='800' sx={{ color: '#ffffff', fontSize: { xs: '1.05rem', sm: '1.2rem' } }}>
               Actualizar Contraseña
             </Typography>
           </Box>
-          <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 3 }}>
+          <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 3, fontSize: '0.85rem' }}>
             Elige una contraseña robusta de al menos 6 caracteres para proteger tu cuenta.
           </Typography>
 
           <form onSubmit={handlePasswordSubmit}>
-            <Stack spacing={2.5} sx={{ maxWidth: 500 }}>
+            <Stack spacing={2} sx={{ maxWidth: 500, width: '100%' }}>
               <TextField
                 fullWidth
                 type='password'
@@ -799,14 +863,15 @@ export const ProfilePage = () => {
                   type='submit'
                   variant='contained'
                   disabled={savingPassword}
-                  startIcon={savingPassword ? null : <ShieldCheck size={18} />}
+                  startIcon={savingPassword ? null : <ShieldCheck size={17} />}
                   sx={{
                     borderRadius: '12px',
                     fontWeight: 700,
                     textTransform: 'none',
                     bgcolor: '#007AFF',
                     px: 3.5,
-                    py: 1.2
+                    py: 1.1,
+                    width: { xs: '100%', sm: 'auto' }
                   }}
                 >
                   {savingPassword ? 'Actualizando...' : 'Actualizar Contraseña'}
