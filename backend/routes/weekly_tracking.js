@@ -101,12 +101,13 @@ router.post('/upload-weight-photo', upload.single('weightPhoto'), async (req, re
   }
 })
 
-// Crear nuevo seguimiento semanal
+// Crear o actualizar seguimiento semanal
 router.post('/', async (req, res) => {
   try {
     const {
       user_id,
       week_start_date,
+      date,
       weight,
       weight_photo_url,
       chest_measurement,
@@ -124,10 +125,12 @@ router.post('/', async (req, res) => {
       self_rating
     } = req.body
 
+    const targetWeekDate = week_start_date || date || new Date().toISOString().split('T')[0]
+
     // Validar campos requeridos
-    if (!user_id || !week_start_date) {
+    if (!user_id) {
       return res.status(400).json({ 
-        message: 'El ID del usuario y la fecha de inicio de semana son requeridos' 
+        message: 'El ID del usuario es requerido' 
       })
     }
 
@@ -145,35 +148,60 @@ router.post('/', async (req, res) => {
       })
     }
 
-    const { data, error } = await supabase
+    // Comprobar si ya existe un registro para esta fecha
+    const { data: existing } = await supabase
       .from('weekly_tracking')
-      .insert([{
-        user_id,
-        week_start_date,
-        weight,
-        weight_photo_url,
-        chest_measurement,
-        waist_measurement,
-        hip_measurement,
-        thigh_measurement,
-        bicep_measurement,
-        diet_difficulties,
-        exercise_difficulties,
-        bowel_movements_per_week,
-        daily_water_intake,
-        sleep_quality,
-        training_days_completed,
-        diet_deviations,
-        self_rating
-      }])
-      .select()
-      .single()
+      .select('id')
+      .eq('user_id', user_id)
+      .eq('week_start_date', targetWeekDate)
+      .maybeSingle()
 
-    if (error) throw error
+    const trackingPayload = {
+      user_id,
+      week_start_date: targetWeekDate,
+      weight: weight !== undefined && weight !== '' ? Number(weight) : null,
+      weight_photo_url: weight_photo_url || null,
+      chest_measurement: chest_measurement !== undefined && chest_measurement !== '' ? Number(chest_measurement) : null,
+      waist_measurement: waist_measurement !== undefined && waist_measurement !== '' ? Number(waist_measurement) : null,
+      hip_measurement: hip_measurement !== undefined && hip_measurement !== '' ? Number(hip_measurement) : null,
+      thigh_measurement: thigh_measurement !== undefined && thigh_measurement !== '' ? Number(thigh_measurement) : null,
+      bicep_measurement: bicep_measurement !== undefined && bicep_measurement !== '' ? Number(bicep_measurement) : null,
+      diet_difficulties: diet_difficulties || null,
+      exercise_difficulties: exercise_difficulties || null,
+      bowel_movements_per_week: bowel_movements_per_week !== undefined && bowel_movements_per_week !== '' ? Number(bowel_movements_per_week) : null,
+      daily_water_intake: daily_water_intake !== undefined && daily_water_intake !== '' ? Number(daily_water_intake) : null,
+      sleep_quality: sleep_quality || null,
+      training_days_completed: training_days_completed !== undefined && training_days_completed !== '' ? Number(training_days_completed) : null,
+      diet_deviations: diet_deviations || null,
+      self_rating: self_rating !== undefined && self_rating !== '' ? Number(self_rating) : null,
+      updated_at: new Date().toISOString()
+    }
 
-    res.status(201).json(data)
+    let responseData
+    if (existing && existing.id) {
+      const { data, error } = await supabase
+        .from('weekly_tracking')
+        .update(trackingPayload)
+        .eq('id', existing.id)
+        .select()
+        .single()
+
+      if (error) throw error
+      responseData = data
+    } else {
+      const { data, error } = await supabase
+        .from('weekly_tracking')
+        .insert([trackingPayload])
+        .select()
+        .single()
+
+      if (error) throw error
+      responseData = data
+    }
+
+    res.status(201).json(responseData)
   } catch (error) {
-    console.error('Error al crear seguimiento semanal:', error)
+    console.error('Error al crear/actualizar seguimiento semanal:', error)
     res.status(500).json({ message: 'Error interno del servidor' })
   }
 })

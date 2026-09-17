@@ -172,19 +172,20 @@ export const ClientProgressSubmitPage: React.FC = () => {
       }
 
       // MODO 2: Reporte semanal estándar (Check-in de progreso)
-      const trackingPayload: Partial<WeeklyTracking> = {
+      const trackingPayload: any = {
         user_id: userId,
-        weight: form.weight ? Number(form.weight) : undefined,
-        chest_measurement: form.chest_measurement ? Number(form.chest_measurement) : undefined,
-        waist_measurement: form.waist_measurement ? Number(form.waist_measurement) : undefined,
-        hip_measurement: form.hip_measurement ? Number(form.hip_measurement) : undefined,
-        thigh_measurement: form.thigh_measurement ? Number(form.thigh_measurement) : undefined,
-        bicep_measurement: form.bicep_measurement ? Number(form.bicep_measurement) : undefined,
-        exercise_difficulties: form.exercise_difficulties || undefined,
+        week_start_date: todayDate,
         date: todayDate,
+        weight: form.weight !== '' ? Number(form.weight) : undefined,
+        chest_measurement: form.chest_measurement !== '' ? Number(form.chest_measurement) : undefined,
+        waist_measurement: form.waist_measurement !== '' ? Number(form.waist_measurement) : undefined,
+        hip_measurement: form.hip_measurement !== '' ? Number(form.hip_measurement) : undefined,
+        thigh_measurement: form.thigh_measurement !== '' ? Number(form.thigh_measurement) : undefined,
+        bicep_measurement: form.bicep_measurement !== '' ? Number(form.bicep_measurement) : undefined,
+        exercise_difficulties: form.exercise_difficulties || undefined,
       };
 
-      const tracking = await weeklyTrackingService.create(trackingPayload);
+      await weeklyTrackingService.create(trackingPayload);
 
       const photoPromises: Promise<any>[] = [];
       if (photoFront) {
