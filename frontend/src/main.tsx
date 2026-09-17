@@ -33,6 +33,7 @@ import ProgressPage from './pages/ProgressPage'
 import ClientHomePage from './pages/ClientHomePage'
 import ClientMyDietPage from './pages/ClientMyDietPage'
 import ClientProgressSubmitPage from './pages/ClientProgressSubmitPage'
+import ClientTrackingPage from './pages/ClientTrackingPage'
 import CrmPage from './pages/CrmPage'
 import TrainerBillingPage from './pages/TrainerBillingPage'
 
