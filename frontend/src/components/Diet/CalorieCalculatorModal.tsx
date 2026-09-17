@@ -70,6 +70,20 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
       if (currentUser) {
         if (currentUser.weight) setWeight(String(currentUser.weight));
         if (currentUser.height) setHeight(String(currentUser.height));
+        if (currentUser.gender === 'female' || currentUser.gender === 'male') {
+          setGender(currentUser.gender);
+        }
+        if (currentUser.fitness_goal) {
+          if (currentUser.fitness_goal === 'fat_loss') setGoal('lose');
+          else if (currentUser.fitness_goal === 'muscle_gain') setGoal('gain');
+          else if (currentUser.fitness_goal === 'maintenance') setGoal('maintain');
+        }
+        if (currentUser.activity_level) {
+          if (currentUser.activity_level === 'sedentary') setActivity(1.2);
+          else if (currentUser.activity_level === 'light') setActivity(1.375);
+          else if (currentUser.activity_level === 'moderate') setActivity(1.55);
+          else if (currentUser.activity_level === 'very_active') setActivity(1.725);
+        }
         if (currentUser.birth_date) {
           const birth = new Date(currentUser.birth_date);
           const diffMs = Date.now() - birth.getTime();
@@ -95,7 +109,7 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
         if (savedMeta) {
           const parsed = JSON.parse(savedMeta);
           if (parsed.gender) setGender(parsed.gender);
-          if (parsed.activity) setActivity(parsed.activity);
+          if (parsed.activity) setActivity(Number(parsed.activity));
           if (parsed.goal) setGoal(parsed.goal);
           if (parsed.weight) setWeight(String(parsed.weight));
           if (parsed.height) setHeight(String(parsed.height));

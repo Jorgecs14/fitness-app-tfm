@@ -12,7 +12,10 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
-  LinearProgress
+  LinearProgress,
+  useTheme,
+  useMediaQuery,
+  IconButton
 } from '@mui/material';
 import {
   User,
@@ -21,7 +24,9 @@ import {
   CheckCircle2,
   Sparkles,
   ArrowRight,
-  ArrowLeft
+  ArrowLeft,
+  Flame,
+  Dumbbell
 } from 'lucide-react';
 import { completeOnboarding } from '../../services/userService';
 import { User as UserType } from '../../types/User';
@@ -37,6 +42,9 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
   user,
   onComplete
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,7 +71,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
     food_intolerances: '',
     injuries_conditions: '',
     disliked_foods: '',
-    training_days: '4',
+    training_days: '5',
     observations: ''
   });
 
@@ -90,7 +98,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
     if (step === 2) {
       if (!formData.waist_measurement) {
-        setError('Por favor, introduce al menos tu medida de cintura para el seguimiento antropométrico.');
+        setError('Por favor, introduce al menos tu medida de cintura (en cm) para tu punto de partida.');
         return;
       }
     }
@@ -110,13 +118,56 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
       setLoading(true);
       setError(null);
 
-      const res = await completeOnboarding(user.id, formData);
+      // Calcular factor de actividad preciso para la calculadora y sincronizar
+      let activityFactor = 1.55; // default 3-5 días moderado
+      const days = parseInt(formData.training_days, 10) || 5;
+      if (days <= 2) activityFactor = 1.375;
+      else if (days <= 5) activityFactor = 1.55;
+      else activityFactor = 1.725;
+
+      let goalKey = 'lose';
+      if (formData.fitness_goal === 'muscle_gain') goalKey = 'gain';
+      else if (formData.fitness_goal === 'maintenance' || formData.fitness_goal === 'health') goalKey = 'maintain';
+
+      let computedAge = 25;
+      if (formData.birth_date) {
+        const birth = new Date(formData.birth_date);
+        const diffMs = Date.now() - birth.getTime();
+        const ageDt = new Date(diffMs);
+        computedAge = Math.abs(ageDt.getUTCFullYear() - 1970) || 25;
+      }
+
+      // Guardar sincronización directa en localStorage para la Calculadora de Calorías
+      try {
+        localStorage.setItem(
+          `calc_meta_${user.id}`,
+          JSON.stringify({
+            gender: formData.gender,
+            activity: activityFactor,
+            goal: goalKey,
+            weight: formData.weight,
+            height: formData.height,
+            age: String(computedAge),
+            training_days: formData.training_days
+          })
+        );
+      } catch (e) {}
+
+      // Mapear activity_level adecuado para el backend
+      const mappedActivityLevel = days >= 6 ? 'very_active' : days >= 3 ? 'moderate' : 'light';
+
+      const payload = {
+        ...formData,
+        activity_level: mappedActivityLevel
+      };
+
+      const res = await completeOnboarding(user.id, payload);
       if (res.success && res.user) {
         onComplete(res.user);
       } else {
         onComplete({
           ...user,
-          ...formData,
+          ...payload,
           weight: formData.weight ? Number(formData.weight) : user.weight,
           height: formData.height ? Number(formData.height) : user.height,
           onboarding_completed: true
@@ -135,44 +186,60 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
       open={open}
       fullWidth
       maxWidth="md"
+      fullScreen={isMobile}
       disableEscapeKeyDown
+      scroll="paper"
       PaperProps={{
         className: 'apple-card',
         sx: {
-          borderRadius: { xs: 3, sm: 4 },
+          borderRadius: { xs: 0, sm: 4 },
           background: 'linear-gradient(180deg, #1C1C1E 0%, #121214 100%)',
-          border: '1px solid rgba(0, 122, 255, 0.3)',
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.75)',
-          overflow: 'hidden',
-          m: { xs: 1.5, sm: 3 },
-          maxHeight: '92vh'
+          border: { xs: 'none', sm: '1px solid rgba(0, 122, 255, 0.3)' },
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.85)',
+          display: 'flex',
+          flexDirection: 'column',
+          height: isMobile ? '100dvh' : 'auto',
+          maxHeight: isMobile ? '100dvh' : '88vh',
+          m: { xs: 0, sm: 2.5 },
+          overflow: 'hidden'
         }
       }}
     >
       {/* Header with Step Progress */}
-      <Box sx={{ p: { xs: 2.5, sm: 3.5 }, pb: 2, borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.5} flexWrap="wrap" gap={1}>
+      <Box
+        sx={{
+          p: { xs: 2, sm: 3 },
+          pb: 1.8,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          bgcolor: 'rgba(28, 28, 30, 0.95)',
+          backdropFilter: 'blur(20px)',
+          flexShrink: 0,
+          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px)' : 2.5
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1.2} flexWrap="wrap" gap={1}>
           <Box display="flex" alignItems="center" gap={1.2}>
             <Box
               sx={{
-                width: 38,
-                height: 38,
-                borderRadius: '12px',
+                width: 36,
+                height: 36,
+                borderRadius: '10px',
                 background: 'linear-gradient(135deg, #007AFF 0%, #5856D6 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 15px rgba(0, 122, 255, 0.4)'
+                boxShadow: '0 0 15px rgba(0, 122, 255, 0.4)',
+                flexShrink: 0
               }}
             >
-              <Sparkles size={20} color="#FFFFFF" />
+              <Sparkles size={18} color="#FFFFFF" />
             </Box>
             <Box>
-              <Typography variant="h6" fontWeight="900" sx={{ color: '#FFFFFF', fontSize: { xs: '1.1rem', sm: '1.25rem' } }}>
-                Bienvenido a LifeBoost, {user?.name || 'Atleta'}
+              <Typography variant="h6" fontWeight="900" sx={{ color: '#FFFFFF', fontSize: { xs: '1rem', sm: '1.2rem' }, lineHeight: 1.2 }}>
+                Bienvenido, {user?.name || 'Atleta'}
               </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                Ficha de Anamnesis y Punto de Partida Inicial
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.72rem' }}>
+                Ficha Inicial de Anamnesis y Punto de Partida
               </Typography>
             </Box>
           </Box>
@@ -184,7 +251,9 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
               background: 'rgba(0, 122, 255, 0.15)',
               color: '#007AFF',
               fontWeight: 800,
-              border: '1px solid rgba(0, 122, 255, 0.3)'
+              border: '1px solid rgba(0, 122, 255, 0.3)',
+              height: 24,
+              fontSize: '0.72rem'
             }}
           />
         </Box>
@@ -194,7 +263,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
           variant="determinate"
           value={(step / 3) * 100}
           sx={{
-            height: 6,
+            height: 5,
             borderRadius: 3,
             bgcolor: 'rgba(255, 255, 255, 0.08)',
             '& .MuiLinearProgress-bar': {
@@ -205,23 +274,34 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         />
 
         {/* Step Tabs Subtitle */}
-        <Stack direction="row" spacing={2} mt={1.5} justifyContent="space-between">
-          <Typography variant="caption" sx={{ fontWeight: 700, color: step >= 1 ? '#007AFF' : 'rgba(255, 255, 255, 0.3)' }}>
-            1. Biometría & Objetivos
+        <Stack direction="row" spacing={1} mt={1.2} justifyContent="space-between">
+          <Typography variant="caption" sx={{ fontWeight: 700, fontSize: { xs: '0.68rem', sm: '0.75rem' }, color: step >= 1 ? '#007AFF' : 'rgba(255, 255, 255, 0.3)' }}>
+            1. Biometría
           </Typography>
-          <Typography variant="caption" sx={{ fontWeight: 700, color: step >= 2 ? '#007AFF' : 'rgba(255, 255, 255, 0.3)' }}>
-            2. Medidas Iniciales
+          <Typography variant="caption" sx={{ fontWeight: 700, fontSize: { xs: '0.68rem', sm: '0.75rem' }, color: step >= 2 ? '#007AFF' : 'rgba(255, 255, 255, 0.3)' }}>
+            2. Medidas Inicio
           </Typography>
-          <Typography variant="caption" sx={{ fontWeight: 700, color: step >= 3 ? '#007AFF' : 'rgba(255, 255, 255, 0.3)' }}>
-            3. Ficha Médica & Preferencias
+          <Typography variant="caption" sx={{ fontWeight: 700, fontSize: { xs: '0.68rem', sm: '0.75rem' }, color: step >= 3 ? '#007AFF' : 'rgba(255, 255, 255, 0.3)' }}>
+            3. Ficha Médica
           </Typography>
         </Stack>
       </Box>
 
-      {/* Content Body */}
-      <DialogContent sx={{ p: { xs: 2.5, sm: 3.5 }, overflowY: 'auto' }}>
+      {/* Content Body with Fluid Touch Scroll */}
+      <DialogContent
+        sx={{
+          p: { xs: 2, sm: 3 },
+          pb: { xs: 5, sm: 4 },
+          bgcolor: '#121214',
+          overflowY: 'auto',
+          WebkitOverflowScrolling: 'touch',
+          overscrollBehavior: 'contain',
+          flex: 1,
+          minHeight: 0
+        }}
+      >
         {error && (
-          <Alert severity="error" sx={{ mb: 2.5, borderRadius: '12px' }}>
+          <Alert severity="error" sx={{ mb: 2, borderRadius: '12px', fontSize: '0.85rem' }}>
             {error}
           </Alert>
         )}
@@ -231,18 +311,18 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         ======================================================== */}
         {step === 1 && (
           <Box>
-            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.95rem' }}>
               <User size={18} color="#007AFF" />
               Datos Fisiológicos y Objetivos
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 3, fontSize: '0.85rem' }}>
-              Estos datos permitirán a tu entrenador calcular tu gasto energético basal (TDEE), agua diaria y macronutrientes.
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 2.5, fontSize: '0.82rem', lineHeight: 1.4 }}>
+              Tu entrenador utilizará estos datos para calcular tu gasto calórico basal (BMR), hidratación y pautas de entrenamiento.
             </Typography>
 
-            <Grid container spacing={2.5}>
+            <Grid container spacing={2}>
               {/* Sexo Biológico */}
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 1, display: 'block' }}>
+              <Grid size={{ xs: 12 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.8, display: 'block' }}>
                   Sexo Biológico
                 </Typography>
                 <Grid container spacing={1.5}>
@@ -250,16 +330,20 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                     <Box
                       onClick={() => setFormData({ ...formData, gender: 'male' })}
                       sx={{
-                        p: 1.8,
+                        p: 1.5,
                         borderRadius: '12px',
                         cursor: 'pointer',
                         textAlign: 'center',
                         border: formData.gender === 'male' ? '1.5px solid #007AFF' : '0.5px solid rgba(255, 255, 255, 0.1)',
                         background: formData.gender === 'male' ? 'rgba(0, 122, 255, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.15s ease',
+                        minHeight: 48,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}
                     >
-                      <Typography variant="body1" fontWeight="800" sx={{ color: formData.gender === 'male' ? '#007AFF' : '#FFFFFF' }}>
+                      <Typography variant="body2" fontWeight="800" sx={{ color: formData.gender === 'male' ? '#007AFF' : '#FFFFFF' }}>
                         🧔 Hombre
                       </Typography>
                     </Box>
@@ -268,16 +352,20 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                     <Box
                       onClick={() => setFormData({ ...formData, gender: 'female' })}
                       sx={{
-                        p: 1.8,
+                        p: 1.5,
                         borderRadius: '12px',
                         cursor: 'pointer',
                         textAlign: 'center',
                         border: formData.gender === 'female' ? '1.5px solid #FF2D55' : '0.5px solid rgba(255, 255, 255, 0.1)',
                         background: formData.gender === 'female' ? 'rgba(255, 45, 85, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                        transition: 'all 0.2s ease'
+                        transition: 'all 0.15s ease',
+                        minHeight: 48,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}
                     >
-                      <Typography variant="body1" fontWeight="800" sx={{ color: formData.gender === 'female' ? '#FF2D55' : '#FFFFFF' }}>
+                      <Typography variant="body2" fontWeight="800" sx={{ color: formData.gender === 'female' ? '#FF2D55' : '#FFFFFF' }}>
                         👩 Mujer
                       </Typography>
                     </Box>
@@ -287,7 +375,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
               {/* Fecha de Nacimiento */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 1, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
                   Fecha de Nacimiento
                 </Typography>
                 <TextField
@@ -296,66 +384,60 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                   onChange={handleChange('birth_date')}
                   fullWidth
                   InputLabelProps={{ shrink: true }}
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
                 />
               </Grid>
 
               {/* Estatura */}
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 6, sm: 3 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Estatura (cm) *
+                </Typography>
                 <TextField
-                  label="Estatura en Centímetros (cm)"
                   type="number"
                   placeholder="ej. 178"
                   value={formData.height}
                   onChange={handleChange('height')}
+                  inputProps={{ inputMode: 'numeric' }}
                   fullWidth
                   required
-                  helperText="Para el cálculo del Índice de Masa Corporal y Tasa Metabólica"
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
                 />
               </Grid>
 
               {/* Peso Inicial */}
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 6, sm: 3 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Peso (kg) *
+                </Typography>
                 <TextField
-                  label="Peso Corporal Actual en Báscula (kg)"
                   type="number"
                   placeholder="ej. 82.5"
                   value={formData.weight}
                   onChange={handleChange('weight')}
+                  inputProps={{ step: '0.1', inputMode: 'decimal' }}
                   fullWidth
                   required
-                  helperText="Punto de partida de tu peso en ayunas"
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
                 />
               </Grid>
 
-              {/* Nivel de Actividad */}
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  select
-                  label="Nivel de Actividad Diaria"
-                  value={formData.activity_level}
-                  onChange={handleChange('activity_level')}
-                  fullWidth
-                >
-                  <MenuItem value="sedentary">🛋️ Sedentario (Oficina / &lt; 5k pasos)</MenuItem>
-                  <MenuItem value="light">🚶 Ligero (Caminatas / 6k-8k pasos)</MenuItem>
-                  <MenuItem value="moderate">⚡ Moderado (Activo / 10k pasos)</MenuItem>
-                  <MenuItem value="very_active">🔥 Muy Activo (Trabajo físico / &gt; 15k pasos)</MenuItem>
-                </TextField>
-              </Grid>
-
               {/* Objetivo Principal */}
-              <Grid size={{ xs: 12, sm: 6 }}>
+              <Grid size={{ xs: 12 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Objetivo Principal con tu Entrenador
+                </Typography>
                 <TextField
                   select
-                  label="Objetivo Principal con tu Entrenador"
                   value={formData.fitness_goal}
                   onChange={handleChange('fitness_goal')}
                   fullWidth
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
                 >
-                  <MenuItem value="fat_loss">🔥 Pérdida de Grasa & Adelgazamiento</MenuItem>
-                  <MenuItem value="muscle_gain">💪 Ganancia de Masa Muscular & Volumen</MenuItem>
-                  <MenuItem value="maintenance">⚖️ Mantenimiento & Recomposición</MenuItem>
-                  <MenuItem value="health">🏃 Rendimiento Deportivo & Salud Integral</MenuItem>
+                  <MenuItem value="fat_loss">🔥 Pérdida de Grasa & Definición</MenuItem>
+                  <MenuItem value="muscle_gain">💪 Ganancia Muscular & Volumen</MenuItem>
+                  <MenuItem value="maintenance">⚖️ Mantenimiento & Recomposición Corporal</MenuItem>
+                  <MenuItem value="health">🏃 Rendimiento Deportivo & Salud General</MenuItem>
                 </TextField>
               </Grid>
             </Grid>
@@ -367,78 +449,109 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         ======================================================== */}
         {step === 2 && (
           <Box>
-            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.95rem' }}>
               <Ruler size={18} color="#34C759" />
               Medidas Corporales de Inicio (cm)
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 3, fontSize: '0.85rem' }}>
-              Toma una cinta métrica y anota tus perímetros iniciales. Estos datos quedarán grabados en tu sección <strong>"Mi Punto de Partida"</strong> para monitorizar cuántos centímetros vas perdiendo.
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 2.5, fontSize: '0.82rem', lineHeight: 1.4 }}>
+              Anota tus perímetros con una cinta métrica. Quedarán fijadas en <strong>"Mi Punto de Partida"</strong> para medir cuántos centímetros reduces a lo largo del tiempo.
             </Typography>
 
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  label="Cintura / Perímetro Abdominal (cm) *"
-                  type="number"
-                  inputProps={{ step: '0.1' }}
-                  placeholder="ej. 86.0"
-                  value={formData.waist_measurement}
-                  onChange={handleChange('waist_measurement')}
-                  fullWidth
-                  required
-                  helperText="Medir a la altura del ombligo en posición relajada"
-                />
+              {/* Cintura (Obligatoria) */}
+              <Grid size={{ xs: 12 }}>
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: '14px',
+                    background: 'rgba(52, 199, 89, 0.08)',
+                    border: '1px solid rgba(52, 199, 89, 0.3)'
+                  }}
+                >
+                  <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#34C759', mb: 0.5 }}>
+                    📏 Cintura / Perímetro Abdominal (cm) *
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mb: 1 }}>
+                    Medir horizontalmente a la altura del ombligo en posición neutra.
+                  </Typography>
+                  <TextField
+                    type="number"
+                    placeholder="ej. 86.0"
+                    value={formData.waist_measurement}
+                    onChange={handleChange('waist_measurement')}
+                    inputProps={{ step: '0.1', inputMode: 'decimal' }}
+                    fullWidth
+                    required
+                    InputProps={{ sx: { bgcolor: '#1C1C1E', borderRadius: '10px', fontSize: '16px' } }}
+                  />
+                </Box>
               </Grid>
 
+              {/* Pecho */}
               <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Pecho / Torso (cm)
+                </Typography>
                 <TextField
-                  label="Pecho (cm)"
                   type="number"
-                  inputProps={{ step: '0.1' }}
                   placeholder="ej. 102.0"
                   value={formData.chest_measurement}
                   onChange={handleChange('chest_measurement')}
+                  inputProps={{ step: '0.1', inputMode: 'decimal' }}
                   fullWidth
-                  helperText="Medir por debajo de las axilas y pezones"
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
+                  helperText="Bajo axilas en máxima espiración"
                 />
               </Grid>
 
+              {/* Cadera */}
               <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Cadera / Glúteo (cm)
+                </Typography>
                 <TextField
-                  label="Cadera / Glúteos (cm)"
                   type="number"
-                  inputProps={{ step: '0.1' }}
                   placeholder="ej. 98.5"
                   value={formData.hip_measurement}
                   onChange={handleChange('hip_measurement')}
+                  inputProps={{ step: '0.1', inputMode: 'decimal' }}
                   fullWidth
-                  helperText="Medir en la parte más ancha de la cadera"
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
+                  helperText="Zona de mayor relieve del glúteo"
                 />
               </Grid>
 
+              {/* Muslo */}
               <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Muslo Superior (cm)
+                </Typography>
                 <TextField
-                  label="Muslo Superior (cm)"
                   type="number"
-                  inputProps={{ step: '0.1' }}
                   placeholder="ej. 58.0"
                   value={formData.thigh_measurement}
                   onChange={handleChange('thigh_measurement')}
+                  inputProps={{ step: '0.1', inputMode: 'decimal' }}
                   fullWidth
-                  helperText="Medir a mitad del muslo"
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
+                  helperText="Medir en tercio superior del muslo"
                 />
               </Grid>
 
+              {/* Bíceps */}
               <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Bíceps en Flexión (cm)
+                </Typography>
                 <TextField
-                  label="Bíceps en Flexión (cm)"
                   type="number"
-                  inputProps={{ step: '0.1' }}
                   placeholder="ej. 36.5"
                   value={formData.bicep_measurement}
                   onChange={handleChange('bicep_measurement')}
+                  inputProps={{ step: '0.1', inputMode: 'decimal' }}
                   fullWidth
-                  helperText="Brazo en ángulo de 90° apretando bíceps"
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
+                  helperText="Brazo a 90° apretando bíceps"
                 />
               </Grid>
             </Grid>
@@ -446,86 +559,120 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         )}
 
         {/* ========================================================
-            PASO 3: Ficha Médica, Lesiones & Nutrición
+            PASO 3: Ficha Médica, Lesiones & Preferencias
         ======================================================== */}
         {step === 3 && (
           <Box>
-            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.95rem' }}>
               <Heart size={18} color="#FF9500" />
-              Ficha Médica, Alergias y Preferencias del Atleta
+              Ficha Médica y Preferencias del Atleta
             </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 3, fontSize: '0.85rem' }}>
-              Tu entrenador necesita conocer cualquier intolerancia, lesión o preferencia para no incluir alimentos molestos ni ejercicios lesivos.
+            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 2.5, fontSize: '0.82rem', lineHeight: 1.4 }}>
+              Permite a tu entrenador adaptar tus alimentos sin alérgenos molestos y descartar ejercicios lesivos para ti.
             </Typography>
 
             <Grid container spacing={2}>
+              {/* Días por semana */}
+              <Grid size={{ xs: 12 }}>
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: '14px',
+                    background: 'rgba(0, 122, 255, 0.08)',
+                    border: '1px solid rgba(0, 122, 255, 0.3)'
+                  }}
+                >
+                  <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#007AFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <Dumbbell size={16} />
+                    Días por Semana que vas a Entrenar
+                  </Typography>
+                  <TextField
+                    select
+                    value={formData.training_days}
+                    onChange={handleChange('training_days')}
+                    fullWidth
+                    InputProps={{ sx: { bgcolor: '#1C1C1E', borderRadius: '10px', fontSize: '16px' } }}
+                  >
+                    <MenuItem value="2">2 Días por semana</MenuItem>
+                    <MenuItem value="3">3 Días por semana (Full Body)</MenuItem>
+                    <MenuItem value="4">4 Días por semana (Torso / Pierna)</MenuItem>
+                    <MenuItem value="5">5 Días por semana (Push / Pull / Legs + Torso)</MenuItem>
+                    <MenuItem value="6">6 Días por semana (Atleta Avanzado)</MenuItem>
+                  </TextField>
+                </Box>
+              </Grid>
+
+              {/* Alergias */}
               <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Alergias Conocidas
+                </Typography>
                 <TextField
-                  label="Alergias Conocidas"
                   placeholder="ej. Frutos secos, marisco, polen (o 'Ninguna')"
                   value={formData.allergies}
                   onChange={handleChange('allergies')}
                   fullWidth
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
                 />
               </Grid>
 
+              {/* Intolerancias */}
               <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Intolerancias Alimentarias
+                </Typography>
                 <TextField
-                  label="Intolerancias Alimentarias"
                   placeholder="ej. Lactosa, gluten, fructosa (o 'Ninguna')"
                   value={formData.food_intolerances}
                   onChange={handleChange('food_intolerances')}
                   fullWidth
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
                 />
               </Grid>
 
+              {/* Lesiones */}
               <Grid size={{ xs: 12 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Lesiones o Molestias Articulares Previas
+                </Typography>
                 <TextField
-                  label="Lesiones, Molestias Articulares o Cirugías Previas"
-                  placeholder="ej. Hernia discal L5-S1, molestia en hombro derecho al empujar, condromalacia rotuliana..."
+                  placeholder="ej. Molestia lumbar en sentadilla, tendón rotuliano izquierdo, hombro derecho..."
                   value={formData.injuries_conditions}
                   onChange={handleChange('injuries_conditions')}
                   fullWidth
                   multiline
                   rows={2}
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
                 />
               </Grid>
 
+              {/* Alimentos que no gustan */}
               <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Alimentos Rechazados (No deseados)
+                </Typography>
                 <TextField
-                  label="Alimentos que NO te gustan / Deseas evitar"
-                  placeholder="ej. Hígado, brócoli, queso azul, pescado azul..."
+                  placeholder="ej. Hígado, queso azul, brócoli, atún..."
                   value={formData.disliked_foods}
                   onChange={handleChange('disliked_foods')}
                   fullWidth
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
                 />
               </Grid>
 
+              {/* Observaciones */}
               <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                  Notas u Horarios para tu Entrenador
+                </Typography>
                 <TextField
-                  select
-                  label="Días por Semana que puedes Entrenar"
-                  value={formData.training_days}
-                  onChange={handleChange('training_days')}
-                  fullWidth
-                >
-                  <MenuItem value="2">2 Días por semana</MenuItem>
-                  <MenuItem value="3">3 Días por semana (Recomendado)</MenuItem>
-                  <MenuItem value="4">4 Días por semana (Torso / Pierna)</MenuItem>
-                  <MenuItem value="5">5 Días por semana (Push / Pull / Legs)</MenuItem>
-                  <MenuItem value="6">6 Días por semana (Avanzado)</MenuItem>
-                </TextField>
-              </Grid>
-
-              <Grid size={{ xs: 12 }}>
-                <TextField
-                  label="Observaciones o Notas Adicionales para tu Entrenador"
-                  placeholder="ej. Suelo entrenar por las mañanas, trabajo a turnos, tengo máquina de café en el trabajo..."
+                  placeholder="ej. Entreno a las 7:00 am en ayunas, trabajo a turnos..."
                   value={formData.observations}
                   onChange={handleChange('observations')}
                   fullWidth
                   multiline
                   rows={2}
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
                 />
               </Grid>
             </Grid>
@@ -533,15 +680,19 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         )}
       </DialogContent>
 
-      {/* Footer Actions */}
+      {/* Fixed Footer Actions */}
       <Box
         sx={{
-          p: { xs: 2, sm: 3 },
-          pt: 2,
+          p: { xs: 2, sm: 2.5 },
           borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          bgcolor: 'rgba(28, 28, 30, 0.95)',
+          backdropFilter: 'blur(20px)',
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          flexShrink: 0,
+          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 14px)' : 2.5,
+          gap: 1.5
         }}
       >
         {step > 1 ? (
@@ -556,7 +707,9 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
               color: '#FFFFFF',
               fontWeight: 700,
               textTransform: 'none',
-              px: 2.5
+              px: { xs: 2, sm: 2.5 },
+              minHeight: 44,
+              fontSize: '0.88rem'
             }}
           >
             Anterior
@@ -574,8 +727,9 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
             sx={{
               borderRadius: '12px',
               fontWeight: 800,
-              px: 3.5,
-              py: 1.2
+              px: { xs: 3, sm: 3.5 },
+              minHeight: 44,
+              fontSize: '0.9rem'
             }}
           >
             Siguiente Paso
@@ -589,13 +743,14 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
             sx={{
               borderRadius: '12px',
               fontWeight: 800,
-              px: 3.5,
-              py: 1.2,
+              px: { xs: 3, sm: 3.5 },
+              minHeight: 44,
+              fontSize: '0.9rem',
               background: 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)',
               boxShadow: '0 8px 25px rgba(52, 199, 89, 0.4)'
             }}
           >
-            {loading ? 'Guardando Ficha...' : 'Finalizar y Entrar a la App'}
+            {loading ? 'Guardando...' : 'Finalizar y Entrar'}
           </Button>
         )}
       </Box>
