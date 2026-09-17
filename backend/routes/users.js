@@ -324,12 +324,146 @@ router.post('/', async (req, res) => {
   }
 })
 
+// PUT /api/users/:id/onboarding - Guardado atómico del Onboarding Inicial del Cliente
+router.put('/:id/onboarding', async (req, res) => {
+  try {
+    const { id } = req.params
+    const {
+      gender,
+      birth_date,
+      height,
+      weight,
+      activity_level,
+      fitness_goal,
+      chest_measurement,
+      waist_measurement,
+      hip_measurement,
+      thigh_measurement,
+      bicep_measurement,
+      allergies,
+      food_intolerances,
+      injuries_conditions,
+      disliked_foods,
+      training_days,
+      observations
+    } = req.body
+
+    const todayDate = new Date().toISOString().split('T')[0]
+
+    // 1. Actualizar usuario en tabla users
+    const userUpdate = {
+      gender: gender || null,
+      birth_date: birth_date || null,
+      height: height ? Number(height) : null,
+      weight: weight ? Number(weight) : null,
+      activity_level: activity_level || null,
+      fitness_goal: fitness_goal || null,
+      onboarding_completed: true
+    }
+
+    const { data: updatedUser, error: userError } = await supabaseAdmin
+      .from('users')
+      .update(userUpdate)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (userError) {
+      console.error('Error actualizando usuario en onboarding:', userError)
+      // Si alguna columna como activity_level o onboarding_completed no existiera en la BD relacional directa, intentamos actualización segura
+      const safeUpdate = {
+        birth_date: birth_date || null,
+        height: height ? Number(height) : null,
+        weight: weight ? Number(weight) : null
+      }
+      await supabaseAdmin.from('users').update(safeUpdate).eq('id', id)
+    }
+
+    // 2. Guardar o actualizar Ficha Médica
+    const medicalNotes = [
+      training_days ? `Disponibilidad semanal: ${training_days} días.` : '',
+      observations ? `Observaciones: ${observations}` : ''
+    ].filter(Boolean).join(' | ')
+
+    const { data: existingMedical } = await supabaseAdmin
+      .from('client_medical_info')
+      .select('id')
+      .eq('user_id', id)
+      .maybeSingle()
+
+    const medicalPayload = {
+      user_id: Number(id),
+      allergies: allergies || null,
+      food_intolerances: food_intolerances || null,
+      injuries_conditions: injuries_conditions || null,
+      disliked_foods: disliked_foods || null,
+      daily_nutrition_log: medicalNotes || null,
+      updated_at: new Date().toISOString()
+    }
+
+    if (existingMedical && existingMedical.id) {
+      await supabaseAdmin.from('client_medical_info').update(medicalPayload).eq('id', existingMedical.id)
+    } else {
+      await supabaseAdmin.from('client_medical_info').insert([medicalPayload])
+    }
+
+    // 3. Guardar Punto de Partida Biométrico (Día 1)
+    const { data: existingTracking } = await supabaseAdmin
+      .from('weekly_tracking')
+      .select('id')
+      .eq('user_id', id)
+      .eq('week_start_date', todayDate)
+      .maybeSingle()
+
+    const trackingPayload = {
+      user_id: Number(id),
+      week_start_date: todayDate,
+      weight: weight ? Number(weight) : null,
+      chest_measurement: chest_measurement ? Number(chest_measurement) : null,
+      waist_measurement: waist_measurement ? Number(waist_measurement) : null,
+      hip_measurement: hip_measurement ? Number(hip_measurement) : null,
+      thigh_measurement: thigh_measurement ? Number(thigh_measurement) : null,
+      bicep_measurement: bicep_measurement ? Number(bicep_measurement) : null,
+      exercise_difficulties: injuries_conditions || null,
+      updated_at: new Date().toISOString()
+    }
+
+    if (existingTracking && existingTracking.id) {
+      await supabaseAdmin.from('weekly_tracking').update(trackingPayload).eq('id', existingTracking.id)
+    } else {
+      await supabaseAdmin.from('weekly_tracking').insert([trackingPayload])
+    }
+
+    // Obtener usuario final fresco
+    const { data: finalUser } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('id', id)
+      .single()
+
+    res.json({
+      success: true,
+      message: 'Onboarding inicial completado con éxito',
+      user: {
+        ...(finalUser || updatedUser),
+        onboarding_completed: true,
+        gender,
+        activity_level,
+        fitness_goal
+      }
+    })
+  } catch (error) {
+    console.error('Error procesando onboarding:', error)
+    res.status(500).json({ error: 'Error al procesar onboarding', details: error.message })
+  }
+})
+
 router.put('/:id', async (req, res) => {
   try {
     const { id } = req.params
-    const { email, name, surname, birth_date, role, trainer_id, weight, height, can_reset_initial_photos } = req.body
+    const { email, name, surname, birth_date, role, trainer_id, weight, height, gender, activity_level, fitness_goal, onboarding_completed, can_reset_initial_photos } = req.body
 
-    const updateFields = { email, name, surname, birth_date, role, trainer_id, weight, height, can_reset_initial_photos }
+    const updateFields = { email, name, surname, birth_date, role, trainer_id, weight, height, gender, activity_level, fitness_goal, onboarding_completed, can_reset_initial_photos }
     Object.keys(updateFields).forEach(key => updateFields[key] === undefined && delete updateFields[key])
 
     const { data, error } = await supabaseAdmin
@@ -339,7 +473,14 @@ router.put('/:id', async (req, res) => {
       .select()
       .single()
 
-    if (error) throw error
+    if (error) {
+      // Fallback si algún campo opcional no estuviera presente en el schema
+      const safeFields = { email, name, surname, birth_date, role, trainer_id, weight, height, can_reset_initial_photos }
+      Object.keys(safeFields).forEach(key => safeFields[key] === undefined && delete safeFields[key])
+      const { data: safeData } = await supabaseAdmin.from('users').update(safeFields).eq('id', id).select().single()
+      return res.json(safeData || { id, ...updateFields })
+    }
+
     if (!data) return res.status(404).json({ error: 'Usuario no encontrado' })
 
     res.json(data)

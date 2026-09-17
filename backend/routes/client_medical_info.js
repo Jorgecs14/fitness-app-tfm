@@ -36,7 +36,7 @@ router.get('/user/:userId', async (req, res) => {
   }
 })
 
-// Crear nueva información médica
+// Crear o actualizar información médica (Upsert por user_id)
 router.post('/', async (req, res) => {
   try {
     const {
@@ -54,26 +54,50 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ message: 'El ID del usuario es requerido' })
     }
 
-    const { data, error } = await supabaseAdmin
+    // Comprobar si ya existe ficha médica previa para este usuario
+    const { data: existing } = await supabaseAdmin
       .from('client_medical_info')
-      .insert([{
-        user_id,
-        allergies,
-        food_intolerances,
-        injuries_conditions,
-        disliked_foods,
-        lab_results,
-        daily_nutrition_log
-      }])
-      .select()
-      .single()
+      .select('id')
+      .eq('user_id', user_id)
+      .maybeSingle()
 
-    if (error) throw error
+    const medicalPayload = {
+      user_id,
+      allergies: allergies || null,
+      food_intolerances: food_intolerances || null,
+      injuries_conditions: injuries_conditions || null,
+      disliked_foods: disliked_foods || null,
+      lab_results: lab_results || null,
+      daily_nutrition_log: daily_nutrition_log || null,
+      updated_at: new Date().toISOString()
+    }
 
-    res.status(201).json(data)
+    let responseData
+    if (existing && existing.id) {
+      const { data, error } = await supabaseAdmin
+        .from('client_medical_info')
+        .update(medicalPayload)
+        .eq('id', existing.id)
+        .select()
+        .single()
+
+      if (error) throw error
+      responseData = data
+    } else {
+      const { data, error } = await supabaseAdmin
+        .from('client_medical_info')
+        .insert([medicalPayload])
+        .select()
+        .single()
+
+      if (error) throw error
+      responseData = data
+    }
+
+    res.status(201).json(responseData)
   } catch (error) {
-    console.error('Error al crear información médica:', error)
-    res.status(500).json({ message: 'Error interno del servidor' })
+    console.error('Error al crear/actualizar información médica:', error)
+    res.status(500).json({ message: 'Error interno del servidor', details: error.message })
   }
 })
 

@@ -37,6 +37,7 @@ import type { MainSectionProps } from '../core/main-section'
 import { FloatingChat } from '../../components/FloatingChat/FloatingChat'
 import { FloatingMobileDock } from '../../components/Navigation/FloatingMobileDock'
 import { GlobalQuickSearchModal } from '../../components/Search/GlobalQuickSearchModal'
+import { ClientOnboardingModal } from '../../components/Onboarding/ClientOnboardingModal'
 
 type LayoutBaseProps = Pick<LayoutSectionProps, 'sx' | 'children' | 'cssVars'>
 
@@ -401,6 +402,25 @@ export function DashboardLayout({
 
       {/* Modal de Asistente de IA Apple Intelligence */}
       <FloatingChat open={chatOpen} onClose={() => setChatOpen(false)} />
+
+      {/* Modal de Onboarding y Anamnesis Obligatoria para Nuevos Clientes */}
+      {currentUser && (currentUser.role === 'client' || currentUser.role === 'cliente') && (
+        <ClientOnboardingModal
+          open={Boolean(
+            !currentUser.onboarding_completed &&
+            !localStorage.getItem(`lifeboost_onboarding_done_${currentUser.id}`) &&
+            (!currentUser.weight || !currentUser.height)
+          )}
+          user={currentUser}
+          onComplete={(updatedUser) => {
+            setCurrentUser(updatedUser)
+            if (updatedUser.id) {
+              localStorage.setItem(`lifeboost_onboarding_done_${updatedUser.id}`, 'true')
+            }
+            navigate('/dashboard/client-home')
+          }}
+        />
+      )}
     </LayoutSection>
   )
 }

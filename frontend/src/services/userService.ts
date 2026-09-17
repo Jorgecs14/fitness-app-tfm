@@ -105,3 +105,19 @@ export const getCurrentUser = async (): Promise<User> => {
   }
 }
 
+export const completeOnboarding = async (userId: number, data: any): Promise<{ success: boolean; user: User }> => {
+  try {
+    const response = await axiosInstance.put(`/users/${userId}/onboarding`, data)
+    if (response.data?.user) {
+      localStorage.setItem('user', JSON.stringify(response.data.user))
+    }
+    return response.data
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.message ||
+      error.response?.data?.error ||
+      'Error al guardar los datos de inicio (onboarding)'
+    )
+  }
+}
+
