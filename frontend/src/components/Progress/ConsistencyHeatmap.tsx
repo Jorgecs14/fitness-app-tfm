@@ -62,16 +62,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({
     while (curr <= today) {
       const dateStr = curr.toISOString().split('T')[0];
       const activity = activityMap.get(dateStr);
-      // Demo fallback if no activity given: generate realistic fitness cadence
-      let count = activity ? activity.count : 0;
-      if (activityData.length === 0) {
-        // Deterministic realistic workout pattern: workouts on Mon, Wed, Fri, Sat with occasional missed days
-        const d = curr.getDay();
-        const dayNum = curr.getDate();
-        if ((d === 1 || d === 3 || d === 5 || d === 6) && (dayNum % 7 !== 0)) {
-          count = d === 6 ? 2 : 1;
-        }
-      }
+      const count = activity ? activity.count : 0;
 
       if (count > 0) {
         totalWorkouts += count;
@@ -107,7 +98,7 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({
     while (true) {
       const dateStr = checkDate.toISOString().split('T')[0];
       const act = activityMap.get(dateStr);
-      const c = act ? act.count : (activityData.length === 0 && [1, 3, 5, 6].includes(checkDate.getDay()) ? 1 : 0);
+      const c = act ? act.count : 0;
       if (c > 0) {
         currentStreak++;
         checkDate.setDate(checkDate.getDate() - 1);
@@ -117,16 +108,16 @@ export const ConsistencyHeatmap: React.FC<ConsistencyHeatmapProps> = ({
     }
 
     const totalDays = rangeWeeks * 7;
-    const adherenceRate = Math.min(100, Math.round((activeDaysCount / (totalDays * (4 / 7))) * 100));
+    const adherenceRate = totalDays > 0 ? Math.min(100, Math.round((activeDaysCount / (totalDays * (4 / 7))) * 100)) : 0;
 
     return {
       weeks: resultWeeks,
       stats: {
         totalWorkouts,
         activeDaysCount,
-        currentStreak: Math.max(currentStreak, 4),
-        longestStreak: Math.max(longestStreak, 12),
-        adherenceRate: Math.max(adherenceRate, 88),
+        currentStreak,
+        longestStreak,
+        adherenceRate,
       },
     };
   }, [activityMap, activityData, rangeWeeks]);

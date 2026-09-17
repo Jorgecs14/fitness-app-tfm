@@ -1,5 +1,4 @@
-// Componente principal de gestión de dietas con funcionalidades CRUD, gestión de alimentos y filtros
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Box,
@@ -30,7 +29,6 @@ export const DietManager = () => {
   const navigate = useNavigate()
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [diets, setDiets] = useState<DietWithFoods[]>([])
-  const [filteredDiets, setFilteredDiets] = useState<DietWithFoods[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [editingDiet, setEditingDiet] = useState<DietWithFoods | null>(null)
   const [viewingDiet, setViewingDiet] = useState<DietWithFoods | null>(null)
@@ -77,7 +75,7 @@ export const DietManager = () => {
     try {
       setLoading(true)
       const data = await dietService.getDietsWithFoods()
-      setDiets(data)
+      setDiets(Array.isArray(data) ? data : [])
     } catch (error: any) {
       showToast(`Error al cargar dietas: ${error.message}`, 'error')
     } finally {
@@ -89,28 +87,27 @@ export const DietManager = () => {
     try {
       if (activeUser && (activeUser.role === 'trainer' || activeUser.role === 'entrenador')) {
         const data = await userService.getTrainerClients(activeUser.id)
-        setUsers(data)
+        setUsers(Array.isArray(data) ? data : [])
       } else {
         const data = await userService.getUsers()
-        setUsers(data)
+        setUsers(Array.isArray(data) ? data : [])
       }
     } catch (error) {
       showToast('Error al cargar usuarios', 'error')
     }
   }
 
-  const filterDiets = () => {
+  const filteredDiets = useMemo(() => {
     if (!searchQuery.trim()) {
-      setFilteredDiets(diets)
-    } else {
-      const filtered = diets.filter(
-        (diet) =>
-          diet.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          diet.description.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      setFilteredDiets(filtered)
+      return diets;
     }
-  }
+    const q = searchQuery.toLowerCase();
+    return diets.filter(
+      (diet) =>
+        diet.name?.toLowerCase().includes(q) ||
+        (diet.description && diet.description.toLowerCase().includes(q))
+    );
+  }, [diets, searchQuery]);
 
   const handleAdd = () => {
     setEditingDiet(null)

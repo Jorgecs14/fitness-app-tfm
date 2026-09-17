@@ -60,7 +60,6 @@ export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ hi
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }, [history, selectedExercise]);
 
-  // Generate mock realistic progression if user has no data for this exercise yet
   const chartData = useMemo(() => {
     const groupedByDate: { [date: string]: { max1RM: number; totalVolume: number; reps: number; weight: number } } = {};
 
@@ -88,30 +87,13 @@ export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ hi
           groupedByDate[dateStr].totalVolume += setVolume;
         }
       });
-    } else {
-      // Demo realistic trajectory
-      const baseWeight = selectedExercise.includes('Sentadilla')
-        ? 80
-        : selectedExercise.includes('Peso Muerto')
-        ? 100
-        : 60;
-      const datesList = ['2026-06-01', '2026-06-15', '2026-07-01', '2026-07-15', '2026-08-01', '2026-08-15', '2026-09-01'];
-      datesList.forEach((d, idx) => {
-        const progressionKg = baseWeight + idx * 3.5;
-        groupedByDate[d] = {
-          max1RM: Math.round(progressionKg * 10) / 10,
-          totalVolume: Math.round(progressionKg * 4 * 8),
-          reps: 8,
-          weight: progressionKg * 0.8,
-        };
-      });
     }
 
     const dates = Object.keys(groupedByDate).sort();
     const oneRMData = dates.map((d) => groupedByDate[d].max1RM);
     const volumeData = dates.map((d) => groupedByDate[d].totalVolume);
 
-    const maxPR = Math.max(...oneRMData, 0);
+    const maxPR = oneRMData.length > 0 ? Math.max(...oneRMData, 0) : 0;
     const firstPR = oneRMData[0] || 0;
     const latestPR = oneRMData[oneRMData.length - 1] || 0;
     const diffPR = latestPR - firstPR;
@@ -125,7 +107,7 @@ export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ hi
       latestPR,
       diffPR: Math.round(diffPR * 10) / 10,
       percentDiff,
-      isDemo: filteredHistory.length === 0,
+      hasData: filteredHistory.length > 0,
     };
   }, [filteredHistory, formulaMode, selectedExercise]);
 
@@ -447,8 +429,8 @@ export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ hi
         <Chart options={chartOptions} series={series} type="area" height="100%" />
       </Box>
 
-      {/* Footer Info */}
-      {chartData.isDemo && (
+      {/* Footer Info / Empty State */}
+      {!chartData.hasData && (
         <Box
           sx={{
             mt: 2,
@@ -463,7 +445,7 @@ export const ExerciseProgressChart: React.FC<ExerciseProgressChartProps> = ({ hi
         >
           <Info size={18} color="#22d3ee" />
           <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            Visualizando curva de proyección y progresión estimada. A medida que completes tus series en el Reproductor en Vivo, esta gráfica se nutrirá con tus datos reales.
+            No hay levantamientos registrados aún para {selectedExercise}. A medida que se completen series en los entrenamientos, se representará aquí la curva de 1RM y volumen real.
           </Typography>
         </Box>
       )}

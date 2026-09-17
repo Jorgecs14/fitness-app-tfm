@@ -1,4 +1,3 @@
-import React, { useState, useEffect, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -11,7 +10,10 @@ import {
   InputAdornment,
   Tabs,
   Tab,
-  CircularProgress
+  CircularProgress,
+  Select,
+  MenuItem,
+  FormControl
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -22,10 +24,13 @@ import {
   Activity,
   Award,
   RefreshCw,
-  Image as ImageIcon
+  Image as ImageIcon,
+  UserCheck
 } from 'lucide-react';
 import { getUsers, getCurrentUser, getTrainerClients } from '../services/userService';
 import { weeklyTrackingService } from '../services/weeklyTrackingService';
+import { clientProgressPhotoService } from '../services/clientProgressPhotoService';
+import { ClientProgressPhoto } from '../types/ClientProgressPhoto';
 import { User } from '../types/User';
 import ConsistencyHeatmap from '../components/Progress/ConsistencyHeatmap';
 import ExerciseProgressChart from '../components/Analytics/ExerciseProgressChart';
@@ -42,6 +47,9 @@ interface UserProgress {
 export const ProgressPage: React.FC = () => {
   const navigate = useNavigate();
   const [userProgress, setUserProgress] = useState<UserProgress[]>([]);
+  const [selectedClientId, setSelectedClientId] = useState<number | ''>('');
+  const [clientPhotos, setClientPhotos] = useState<ClientProgressPhoto[]>([]);
+  const [clientActivity, setClientActivity] = useState<{ date: string; count: number }[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -116,6 +124,9 @@ export const ProgressPage: React.FC = () => {
       });
       
       setUserProgress(progressData);
+      if (progressData.length > 0 && !selectedClientId) {
+        setSelectedClientId(progressData[0].user.id);
+      }
     } catch (err) {
       setError('Error al cargar los progresos de los clientes');
       console.error('Error loading user progress:', err);
@@ -123,6 +134,29 @@ export const ProgressPage: React.FC = () => {
       setLoading(false);
     }
   };
+
+  // Cargar datos biométricos y fotos del atleta seleccionado
+  useEffect(() => {
+    if (!selectedClientId) return;
+    const fetchAthleteDetails = async () => {
+      try {
+        const [photos, weekly] = await Promise.all([
+          clientProgressPhotoService.getByUserId(Number(selectedClientId)).catch(() => []),
+          weeklyTrackingService.getByUserId(Number(selectedClientId)).catch(() => [])
+        ]);
+        setClientPhotos(photos || []);
+        
+        const activities = (weekly || []).map((w: any) => ({
+          date: (w.week_start_date || '').split('T')[0],
+          count: 1
+        }));
+        setClientActivity(activities);
+      } catch (err) {
+        console.error('Error fetching athlete details:', err);
+      }
+    };
+    fetchAthleteDetails();
+  }, [selectedClientId]);
 
   // KPIs
   const stats = useMemo(() => {
@@ -684,16 +718,70 @@ export const ProgressPage: React.FC = () => {
         </Box>
       )}
 
-      {/* TAB 1: Calendario de Consistencia Global */}
+      {/* TAB 1: Calendario de Consistencia */}
       {currentTab === 1 && (
         <Box sx={{ width: '100%', minWidth: 0, overflow: 'hidden' }}>
-          <ConsistencyHeatmap />
+          {userProgress.length > 0 && (
+            <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2} gap={1.5} flexWrap="wrap">
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 600 }}>
+                Visualizando atleta:
+              </Typography>
+              <FormControl size="small" sx={{ minWidth: 220 }}>
+                <Select
+                  value={selectedClientId}
+                  onChange={(e) => setSelectedClientId(Number(e.target.value))}
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '0.82rem',
+                    height: 38,
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                  }}
+                >
+                  {userProgress.map((item) => (
+                    <MenuItem key={`sel-heat-${item.user.id}`} value={item.user.id} sx={{ fontSize: '0.82rem' }}>
+                      {item.user.name} {item.user.surname || ''}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+          <ConsistencyHeatmap activityData={clientActivity} />
         </Box>
       )}
 
       {/* TAB 2: Evolución de Fuerza 1RM */}
       {currentTab === 2 && (
         <Box sx={{ width: '100%', minWidth: 0, overflow: 'hidden' }}>
+          {userProgress.length > 0 && (
+            <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2} gap={1.5} flexWrap="wrap">
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 600 }}>
+                Visualizando atleta:
+              </Typography>
+              <FormControl size="small" sx={{ minWidth: 220 }}>
+                <Select
+                  value={selectedClientId}
+                  onChange={(e) => setSelectedClientId(Number(e.target.value))}
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '0.82rem',
+                    height: 38,
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                  }}
+                >
+                  {userProgress.map((item) => (
+                    <MenuItem key={`sel-chart-${item.user.id}`} value={item.user.id} sx={{ fontSize: '0.82rem' }}>
+                      {item.user.name} {item.user.surname || ''}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
           <ExerciseProgressChart history={[]} />
         </Box>
       )}
@@ -701,7 +789,34 @@ export const ProgressPage: React.FC = () => {
       {/* TAB 3: Visor Antes y Después */}
       {currentTab === 3 && (
         <Box sx={{ width: '100%', minWidth: 0, overflow: 'hidden' }}>
-          <BeforeAfterSlider />
+          {userProgress.length > 0 && (
+            <Box display="flex" justifyContent="flex-end" alignItems="center" mb={2} gap={1.5} flexWrap="wrap">
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontWeight: 600 }}>
+                Visualizando atleta:
+              </Typography>
+              <FormControl size="small" sx={{ minWidth: 220 }}>
+                <Select
+                  value={selectedClientId}
+                  onChange={(e) => setSelectedClientId(Number(e.target.value))}
+                  sx={{
+                    bgcolor: 'rgba(255, 255, 255, 0.05)',
+                    borderRadius: '12px',
+                    color: '#fff',
+                    fontSize: '0.82rem',
+                    height: 38,
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.12)' },
+                  }}
+                >
+                  {userProgress.map((item) => (
+                    <MenuItem key={`sel-photo-${item.user.id}`} value={item.user.id} sx={{ fontSize: '0.82rem' }}>
+                      {item.user.name} {item.user.surname || ''}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+          <BeforeAfterSlider photos={clientPhotos} />
         </Box>
       )}
     </Box>
