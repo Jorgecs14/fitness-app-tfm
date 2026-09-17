@@ -18,6 +18,7 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
 import Badge from '@mui/material/Badge'
 import Avatar from '@mui/material/Avatar'
+import { MessageSquare } from 'lucide-react'
 
 import { Iconify } from '../../utils/iconify'
 import { NotificationsPopover } from '../../utils/notifications/notifications-popover'
@@ -226,25 +227,44 @@ export function DashboardLayout({
                 <Iconify icon="solar:magnifer-bold" width={18} sx={{ color: '#ffffff' }} />
               </IconButton>
 
-              <IconButton
+              {/* Botón Alargado: Chat del Entrenador */}
+              <Box
+                component="button"
                 onClick={() => setChatOpen(true)}
-                title="Asistente Fitness IA"
+                title="Chat directo con tu entrenador"
                 sx={{
-                  width: 36,
-                  height: 36,
-                  color: '#007AFF',
-                  borderRadius: 2,
-                  background: 'rgba(0, 122, 255, 0.15)',
-                  border: '0.5px solid rgba(0, 122, 255, 0.3)',
-                  transition: 'all 0.15s ease',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: { xs: 0.7, sm: 1 },
+                  px: { xs: 1.4, sm: 2 },
+                  py: 0.85,
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, rgba(0, 122, 255, 0.22) 0%, rgba(0, 122, 255, 0.1) 100%)',
+                  border: '1px solid rgba(0, 122, 255, 0.4)',
+                  color: '#ffffff',
+                  cursor: 'pointer',
+                  fontWeight: 700,
+                  fontSize: { xs: '0.78rem', sm: '0.85rem' },
+                  letterSpacing: '-0.01em',
+                  boxShadow: '0 4px 14px rgba(0, 122, 255, 0.2)',
+                  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                  whiteSpace: 'nowrap',
                   '&:hover': {
-                    background: 'rgba(0, 122, 255, 0.25)',
-                    transform: 'scale(1.05)',
+                    background: 'linear-gradient(135deg, #007AFF 0%, #0056b3 100%)',
+                    borderColor: '#007AFF',
+                    boxShadow: '0 6px 20px rgba(0, 122, 255, 0.45)',
+                    transform: 'translateY(-1px)',
                   },
+                  '&:active': {
+                    transform: 'scale(0.97)',
+                  }
                 }}
               >
-                <Iconify icon="solar:magic-stick-3-bold" width={18} />
-              </IconButton>
+                <MessageSquare size={16} color="#38bdf8" />
+                <Typography component="span" sx={{ fontSize: 'inherit', fontWeight: 'inherit', color: 'inherit' }}>
+                  Chat del Entrenador
+                </Typography>
+              </Box>
 
               <IconButton
                 onClick={handleNotificationsOpen}
@@ -400,8 +420,8 @@ export function DashboardLayout({
       {/* Modal de Búsqueda Rápida Global Cmd+K */}
       <GlobalQuickSearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
 
-      {/* Modal de Asistente de IA Apple Intelligence */}
-      <FloatingChat open={chatOpen} onClose={() => setChatOpen(false)} />
+      {/* Modal de Chat del Entrenador con Historial Persistente */}
+      <FloatingChat open={chatOpen} onClose={() => setChatOpen(false)} currentUser={currentUser} />
 
       {/* Modal de Onboarding y Anamnesis Obligatoria para Nuevos Clientes */}
       {currentUser && (currentUser.role === 'client' || currentUser.role === 'cliente') && (

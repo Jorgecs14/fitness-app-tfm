@@ -47,10 +47,10 @@ export const FloatingMobileDock: React.FC<FloatingMobileDockProps> = ({
       icon: TrendingUp,
     },
     {
-      label: 'Chat IA',
+      label: 'Chat',
       isAction: true,
       onClick: onOpenChat,
-      icon: Sparkles,
+      icon: MessageSquareShare,
       highlight: true,
     },
     {
