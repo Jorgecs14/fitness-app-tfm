@@ -47,6 +47,8 @@ interface UserListProps {
   onExport: (format: 'pdf' | 'excel' | 'csv') => void;
   onCreateNew: () => void;
   onAssignTrainer?: (user: User) => void;
+  customTitle?: string;
+  customSubtitle?: string;
 }
 
 export const UserList = ({
@@ -56,6 +58,8 @@ export const UserList = ({
   onDelete,
   onExport,
   onCreateNew,
+  customTitle,
+  customSubtitle,
 }: UserListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
@@ -122,10 +126,10 @@ export const UserList = ({
       >
         <Box>
           <Typography variant="h4" fontWeight="800" sx={{ letterSpacing: '-0.02em', mb: 0.5, color: '#FFFFFF' }}>
-            Directorio de Usuarios
+            {customTitle || 'Directorio de Usuarios'}
           </Typography>
           <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-            Gestión de roles, expedientes 360° y accesos de atletas y entrenadores.
+            {customSubtitle || 'Gestión de roles, expedientes 360° y accesos de atletas y entrenadores.'}
           </Typography>
         </Box>
 

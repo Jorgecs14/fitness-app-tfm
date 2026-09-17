@@ -1,5 +1,5 @@
-// Calculadora metabólica de calorías (BMR & TDEE) con estética Apple Liquid Glass
-import React, { useState } from 'react';
+// Calculadora metabólica de calorías (BMR & TDEE) con estética Apple Liquid Glass y persistencia de datos
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,8 @@ import {
   Chip,
   useTheme,
   useMediaQuery,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import {
   Calculator,
@@ -23,20 +25,31 @@ import {
   TrendingDown,
   TrendingUp,
   Activity,
-  User,
+  User as UserIcon,
   Sparkles,
   Check,
+  Save,
 } from 'lucide-react';
+import { User } from '../../types/User';
+import { DietWithFoods } from '../../types/DietWithFoods';
+import * as userService from '../../services/userService';
+import * as dietService from '../../services/dietService';
 
 interface CalorieCalculatorModalProps {
   open: boolean;
   onClose: () => void;
+  currentUser?: User | null;
+  currentDiet?: DietWithFoods | null;
+  onSuccess?: () => void;
   onApplyTargetCalories?: (targetCalories: number, macros: { protein: number; carbs: number; fat: number }) => void;
 }
 
 export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
   open,
   onClose,
+  currentUser,
+  currentDiet,
+  onSuccess,
   onApplyTargetCalories,
 }) => {
   const theme = useTheme();
@@ -48,6 +61,46 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
   const [height, setHeight] = useState<number>(175);
   const [activity, setActivity] = useState<number>(1.375);
   const [goal, setGoal] = useState<'lose' | 'maintain' | 'gain'>('lose');
+  const [saving, setSaving] = useState<boolean>(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      // 1. Pre-cargar datos del usuario autenticado si existen
+      if (currentUser) {
+        if (currentUser.weight) setWeight(Number(currentUser.weight));
+        if (currentUser.height) setHeight(Number(currentUser.height));
+        if (currentUser.birth_date) {
+          const birth = new Date(currentUser.birth_date);
+          const diffMs = Date.now() - birth.getTime();
+          const ageDt = new Date(diffMs);
+          const computedAge = Math.abs(ageDt.getUTCFullYear() - 1970);
+          if (computedAge > 0 && computedAge < 120) {
+            setAge(computedAge);
+          }
+        }
+      }
+
+      // 2. Si ya hay una dieta existente con calorías, sincronizar el objetivo aproximado
+      if (currentDiet?.calories) {
+        const cals = currentDiet.calories;
+        if (cals < 2000) setGoal('lose');
+        else if (cals > 2600) setGoal('gain');
+        else setGoal('maintain');
+      }
+
+      // 3. Restaurar preferencias guardadas en localStorage si las hay
+      try {
+        const savedMeta = localStorage.getItem(`calc_meta_${currentUser?.id || 'guest'}`);
+        if (savedMeta) {
+          const parsed = JSON.parse(savedMeta);
+          if (parsed.gender) setGender(parsed.gender);
+          if (parsed.activity) setActivity(parsed.activity);
+          if (parsed.goal) setGoal(parsed.goal);
+        }
+      } catch (e) {}
+    }
+  }, [open, currentUser, currentDiet]);
 
   // BMR Formula (Mifflin-St Jeor)
   const calculateBMR = () => {
@@ -73,15 +126,76 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
   const carbsGrams = Math.round((targetCalories * 0.45) / 4);
   const fatGrams = Math.round((targetCalories * 0.25) / 9);
 
-  const handleApply = () => {
-    if (onApplyTargetCalories) {
-      onApplyTargetCalories(targetCalories, {
-        protein: proteinGrams,
-        carbs: carbsGrams,
-        fat: fatGrams,
-      });
+  const handleApply = async () => {
+    try {
+      setSaving(true);
+      setFeedback(null);
+
+      // 1. Guardar preferencias en localStorage
+      try {
+        localStorage.setItem(
+          `calc_meta_${currentUser?.id || 'guest'}`,
+          JSON.stringify({ gender, activity, goal, weight, height, age, targetCalories })
+        );
+      } catch (e) {}
+
+      // 2. Si hay usuario autenticado, actualizar biometría en Supabase / Base de datos
+      if (currentUser?.id) {
+        try {
+          await userService.updateUser(currentUser.id, {
+            weight: Number(weight),
+            height: Number(height),
+          });
+        } catch (uErr) {
+          console.warn('No se pudo actualizar datos antropométricos del usuario:', uErr);
+        }
+
+        // 3. Actualizar o crear la dieta asignada al usuario
+        if (currentDiet?.id) {
+          try {
+            await dietService.updateDiet(currentDiet.id, {
+              ...currentDiet,
+              calories: targetCalories,
+            });
+          } catch (dErr) {
+            console.warn('Error actualizando calorías de la dieta activa:', dErr);
+          }
+        } else {
+          // Crear nueva dieta asignada a este usuario
+          try {
+            const goalLabel = goal === 'lose' ? 'Déficit Calórico' : goal === 'gain' ? 'Superávit Calórico' : 'Mantenimiento';
+            const newDiet = await dietService.createDiet({
+              name: `Plan ${goalLabel} (${targetCalories} kcal)`,
+              description: `Pautas nutricionales personalizadas calculadas con fórmula Mifflin-St Jeor.`,
+              calories: targetCalories,
+              export_template: 'visual',
+            });
+            await dietService.assignUserToDiet(newDiet.id, currentUser.id);
+          } catch (createErr) {
+            console.warn('Error creando dieta inicial para usuario:', createErr);
+          }
+        }
+      }
+
+      // 4. Disparar callbacks de reactividad
+      if (onApplyTargetCalories) {
+        onApplyTargetCalories(targetCalories, {
+          protein: proteinGrams,
+          carbs: carbsGrams,
+          fat: fatGrams,
+        });
+      }
+
+      if (onSuccess) {
+        onSuccess();
+      }
+
+      onClose();
+    } catch (err: any) {
+      setFeedback(err.message || 'Error guardando datos');
+    } finally {
+      setSaving(false);
     }
-    onClose();
   };
 
   return (
@@ -161,6 +275,12 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
       {/* Contenido con Scroll */}
       <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#000000', overflowY: 'auto' }}>
         <Stack spacing={2.5}>
+          {feedback && (
+            <Alert severity="error" sx={{ borderRadius: '12px' }}>
+              {feedback}
+            </Alert>
+          )}
+
           {/* Selector de Género Apple Segmented */}
           <Box
             sx={{
@@ -225,7 +345,7 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
                   fullWidth
                   type="number"
                   value={age}
-                  onChange={(e) => setAge(Number(e.target.value))}
+                  onChange={(e) => setAge(Math.max(10, Number(e.target.value)))}
                   InputProps={{ sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' } }}
                 />
               </Grid>
@@ -238,7 +358,7 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
                   fullWidth
                   type="number"
                   value={weight}
-                  onChange={(e) => setWeight(Number(e.target.value))}
+                  onChange={(e) => setWeight(Math.max(30, Number(e.target.value)))}
                   InputProps={{ sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' } }}
                 />
               </Grid>
@@ -251,7 +371,7 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
                   fullWidth
                   type="number"
                   value={height}
-                  onChange={(e) => setHeight(Number(e.target.value))}
+                  onChange={(e) => setHeight(Math.max(100, Number(e.target.value)))}
                   InputProps={{ sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' } }}
                 />
               </Grid>
@@ -379,6 +499,7 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
       >
         <Button
           onClick={onClose}
+          disabled={saving}
           sx={{
             flex: 1,
             height: 44,
@@ -396,6 +517,8 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
         <Button
           onClick={handleApply}
           variant="contained"
+          disabled={saving}
+          startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <Save size={18} />}
           sx={{
             flex: 2,
             height: 44,
@@ -409,7 +532,7 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
             '&:hover': { bgcolor: '#0062cc' },
           }}
         >
-          Aplicar a Mi Plan
+          {saving ? 'Guardando en Perfil...' : 'Guardar y Aplicar a Mi Plan'}
         </Button>
       </DialogActions>
     </Dialog>

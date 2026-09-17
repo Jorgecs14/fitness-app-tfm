@@ -48,21 +48,26 @@ export const ClientMyDietPage: React.FC = () => {
       // 1. Intentar obtener la dieta directa asignada a este usuario
       let matchedDiet = await getUserDiet(user.id);
 
-      // 2. Si no hay dieta directa, consultar la lista completa con alimentos
+      // 2. Si no viene por endpoint directo, buscar si está en el join user_diets
       if (!matchedDiet) {
         const diets = await getDietsWithFoods();
-        if (diets.length > 0) {
+        for (const d of diets) {
           try {
-            matchedDiet = await getDietWithFoods(diets[0].id);
+            const dietUsers = await getDietUsers(d.id);
+            if (dietUsers.some((u: any) => u.id === user.id)) {
+              matchedDiet = await getDietWithFoods(d.id);
+              break;
+            }
           } catch (e) {
-            matchedDiet = diets[0];
+            // continue
           }
         }
       }
 
-      setDiet(matchedDiet);
+      setDiet(matchedDiet || null);
     } catch (err) {
       console.error('Error cargando dieta:', err);
+      setDiet(null);
     } finally {
       setLoading(false);
     }
@@ -260,6 +265,11 @@ export const ClientMyDietPage: React.FC = () => {
         <CalorieCalculatorModal
           open={calculatorOpen}
           onClose={() => setCalculatorOpen(false)}
+          currentUser={currentUser}
+          currentDiet={diet}
+          onSuccess={() => {
+            loadDiet();
+          }}
         />
       )}
 

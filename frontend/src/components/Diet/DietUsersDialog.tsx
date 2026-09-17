@@ -60,10 +60,17 @@ export const DietUsersDialog: React.FC<DietUsersDialogProps> = ({
     setLoading(true);
 
     try {
-      const [assigned, all] = await Promise.all([
+      const [assigned, loggedInUser] = await Promise.all([
         dietService.getDietUsers(diet.id),
-        userService.getUsers(),
+        userService.getCurrentUser(),
       ]);
+
+      let all: any[] = [];
+      if (loggedInUser && (loggedInUser.role === 'trainer' || loggedInUser.role === 'entrenador')) {
+        all = await userService.getTrainerClients(loggedInUser.id);
+      } else {
+        all = await userService.getUsers();
+      }
 
       setAssignedUsers(Array.isArray(assigned) ? assigned : []);
       setAllUsers(Array.isArray(all) ? all : (all as any)?.data || []);

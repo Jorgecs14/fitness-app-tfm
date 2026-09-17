@@ -62,10 +62,17 @@ export const WorkoutUserDialog: React.FC<WorkoutUserDialogProps> = ({
     setLoading(true);
 
     try {
-      const [current, all] = await Promise.all([
+      const [current, loggedInUser] = await Promise.all([
         workoutService.getWorkoutUser(workout.id),
-        userService.getUsers(),
+        userService.getCurrentUser(),
       ]);
+
+      let all: any[] = [];
+      if (loggedInUser && (loggedInUser.role === 'trainer' || loggedInUser.role === 'entrenador')) {
+        all = await userService.getTrainerClients(loggedInUser.id);
+      } else {
+        all = await userService.getUsers();
+      }
 
       setCurrentUser(current);
       setAllUsers(Array.isArray(all) ? all : (all as any)?.data || []);

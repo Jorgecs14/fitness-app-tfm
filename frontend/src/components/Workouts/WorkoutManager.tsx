@@ -29,6 +29,7 @@ import { LiveWorkoutDialog } from './LiveWorkoutDialog'
 import { QrShareModal } from './QrShareModal'
 
 export const WorkoutManager = () => {
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [workouts, setWorkouts] = useState<WorkoutWithExercises[]>([])
   const [filteredWorkouts, setFilteredWorkouts] = useState<
     WorkoutWithExercises[]
@@ -62,13 +63,31 @@ export const WorkoutManager = () => {
   const { exportToCSV, exportToPDF, exportToExcel } = useExport()
 
   useEffect(() => {
-    loadWorkouts()
-    loadUsers()
+    init()
   }, [])
 
-  useEffect(() => {
-    filterWorkouts()
-  }, [workouts, searchQuery, selectedCategory])
+  const init = async () => {
+    try {
+      setLoading(true)
+      const activeUser = await userService.getCurrentUser()
+      setCurrentUser(activeUser)
+
+      let usersList: User[] = []
+      if (activeUser && (activeUser.role === 'trainer' || activeUser.role === 'entrenador')) {
+        usersList = await userService.getTrainerClients(activeUser.id)
+      } else if (activeUser && activeUser.role === 'admin') {
+        usersList = await userService.getUsers()
+      }
+      setUsers(usersList)
+
+      const workoutsData = await workoutService.getWorkoutsWithExercises()
+      setWorkouts(workoutsData)
+    } catch (err) {
+      showToast('Error al cargar datos', 'error')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const loadWorkouts = async () => {
     try {
@@ -82,30 +101,49 @@ export const WorkoutManager = () => {
     }
   }
 
-  const loadUsers = async () => {
-    try {
-      const data = await userService.getUsers()
-      setUsers(data)
-    } catch (error) {
-      showToast('Error al cargar usuarios', 'error')
-    }
-  }
+  useEffect(() => {
+    filterWorkouts()
+  }, [workouts, searchQuery, selectedCategory, currentUser, users])
 
   const filterWorkouts = () => {
     let list = [...workouts]
 
+    // 1. Aislamiento por rol (Multi-tenancy Entrenador <-> Alumno)
+    if (currentUser) {
+      const role = (currentUser.role || '').toLowerCase()
+      if (role === 'client' || role === 'cliente') {
+        // El cliente SOLO ve las rutinas asignadas a su ID
+        list = list.filter((w) => w.user_id === currentUser.id)
+      } else if (role === 'trainer' || role === 'entrenador') {
+        // El entrenador ve rutinas creadas/asignadas a sus alumnos, propias o plantillas
+        const clientIds = users.map((u) => u.id)
+        list = list.filter(
+          (w) =>
+            !w.user_id ||
+            w.user_id === currentUser.id ||
+            clientIds.includes(w.user_id)
+        )
+      }
+    }
+
+    // 2. Filtro por categoría
     if (selectedCategory !== 'all') {
-      list = list.filter(w => {
+      list = list.filter((w) => {
         const cat = (w.category || '').toLowerCase()
-        if (selectedCategory === 'hipertrofia') return cat.includes('hiper') || cat.includes('hyper')
-        if (selectedCategory === 'fuerza') return cat.includes('fuerza') || cat.includes('strength')
-        if (selectedCategory === 'resistencia') return cat.includes('resistencia') || cat.includes('endurance')
+        if (selectedCategory === 'hipertrofia')
+          return cat.includes('hiper') || cat.includes('hyper')
+        if (selectedCategory === 'fuerza')
+          return cat.includes('fuerza') || cat.includes('strength')
+        if (selectedCategory === 'resistencia')
+          return cat.includes('resistencia') || cat.includes('endurance')
         if (selectedCategory === 'cardio') return cat.includes('cardio')
-        if (selectedCategory === 'movilidad') return cat.includes('movil') || cat.includes('flex')
+        if (selectedCategory === 'movilidad')
+          return cat.includes('movil') || cat.includes('flex')
         return cat.includes(selectedCategory.toLowerCase())
       })
     }
 
+    // 3. Búsqueda por texto
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase()
       list = list.filter(
@@ -286,6 +324,8 @@ export const WorkoutManager = () => {
     { id: 'movilidad', label: 'Movilidad' },
   ]
 
+  const isClient = currentUser?.role === 'client' || currentUser?.role === 'cliente'
+
   return (
     <Box sx={{ p: { xs: 2, sm: 3, md: 4 } }}>
       <ToastContainer />
@@ -296,7 +336,6 @@ export const WorkoutManager = () => {
         </Alert>
       )}
 
-      {/* Hero Glass Banner con Métricas y Botones de Acción */}
       {/* Hero Banner Apple Liquid Glass */}
       <Box className="apple-card" sx={{ p: { xs: 2.5, sm: 3.5 }, mb: 3.5 }}>
         <Box
@@ -319,10 +358,12 @@ export const WorkoutManager = () => {
                 mb: 0.75,
               }}
             >
-              Catálogo de Entrenamientos
+              {isClient ? 'Mis Rutinas Asignadas' : 'Catálogo de Entrenamientos'}
             </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', maxWidth: 620, lineHeight: 1.5 }}>
-              Diseña, personaliza y ejecuta rutinas de entrenamiento optimizadas con seguimiento de series y biblioteca de ejercicios.
+              {isClient
+                ? 'Accede y ejecuta en vivo tus rutinas de entrenamiento personalizadas y prescritas por tu entrenador.'
+                : 'Diseña, personaliza y ejecuta rutinas de entrenamiento optimizadas con seguimiento de series y biblioteca de ejercicios.'}
             </Typography>
 
             {/* Micro-Badges de Métricas */}
@@ -341,7 +382,7 @@ export const WorkoutManager = () => {
               >
                 <Iconify icon="solar:folder-with-files-bold" width={16} sx={{ color: '#007AFF' }} />
                 <Typography variant="caption" sx={{ fontWeight: 600, color: '#ffffff' }}>
-                  {workouts.length} Rutinas Totales
+                  {filteredWorkouts.length} {isClient ? 'Rutinas Asignadas' : 'Rutinas Totales'}
                 </Typography>
               </Box>
 
@@ -359,57 +400,59 @@ export const WorkoutManager = () => {
               >
                 <Iconify icon="solar:dumbbell-bold" width={16} sx={{ color: '#34C759' }} />
                 <Typography variant="caption" sx={{ fontWeight: 600, color: '#ffffff' }}>
-                  {totalExercisesCount} Ejercicios Asignados
+                  {totalExercisesCount} Ejercicios
                 </Typography>
               </Box>
             </Stack>
           </Box>
 
-          <Stack direction="row" spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
-            <Button
-              variant="outlined"
-              startIcon={<Iconify icon="eva:download-fill" />}
-              onClick={(e) => setExportMenuAnchor(e.currentTarget)}
-              sx={{
-                flex: { xs: 1, sm: 'initial' },
-                borderRadius: '12px',
-                px: 2,
-                py: 1,
-                fontWeight: 600,
-                borderColor: 'rgba(255, 255, 255, 0.15)',
-                color: '#ffffff',
-                bgcolor: 'rgba(255, 255, 255, 0.06)',
-                textTransform: 'none',
-                '&:hover': {
-                  borderColor: '#007AFF',
-                  bgcolor: 'rgba(0, 122, 255, 0.12)',
-                },
-              }}
-            >
-              Exportar
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={handleAdd}
-              sx={{
-                flex: { xs: 2, sm: 'initial' },
-                borderRadius: '12px',
-                px: 2.5,
-                py: 1,
-                fontWeight: 700,
-                bgcolor: '#007AFF',
-                color: '#ffffff',
-                textTransform: 'none',
-                boxShadow: '0 4px 14px rgba(0, 122, 255, 0.3)',
-                '&:hover': {
-                  bgcolor: '#0062cc',
-                },
-              }}
-            >
-              Nueva Rutina
-            </Button>
-          </Stack>
+          {!isClient && (
+            <Stack direction="row" spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
+              <Button
+                variant="outlined"
+                startIcon={<Iconify icon="eva:download-fill" />}
+                onClick={(e) => setExportMenuAnchor(e.currentTarget)}
+                sx={{
+                  flex: { xs: 1, sm: 'initial' },
+                  borderRadius: '12px',
+                  px: 2,
+                  py: 1,
+                  fontWeight: 600,
+                  borderColor: 'rgba(255, 255, 255, 0.15)',
+                  color: '#ffffff',
+                  bgcolor: 'rgba(255, 255, 255, 0.06)',
+                  textTransform: 'none',
+                  '&:hover': {
+                    borderColor: '#007AFF',
+                    bgcolor: 'rgba(0, 122, 255, 0.12)',
+                  },
+                }}
+              >
+                Exportar
+              </Button>
+              <Button
+                variant="contained"
+                startIcon={<Iconify icon="mingcute:add-line" />}
+                onClick={handleAdd}
+                sx={{
+                  flex: { xs: 2, sm: 'initial' },
+                  borderRadius: '12px',
+                  px: 2.5,
+                  py: 1,
+                  fontWeight: 700,
+                  bgcolor: '#007AFF',
+                  color: '#ffffff',
+                  textTransform: 'none',
+                  boxShadow: '0 4px 14px rgba(0, 122, 255, 0.3)',
+                  '&:hover': {
+                    bgcolor: '#0062cc',
+                  },
+                }}
+              >
+                Nueva Rutina
+              </Button>
+            </Stack>
+          )}
         </Box>
       </Box>
 

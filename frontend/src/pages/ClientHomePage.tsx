@@ -65,7 +65,7 @@ export const ClientHomePage: React.FC = () => {
         console.error('Error cargando rutinas:', wErr);
       }
 
-      // Cargar dieta del cliente
+      // Cargar dieta del cliente asignada exclusivamente por su entrenador
       try {
         let matchedDiet = await getUserDiet(user.id);
         if (!matchedDiet) {
@@ -81,13 +81,11 @@ export const ClientHomePage: React.FC = () => {
               // Ignorar
             }
           }
-          if (!matchedDiet && diets.length > 0) {
-            matchedDiet = diets[0];
-          }
         }
-        setAssignedDiet(matchedDiet);
+        setAssignedDiet(matchedDiet || null);
       } catch (dErr) {
         console.error('Error cargando dietas:', dErr);
+        setAssignedDiet(null);
       }
 
       // Cargar historial de ejecuciones en vivo
