@@ -56,9 +56,9 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [gender, setGender] = useState<'male' | 'female'>('male');
-  const [age, setAge] = useState<number>(25);
-  const [weight, setWeight] = useState<number>(75);
-  const [height, setHeight] = useState<number>(175);
+  const [age, setAge] = useState<string>('25');
+  const [weight, setWeight] = useState<string>('75');
+  const [height, setHeight] = useState<string>('175');
   const [activity, setActivity] = useState<number>(1.375);
   const [goal, setGoal] = useState<'lose' | 'maintain' | 'gain'>('lose');
   const [saving, setSaving] = useState<boolean>(false);
@@ -68,15 +68,15 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
     if (open) {
       // 1. Pre-cargar datos del usuario autenticado si existen
       if (currentUser) {
-        if (currentUser.weight) setWeight(Number(currentUser.weight));
-        if (currentUser.height) setHeight(Number(currentUser.height));
+        if (currentUser.weight) setWeight(String(currentUser.weight));
+        if (currentUser.height) setHeight(String(currentUser.height));
         if (currentUser.birth_date) {
           const birth = new Date(currentUser.birth_date);
           const diffMs = Date.now() - birth.getTime();
           const ageDt = new Date(diffMs);
           const computedAge = Math.abs(ageDt.getUTCFullYear() - 1970);
           if (computedAge > 0 && computedAge < 120) {
-            setAge(computedAge);
+            setAge(String(computedAge));
           }
         }
       }
@@ -97,17 +97,24 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
           if (parsed.gender) setGender(parsed.gender);
           if (parsed.activity) setActivity(parsed.activity);
           if (parsed.goal) setGoal(parsed.goal);
+          if (parsed.weight) setWeight(String(parsed.weight));
+          if (parsed.height) setHeight(String(parsed.height));
+          if (parsed.age) setAge(String(parsed.age));
         }
       } catch (e) {}
     }
   }, [open, currentUser, currentDiet]);
 
+  const numWeight = parseFloat(weight) || 75;
+  const numHeight = parseFloat(height) || 175;
+  const numAge = parseInt(age, 10) || 25;
+
   // BMR Formula (Mifflin-St Jeor)
   const calculateBMR = () => {
     if (gender === 'male') {
-      return 10 * weight + 6.25 * height - 5 * age + 5;
+      return 10 * numWeight + 6.25 * numHeight - 5 * numAge + 5;
     } else {
-      return 10 * weight + 6.25 * height - 5 * age - 161;
+      return 10 * numWeight + 6.25 * numHeight - 5 * numAge - 161;
     }
   };
 
@@ -343,9 +350,11 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
                 </Typography>
                 <TextField
                   fullWidth
-                  type="number"
+                  type="text"
                   value={age}
-                  onChange={(e) => setAge(Math.max(10, Number(e.target.value)))}
+                  placeholder="25"
+                  onChange={(e) => setAge(e.target.value)}
+                  inputProps={{ inputMode: 'numeric' }}
                   InputProps={{ sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' } }}
                 />
               </Grid>
@@ -356,9 +365,11 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
                 </Typography>
                 <TextField
                   fullWidth
-                  type="number"
+                  type="text"
                   value={weight}
-                  onChange={(e) => setWeight(Math.max(30, Number(e.target.value)))}
+                  placeholder="75"
+                  onChange={(e) => setWeight(e.target.value)}
+                  inputProps={{ inputMode: 'decimal' }}
                   InputProps={{ sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' } }}
                 />
               </Grid>
@@ -369,9 +380,11 @@ export const CalorieCalculatorModal: React.FC<CalorieCalculatorModalProps> = ({
                 </Typography>
                 <TextField
                   fullWidth
-                  type="number"
+                  type="text"
                   value={height}
-                  onChange={(e) => setHeight(Math.max(100, Number(e.target.value)))}
+                  placeholder="175"
+                  onChange={(e) => setHeight(e.target.value)}
+                  inputProps={{ inputMode: 'numeric' }}
                   InputProps={{ sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '10px', fontSize: '16px' } }}
                 />
               </Grid>

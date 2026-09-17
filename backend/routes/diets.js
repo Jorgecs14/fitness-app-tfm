@@ -306,4 +306,79 @@ router.delete('/:id/users/:userId', async (req, res) => {
   }
 })
 
+// Asegurar tabla de observaciones de dieta
+pool.query(`
+  CREATE TABLE IF NOT EXISTS diet_observations (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL,
+    diet_id INTEGER,
+    note TEXT NOT NULL,
+    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    CONSTRAINT unique_user_diet_obs_date UNIQUE (user_id, date)
+  )
+`).catch(err => console.error('Error creating diet_observations table:', err.message))
+
+// Guardar o actualizar la observación de dieta del día
+router.post('/observations', async (req, res) => {
+  try {
+    const { user_id, diet_id, note, date } = req.body
+    if (!user_id || !note) {
+      return res.status(400).json({ error: 'user_id y note son requeridos' })
+    }
+
+    const targetDate = date || new Date().toISOString().split('T')[0]
+
+    const { rows } = await pool.query(
+      `INSERT INTO diet_observations (user_id, diet_id, note, date, created_at)
+       VALUES ($1, $2, $3, $4, NOW())
+       ON CONFLICT (user_id, date)
+       DO UPDATE SET note = EXCLUDED.note, diet_id = EXCLUDED.diet_id, created_at = NOW()
+       RETURNING *`,
+      [user_id, diet_id || null, note.trim(), targetDate]
+    )
+
+    res.status(200).json({ message: 'Observación guardada correctamente', data: rows[0] })
+  } catch (error) {
+    console.error('Error guardando observación:', error)
+    res.status(500).json({ error: 'Error al guardar observación', details: error.message })
+  }
+})
+
+// Obtener observaciones de dieta de un usuario
+router.get('/observations/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params
+    const { rows } = await pool.query(
+      `SELECT * FROM diet_observations
+       WHERE user_id = $1
+       ORDER BY date DESC, id DESC
+       LIMIT 30`,
+      [userId]
+    )
+    res.json(rows)
+  } catch (error) {
+    console.error('Error al obtener observaciones:', error)
+    res.status(500).json({ error: 'Error al obtener observaciones' })
+  }
+})
+
+// Obtener observación de hoy de un usuario
+router.get('/observations/:userId/today', async (req, res) => {
+  try {
+    const { userId } = req.params
+    const today = new Date().toISOString().split('T')[0]
+    const { rows } = await pool.query(
+      `SELECT * FROM diet_observations
+       WHERE user_id = $1 AND date = $2
+       LIMIT 1`,
+      [userId, today]
+    )
+    res.json(rows[0] || null)
+  } catch (error) {
+    console.error('Error al obtener observación de hoy:', error)
+    res.status(500).json({ error: 'Error al obtener observación de hoy' })
+  }
+})
+
 module.exports = router

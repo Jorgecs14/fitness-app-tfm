@@ -181,3 +181,31 @@ export const getDietFoods = async (dietId: number) => {
   }
 }
 
+export const saveDietObservation = async (data: { user_id: number; diet_id?: number; note: string; date?: string }) => {
+  try {
+    const response = await axiosInstance.post('/diets/observations', data)
+    return response.data
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || error.response?.data?.error || 'Error al guardar la observación')
+  }
+}
+
+export const getDietObservations = async (userId: number) => {
+  try {
+    const response = await axiosInstance.get(`/diets/observations/${userId}`)
+    return response.data
+  } catch (error: any) {
+    return []
+  }
+}
+
+export const getTodayDietObservation = async (userId: number) => {
+  try {
+    const response = await axiosInstance.get(`/diets/observations/${userId}/today`)
+    return response.data
+  } catch (error: any) {
+    return null
+  }
+}
+
+
