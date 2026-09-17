@@ -44,11 +44,11 @@ import { BodyHeatmap } from '../components/Analytics/BodyHeatmap';
 import { loadOf } from '../lib/muscles';
 
 const MEAL_STEPS = [
-  { id: 'desayuno', label: '1º Desayuno', short: 'Desayuno', icon: '🍳' },
-  { id: 'media_manana', label: '2º Media Mañana', short: 'Media Mañana', icon: '🍎' },
-  { id: 'comida', label: '3º Comida', short: 'Comida', icon: '🥗' },
-  { id: 'merienda', label: '4º Merienda', short: 'Merienda', icon: '🥪' },
-  { id: 'cena', label: '5º Cena', short: 'Cena', icon: '🍲' },
+  { id: 'desayuno', label: '1º Desayuno', short: 'Desayuno' },
+  { id: 'media_manana', label: '2º Media Mañana', short: 'Media Mañana' },
+  { id: 'comida', label: '3º Comida', short: 'Comida' },
+  { id: 'merienda', label: '4º Merienda', short: 'Merienda' },
+  { id: 'cena', label: '5º Cena', short: 'Cena' },
 ];
 
 export const ClientHomePage: React.FC = () => {
@@ -536,8 +536,8 @@ export const ClientHomePage: React.FC = () => {
                       <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block' }}>
                         Próxima comida a marcar:
                       </Typography>
-                      <Typography variant="h6" fontWeight="800" sx={{ color: '#FFFFFF', mt: 0.2, display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <span>{nextMeal.icon}</span> {nextMeal.label}
+                      <Typography variant="h6" fontWeight="800" sx={{ color: '#FFFFFF', mt: 0.2 }}>
+                        {nextMeal.label}
                       </Typography>
                     </Box>
                   ) : (
@@ -684,13 +684,13 @@ export const ClientHomePage: React.FC = () => {
                     fontSize: '12px',
                     fontWeight: 700,
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    gap: '6px',
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  <span>🌙 Bueno</span>
+                  <Moon size={14} /> Bueno
                 </button>
 
                 <button
@@ -706,13 +706,13 @@ export const ClientHomePage: React.FC = () => {
                     fontSize: '12px',
                     fontWeight: 700,
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    gap: '6px',
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  <span>⛅ Regular</span>
+                  <Activity size={14} /> Regular
                 </button>
 
                 <button
@@ -728,13 +728,13 @@ export const ClientHomePage: React.FC = () => {
                     fontSize: '12px',
                     fontWeight: 700,
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
+                    gap: '6px',
                     transition: 'all 0.2s ease',
                   }}
                 >
-                  <span>⚡ Malo</span>
+                  <Minus size={14} /> Malo
                 </button>
               </Stack>
             </Box>

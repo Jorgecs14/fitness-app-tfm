@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Dialog,
-  DialogContent,
   Box,
   Typography,
   Grid,
@@ -14,8 +13,7 @@ import {
   Alert,
   LinearProgress,
   useTheme,
-  useMediaQuery,
-  IconButton
+  useMediaQuery
 } from '@mui/material';
 import {
   User,
@@ -25,8 +23,9 @@ import {
   Sparkles,
   ArrowRight,
   ArrowLeft,
-  Flame,
-  Dumbbell
+  Dumbbell,
+  ShieldCheck,
+  Activity
 } from 'lucide-react';
 import { completeOnboarding } from '../../services/userService';
 import { User as UserType } from '../../types/User';
@@ -44,6 +43,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const [step, setStep] = useState<number>(1);
   const [loading, setLoading] = useState(false);
@@ -74,6 +74,13 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
     training_days: '5',
     observations: ''
   });
+
+  // Garantizar que al cambiar de paso el scroll vuelva siempre a la parte superior
+  useEffect(() => {
+    if (contentRef.current) {
+      contentRef.current.scrollTop = 0;
+    }
+  }, [step]);
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [field]: e.target.value });
@@ -119,7 +126,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
       setError(null);
 
       // Calcular factor de actividad preciso para la calculadora y sincronizar
-      let activityFactor = 1.55; // default 3-5 días moderado
+      let activityFactor = 1.55;
       const days = parseInt(formData.training_days, 10) || 5;
       if (days <= 2) activityFactor = 1.375;
       else if (days <= 5) activityFactor = 1.55;
@@ -137,7 +144,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         computedAge = Math.abs(ageDt.getUTCFullYear() - 1970) || 25;
       }
 
-      // Guardar sincronización directa en localStorage para la Calculadora de Calorías
+      // Guardar sincronización en localStorage para la Calculadora de Calorías
       try {
         localStorage.setItem(
           `calc_meta_${user.id}`,
@@ -153,7 +160,6 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         );
       } catch (e) {}
 
-      // Mapear activity_level adecuado para el backend
       const mappedActivityLevel = days >= 6 ? 'very_active' : days >= 3 ? 'moderate' : 'light';
 
       const payload = {
@@ -188,14 +194,12 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
       maxWidth="md"
       fullScreen={isMobile}
       disableEscapeKeyDown
-      scroll="paper"
       PaperProps={{
-        className: 'apple-card',
         sx: {
-          borderRadius: { xs: 0, sm: 4 },
-          background: 'linear-gradient(180deg, #1C1C1E 0%, #121214 100%)',
-          border: { xs: 'none', sm: '1px solid rgba(0, 122, 255, 0.3)' },
-          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.85)',
+          borderRadius: { xs: 0, sm: '24px' },
+          background: '#121214',
+          border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.1)' },
+          boxShadow: '0 25px 60px rgba(0, 0, 0, 0.9)',
           display: 'flex',
           flexDirection: 'column',
           height: isMobile ? '100dvh' : 'auto',
@@ -205,13 +209,13 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         }
       }}
     >
-      {/* Header with Step Progress */}
+      {/* Header Fijo */}
       <Box
         sx={{
-          p: { xs: 2, sm: 3 },
+          p: { xs: 2, sm: 2.8 },
           pb: 1.8,
           borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          bgcolor: 'rgba(28, 28, 30, 0.95)',
+          background: 'rgba(24, 24, 27, 0.95)',
           backdropFilter: 'blur(20px)',
           flexShrink: 0,
           pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px)' : 2.5
@@ -224,22 +228,23 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                 width: 36,
                 height: 36,
                 borderRadius: '10px',
-                background: 'linear-gradient(135deg, #007AFF 0%, #5856D6 100%)',
+                background: 'rgba(0, 122, 255, 0.15)',
+                border: '1px solid rgba(0, 122, 255, 0.3)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 0 15px rgba(0, 122, 255, 0.4)',
+                color: '#007AFF',
                 flexShrink: 0
               }}
             >
-              <Sparkles size={18} color="#FFFFFF" />
+              <Activity size={18} />
             </Box>
             <Box>
-              <Typography variant="h6" fontWeight="900" sx={{ color: '#FFFFFF', fontSize: { xs: '1rem', sm: '1.2rem' }, lineHeight: 1.2 }}>
+              <Typography variant="h6" fontWeight="800" sx={{ color: '#FFFFFF', fontSize: { xs: '1rem', sm: '1.15rem' }, lineHeight: 1.2 }}>
                 Bienvenido, {user?.name || 'Atleta'}
               </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.72rem' }}>
-                Ficha Inicial de Anamnesis y Punto de Partida
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.55)', fontSize: '0.72rem' }}>
+                Ficha inicial de anamnesis y punto de partida
               </Typography>
             </Box>
           </Box>
@@ -248,10 +253,10 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
             label={`Paso ${step} de 3`}
             size="small"
             sx={{
-              background: 'rgba(0, 122, 255, 0.15)',
-              color: '#007AFF',
-              fontWeight: 800,
-              border: '1px solid rgba(0, 122, 255, 0.3)',
+              background: 'rgba(255, 255, 255, 0.08)',
+              color: '#FFFFFF',
+              fontWeight: 700,
+              border: '1px solid rgba(255, 255, 255, 0.15)',
               height: 24,
               fontSize: '0.72rem'
             }}
@@ -263,40 +268,41 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
           variant="determinate"
           value={(step / 3) * 100}
           sx={{
-            height: 5,
-            borderRadius: 3,
+            height: 4,
+            borderRadius: 2,
             bgcolor: 'rgba(255, 255, 255, 0.08)',
             '& .MuiLinearProgress-bar': {
-              background: 'linear-gradient(90deg, #007AFF 0%, #34C759 100%)',
-              borderRadius: 3
+              background: '#007AFF',
+              borderRadius: 2
             }
           }}
         />
 
-        {/* Step Tabs Subtitle */}
-        <Stack direction="row" spacing={1} mt={1.2} justifyContent="space-between">
-          <Typography variant="caption" sx={{ fontWeight: 700, fontSize: { xs: '0.68rem', sm: '0.75rem' }, color: step >= 1 ? '#007AFF' : 'rgba(255, 255, 255, 0.3)' }}>
+        {/* Step Subtitles */}
+        <Stack direction="row" spacing={1} mt={1} justifyContent="space-between">
+          <Typography variant="caption" sx={{ fontWeight: 600, fontSize: { xs: '0.68rem', sm: '0.75rem' }, color: step >= 1 ? '#007AFF' : 'rgba(255, 255, 255, 0.35)' }}>
             1. Biometría
           </Typography>
-          <Typography variant="caption" sx={{ fontWeight: 700, fontSize: { xs: '0.68rem', sm: '0.75rem' }, color: step >= 2 ? '#007AFF' : 'rgba(255, 255, 255, 0.3)' }}>
-            2. Medidas Inicio
+          <Typography variant="caption" sx={{ fontWeight: 600, fontSize: { xs: '0.68rem', sm: '0.75rem' }, color: step >= 2 ? '#007AFF' : 'rgba(255, 255, 255, 0.35)' }}>
+            2. Medidas de Inicio
           </Typography>
-          <Typography variant="caption" sx={{ fontWeight: 700, fontSize: { xs: '0.68rem', sm: '0.75rem' }, color: step >= 3 ? '#007AFF' : 'rgba(255, 255, 255, 0.3)' }}>
+          <Typography variant="caption" sx={{ fontWeight: 600, fontSize: { xs: '0.68rem', sm: '0.75rem' }, color: step >= 3 ? '#007AFF' : 'rgba(255, 255, 255, 0.35)' }}>
             3. Ficha Médica
           </Typography>
         </Stack>
       </Box>
 
-      {/* Content Body with Fluid Touch Scroll */}
-      <DialogContent
+      {/* Contenedor Central con Scroll Táctil */}
+      <Box
+        ref={contentRef}
         sx={{
           p: { xs: 2, sm: 3 },
-          pb: { xs: 5, sm: 4 },
+          pb: { xs: 4, sm: 4 },
           bgcolor: '#121214',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
-          flex: 1,
+          flex: '1 1 auto',
           minHeight: 0
         }}
       >
@@ -311,18 +317,20 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         ======================================================== */}
         {step === 1 && (
           <Box>
-            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.95rem' }}>
-              <User size={18} color="#007AFF" />
-              Datos Fisiológicos y Objetivos
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 2.5, fontSize: '0.82rem', lineHeight: 1.4 }}>
-              Tu entrenador utilizará estos datos para calcular tu gasto calórico basal (BMR), hidratación y pautas de entrenamiento.
-            </Typography>
+            <Box mb={2}>
+              <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.3, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.95rem' }}>
+                <User size={18} color="#007AFF" />
+                Datos Fisiológicos y Objetivos
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                Estos datos permiten calcular tu gasto energético basal (TDEE), hidratación y requerimientos nutricionales.
+              </Typography>
+            </Box>
 
             <Grid container spacing={2}>
               {/* Sexo Biológico */}
               <Grid size={{ xs: 12 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.8, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.8, display: 'block' }}>
                   Sexo Biológico
                 </Typography>
                 <Grid container spacing={1.5}>
@@ -334,17 +342,17 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                         borderRadius: '12px',
                         cursor: 'pointer',
                         textAlign: 'center',
-                        border: formData.gender === 'male' ? '1.5px solid #007AFF' : '0.5px solid rgba(255, 255, 255, 0.1)',
-                        background: formData.gender === 'male' ? 'rgba(0, 122, 255, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                        border: formData.gender === 'male' ? '1.5px solid #007AFF' : '1px solid rgba(255, 255, 255, 0.1)',
+                        background: formData.gender === 'male' ? 'rgba(0, 122, 255, 0.12)' : 'rgba(255, 255, 255, 0.03)',
                         transition: 'all 0.15s ease',
-                        minHeight: 48,
+                        minHeight: 46,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}
                     >
-                      <Typography variant="body2" fontWeight="800" sx={{ color: formData.gender === 'male' ? '#007AFF' : '#FFFFFF' }}>
-                        🧔 Hombre
+                      <Typography variant="body2" fontWeight="700" sx={{ color: formData.gender === 'male' ? '#007AFF' : '#FFFFFF' }}>
+                        Hombre
                       </Typography>
                     </Box>
                   </Grid>
@@ -356,17 +364,17 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                         borderRadius: '12px',
                         cursor: 'pointer',
                         textAlign: 'center',
-                        border: formData.gender === 'female' ? '1.5px solid #FF2D55' : '0.5px solid rgba(255, 255, 255, 0.1)',
-                        background: formData.gender === 'female' ? 'rgba(255, 45, 85, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                        border: formData.gender === 'female' ? '1.5px solid #007AFF' : '1px solid rgba(255, 255, 255, 0.1)',
+                        background: formData.gender === 'female' ? 'rgba(0, 122, 255, 0.12)' : 'rgba(255, 255, 255, 0.03)',
                         transition: 'all 0.15s ease',
-                        minHeight: 48,
+                        minHeight: 46,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center'
                       }}
                     >
-                      <Typography variant="body2" fontWeight="800" sx={{ color: formData.gender === 'female' ? '#FF2D55' : '#FFFFFF' }}>
-                        👩 Mujer
+                      <Typography variant="body2" fontWeight="700" sx={{ color: formData.gender === 'female' ? '#007AFF' : '#FFFFFF' }}>
+                        Mujer
                       </Typography>
                     </Box>
                   </Grid>
@@ -375,7 +383,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
               {/* Fecha de Nacimiento */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Fecha de Nacimiento
                 </Typography>
                 <TextField
@@ -390,7 +398,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
               {/* Estatura */}
               <Grid size={{ xs: 6, sm: 3 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Estatura (cm) *
                 </Typography>
                 <TextField
@@ -407,7 +415,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
               {/* Peso Inicial */}
               <Grid size={{ xs: 6, sm: 3 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Peso (kg) *
                 </Typography>
                 <TextField
@@ -424,7 +432,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
               {/* Objetivo Principal */}
               <Grid size={{ xs: 12 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Objetivo Principal con tu Entrenador
                 </Typography>
                 <TextField
@@ -434,10 +442,10 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                   fullWidth
                   InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
                 >
-                  <MenuItem value="fat_loss">🔥 Pérdida de Grasa & Definición</MenuItem>
-                  <MenuItem value="muscle_gain">💪 Ganancia Muscular & Volumen</MenuItem>
-                  <MenuItem value="maintenance">⚖️ Mantenimiento & Recomposición Corporal</MenuItem>
-                  <MenuItem value="health">🏃 Rendimiento Deportivo & Salud General</MenuItem>
+                  <MenuItem value="fat_loss">Pérdida de grasa y definición muscular</MenuItem>
+                  <MenuItem value="muscle_gain">Ganancia de masa muscular e hipertrofia</MenuItem>
+                  <MenuItem value="maintenance">Mantenimiento y recomposición corporal</MenuItem>
+                  <MenuItem value="health">Rendimiento deportivo y salud integral</MenuItem>
                 </TextField>
               </Grid>
             </Grid>
@@ -449,13 +457,15 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         ======================================================== */}
         {step === 2 && (
           <Box>
-            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.95rem' }}>
-              <Ruler size={18} color="#34C759" />
-              Medidas Corporales de Inicio (cm)
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 2.5, fontSize: '0.82rem', lineHeight: 1.4 }}>
-              Anota tus perímetros con una cinta métrica. Quedarán fijadas en <strong>"Mi Punto de Partida"</strong> para medir cuántos centímetros reduces a lo largo del tiempo.
-            </Typography>
+            <Box mb={2}>
+              <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.3, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.95rem' }}>
+                <Ruler size={18} color="#34C759" />
+                Medidas Corporales de Inicio (cm)
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                Anota tus perímetros iniciales con una cinta métrica. Se guardarán en tu sección de punto de partida para monitorizar tu reducción de centímetros.
+              </Typography>
+            </Box>
 
             <Grid container spacing={2}>
               {/* Cintura (Obligatoria) */}
@@ -464,14 +474,14 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                   sx={{
                     p: 2,
                     borderRadius: '14px',
-                    background: 'rgba(52, 199, 89, 0.08)',
-                    border: '1px solid rgba(52, 199, 89, 0.3)'
+                    background: 'rgba(52, 199, 89, 0.06)',
+                    border: '1px solid rgba(52, 199, 89, 0.25)'
                   }}
                 >
-                  <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#34C759', mb: 0.5 }}>
-                    📏 Cintura / Perímetro Abdominal (cm) *
+                  <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#34C759', mb: 0.3 }}>
+                    Cintura / Perímetro Abdominal (cm) *
                   </Typography>
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mb: 1 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.55)', display: 'block', mb: 1 }}>
                     Medir horizontalmente a la altura del ombligo en posición neutra.
                   </Typography>
                   <TextField
@@ -489,7 +499,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
               {/* Pecho */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Pecho / Torso (cm)
                 </Typography>
                 <TextField
@@ -500,13 +510,13 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                   inputProps={{ step: '0.1', inputMode: 'decimal' }}
                   fullWidth
                   InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
-                  helperText="Bajo axilas en máxima espiración"
+                  helperText="Bajo axilas en espiración neutra"
                 />
               </Grid>
 
               {/* Cadera */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Cadera / Glúteo (cm)
                 </Typography>
                 <TextField
@@ -517,13 +527,13 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                   inputProps={{ step: '0.1', inputMode: 'decimal' }}
                   fullWidth
                   InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
-                  helperText="Zona de mayor relieve del glúteo"
+                  helperText="Zona de mayor relieve"
                 />
               </Grid>
 
               {/* Muslo */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Muslo Superior (cm)
                 </Typography>
                 <TextField
@@ -534,13 +544,13 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                   inputProps={{ step: '0.1', inputMode: 'decimal' }}
                   fullWidth
                   InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
-                  helperText="Medir en tercio superior del muslo"
+                  helperText="Tercio superior del muslo"
                 />
               </Grid>
 
               {/* Bíceps */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Bíceps en Flexión (cm)
                 </Typography>
                 <TextField
@@ -551,7 +561,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                   inputProps={{ step: '0.1', inputMode: 'decimal' }}
                   fullWidth
                   InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '16px' } }}
-                  helperText="Brazo a 90° apretando bíceps"
+                  helperText="Brazo a 90° en contracción"
                 />
               </Grid>
             </Grid>
@@ -563,13 +573,15 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
         ======================================================== */}
         {step === 3 && (
           <Box>
-            <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.95rem' }}>
-              <Heart size={18} color="#FF9500" />
-              Ficha Médica y Preferencias del Atleta
-            </Typography>
-            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 2.5, fontSize: '0.82rem', lineHeight: 1.4 }}>
-              Permite a tu entrenador adaptar tus alimentos sin alérgenos molestos y descartar ejercicios lesivos para ti.
-            </Typography>
+            <Box mb={2}>
+              <Typography variant="subtitle1" fontWeight="800" sx={{ color: '#FFFFFF', mb: 0.3, display: 'flex', alignItems: 'center', gap: 1, fontSize: '0.95rem' }}>
+                <ShieldCheck size={18} color="#FF9500" />
+                Ficha Médica y Disponibilidad
+              </Typography>
+              <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.82rem', lineHeight: 1.4 }}>
+                Permite a tu entrenador adaptar tus comidas sin alérgenos molestos y planificar tus sesiones sin ejercicios lesivos.
+              </Typography>
+            </Box>
 
             <Grid container spacing={2}>
               {/* Días por semana */}
@@ -578,13 +590,13 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                   sx={{
                     p: 2,
                     borderRadius: '14px',
-                    background: 'rgba(0, 122, 255, 0.08)',
-                    border: '1px solid rgba(0, 122, 255, 0.3)'
+                    background: 'rgba(0, 122, 255, 0.06)',
+                    border: '1px solid rgba(0, 122, 255, 0.25)'
                   }}
                 >
-                  <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#007AFF', mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#007AFF', mb: 0.3, display: 'flex', alignItems: 'center', gap: 1 }}>
                     <Dumbbell size={16} />
-                    Días por Semana que vas a Entrenar
+                    Días por Semana Disponibles para Entrenar
                   </Typography>
                   <TextField
                     select
@@ -593,22 +605,22 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
                     fullWidth
                     InputProps={{ sx: { bgcolor: '#1C1C1E', borderRadius: '10px', fontSize: '16px' } }}
                   >
-                    <MenuItem value="2">2 Días por semana</MenuItem>
-                    <MenuItem value="3">3 Días por semana (Full Body)</MenuItem>
-                    <MenuItem value="4">4 Días por semana (Torso / Pierna)</MenuItem>
-                    <MenuItem value="5">5 Días por semana (Push / Pull / Legs + Torso)</MenuItem>
-                    <MenuItem value="6">6 Días por semana (Atleta Avanzado)</MenuItem>
+                    <MenuItem value="2">2 días por semana</MenuItem>
+                    <MenuItem value="3">3 días por semana (Frecuencia recomendada)</MenuItem>
+                    <MenuItem value="4">4 días por semana (Torso / Pierna)</MenuItem>
+                    <MenuItem value="5">5 días por semana (Push / Pull / Legs)</MenuItem>
+                    <MenuItem value="6">6 días por semana (Alto volumen)</MenuItem>
                   </TextField>
                 </Box>
               </Grid>
 
               {/* Alergias */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Alergias Conocidas
                 </Typography>
                 <TextField
-                  placeholder="ej. Frutos secos, marisco, polen (o 'Ninguna')"
+                  placeholder="Indica alergias conocidas o 'Ninguna'"
                   value={formData.allergies}
                   onChange={handleChange('allergies')}
                   fullWidth
@@ -618,11 +630,11 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
               {/* Intolerancias */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Intolerancias Alimentarias
                 </Typography>
                 <TextField
-                  placeholder="ej. Lactosa, gluten, fructosa (o 'Ninguna')"
+                  placeholder="Lactosa, gluten u otras (o 'Ninguna')"
                   value={formData.food_intolerances}
                   onChange={handleChange('food_intolerances')}
                   fullWidth
@@ -632,11 +644,11 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
               {/* Lesiones */}
               <Grid size={{ xs: 12 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
                   Lesiones o Molestias Articulares Previas
                 </Typography>
                 <TextField
-                  placeholder="ej. Molestia lumbar en sentadilla, tendón rotuliano izquierdo, hombro derecho..."
+                  placeholder="Molestias en hombro, rodilla, zona lumbar, cirugías previas..."
                   value={formData.injuries_conditions}
                   onChange={handleChange('injuries_conditions')}
                   fullWidth
@@ -648,11 +660,11 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
               {/* Alimentos que no gustan */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
-                  Alimentos Rechazados (No deseados)
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
+                  Alimentos No Deseados
                 </Typography>
                 <TextField
-                  placeholder="ej. Hígado, queso azul, brócoli, atún..."
+                  placeholder="Alimentos a descartar en el plan nutricional"
                   value={formData.disliked_foods}
                   onChange={handleChange('disliked_foods')}
                   fullWidth
@@ -662,11 +674,11 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
 
               {/* Observaciones */}
               <Grid size={{ xs: 12, sm: 6 }}>
-                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 700, mb: 0.5, display: 'block' }}>
-                  Notas u Horarios para tu Entrenador
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontWeight: 600, mb: 0.5, display: 'block' }}>
+                  Observaciones para tu Entrenador
                 </Typography>
                 <TextField
-                  placeholder="ej. Entreno a las 7:00 am en ayunas, trabajo a turnos..."
+                  placeholder="Horarios habituales, trabajo a turnos, preferencias..."
                   value={formData.observations}
                   onChange={handleChange('observations')}
                   fullWidth
@@ -678,14 +690,14 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
             </Grid>
           </Box>
         )}
-      </DialogContent>
+      </Box>
 
-      {/* Fixed Footer Actions */}
+      {/* Footer Fijo con Acciones */}
       <Box
         sx={{
           p: { xs: 2, sm: 2.5 },
           borderTop: '1px solid rgba(255, 255, 255, 0.08)',
-          bgcolor: 'rgba(28, 28, 30, 0.95)',
+          background: 'rgba(24, 24, 27, 0.95)',
           backdropFilter: 'blur(20px)',
           display: 'flex',
           justifyContent: 'space-between',
@@ -705,7 +717,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
               borderRadius: '12px',
               borderColor: 'rgba(255, 255, 255, 0.2)',
               color: '#FFFFFF',
-              fontWeight: 700,
+              fontWeight: 600,
               textTransform: 'none',
               px: { xs: 2, sm: 2.5 },
               minHeight: 44,
@@ -726,7 +738,7 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
             className="apple-button-primary"
             sx={{
               borderRadius: '12px',
-              fontWeight: 800,
+              fontWeight: 700,
               px: { xs: 3, sm: 3.5 },
               minHeight: 44,
               fontSize: '0.9rem'
@@ -742,12 +754,12 @@ export const ClientOnboardingModal: React.FC<ClientOnboardingModalProps> = ({
             startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <CheckCircle2 size={18} />}
             sx={{
               borderRadius: '12px',
-              fontWeight: 800,
+              fontWeight: 700,
               px: { xs: 3, sm: 3.5 },
               minHeight: 44,
               fontSize: '0.9rem',
-              background: 'linear-gradient(135deg, #34C759 0%, #28CD41 100%)',
-              boxShadow: '0 8px 25px rgba(52, 199, 89, 0.4)'
+              background: '#007AFF',
+              boxShadow: '0 8px 25px rgba(0, 122, 255, 0.35)'
             }}
           >
             {loading ? 'Guardando...' : 'Finalizar y Entrar'}
