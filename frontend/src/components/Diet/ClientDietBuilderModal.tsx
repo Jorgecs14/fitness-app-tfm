@@ -17,6 +17,7 @@ import {
   Tab,
   Autocomplete,
   InputAdornment,
+  Collapse,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -35,8 +36,9 @@ import {
   Trash2,
   ExternalLink,
   Info,
-  Check,
   Link as LinkIcon,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { createDiet, updateDiet, assignUserToDiet } from '../../services/dietService';
 import { MealFoodItem, DietSupplementProduct } from '../../types/Diet';
@@ -63,6 +65,28 @@ const MEAL_DEFINITIONS = [
   { key: 'snack', label: 'Merienda', icon: Cookie, color: '#AF52DE', defaultTime: '17:30 - 18:00' },
   { key: 'dinner', label: 'Cena', icon: ChefHat, color: '#FF2D55', defaultTime: '21:00 - 21:30' },
 ];
+
+const inputStyle = {
+  color: '#ffffff',
+  bgcolor: 'rgba(255, 255, 255, 0.05)',
+  borderRadius: '14px',
+  fontSize: '0.92rem',
+  border: '1px solid rgba(255, 255, 255, 0.12)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    bgcolor: 'rgba(255, 255, 255, 0.07)',
+  },
+  '&.Mui-focused': {
+    borderColor: '#34C759',
+    bgcolor: 'rgba(255, 255, 255, 0.09)',
+    boxShadow: '0 0 0 3px rgba(52, 199, 89, 0.2)',
+  },
+  '& input::placeholder, & textarea::placeholder': {
+    color: 'rgba(255, 255, 255, 0.4)',
+    opacity: 1,
+  },
+};
 
 export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
   open,
@@ -102,6 +126,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [foodQuantity, setFoodQuantity] = useState<string>('100');
   const [foodUnit, setFoodUnit] = useState<string>('g');
+  const [showManualFood, setShowManualFood] = useState<boolean>(false);
   const [customFoodName, setCustomFoodName] = useState<string>('');
   const [customFoodKcal, setCustomFoodKcal] = useState<string>('');
 
@@ -110,7 +135,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
   const [suppName, setSuppName] = useState<string>('');
   const [suppUrl, setSuppUrl] = useState<string>('');
   const [suppTiming, setSuppTiming] = useState<string>('En el Desayuno');
-  const [suppDosage, setSuppDosage] = useState<string>('1 cápsula / toma');
+  const [suppDosage, setSuppDosage] = useState<string>('1 cápsula con agua');
   const [suppObservations, setSuppObservations] = useState<string>('');
 
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
@@ -164,6 +189,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
       setErrorMsg(null);
       setActiveTab(0);
       setActiveMealKey('breakfast');
+      setShowManualFood(false);
     }
   }, [open, dietToEdit]);
 
@@ -246,7 +272,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
       name: nameToUse,
       url: urlToUse || undefined,
       timing: suppTiming.trim() || 'En el Desayuno',
-      dosage: suppDosage.trim() || '1 cápsula / toma',
+      dosage: suppDosage.trim() || '1 cápsula con agua',
       observations: suppObservations.trim() || undefined,
     };
 
@@ -255,7 +281,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
     setSuppName('');
     setSuppUrl('');
     setSuppTiming('En el Desayuno');
-    setSuppDosage('1 cápsula / toma');
+    setSuppDosage('1 cápsula con agua');
     setSuppObservations('');
   };
 
@@ -317,12 +343,12 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
       fullScreen={isMobile}
       PaperProps={{
         sx: {
-          bgcolor: '#000000',
+          bgcolor: '#0A0A0C',
           backgroundImage: 'none',
           color: '#ffffff',
           borderRadius: { xs: 0, sm: '24px' },
           border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.12)' },
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85)',
+          boxShadow: '0 32px 80px rgba(0, 0, 0, 0.9)',
           maxHeight: { xs: '100%', sm: '90vh' },
           display: 'flex',
           flexDirection: 'column',
@@ -332,29 +358,29 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
       {/* Header Apple Liquid Glass */}
       <Box
         sx={{
-          px: { xs: 2, sm: 3 },
-          py: 2,
+          px: { xs: 2.5, sm: 3.5 },
+          py: 2.2,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)',
-          background: 'rgba(28, 28, 30, 0.85)',
-          backdropFilter: 'blur(20px)',
-          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px)' : 2,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'rgba(22, 22, 26, 0.85)',
+          backdropFilter: 'blur(24px)',
+          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 14px)' : 2.2,
         }}
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <Box
             sx={{
-              width: 38,
-              height: 38,
+              width: 40,
+              height: 40,
               borderRadius: '12px',
               bgcolor: 'rgba(52, 199, 89, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#34C759',
-              border: '0.5px solid rgba(52, 199, 89, 0.3)',
+              border: '1px solid rgba(52, 199, 89, 0.3)',
             }}
           >
             <UtensilsCrossed size={20} />
@@ -363,8 +389,8 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
             <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#ffffff', lineHeight: 1.2 }}>
               {dietToEdit ? 'Editar Dieta del Atleta' : 'Prescribir Dieta & Pauta Nutricional'}
             </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '0.75rem' }}>
-              Pauta personalizada con agua, 5 comidas y suplementos con enlace directo
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.78rem' }}>
+              Pauta personalizada con hidratación, 5 comidas y suplementación recomendada
             </Typography>
           </Box>
         </Stack>
@@ -373,9 +399,9 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
           size="small"
           onClick={onClose}
           sx={{
-            color: 'rgba(235, 235, 245, 0.8)',
+            color: 'rgba(255, 255, 255, 0.8)',
             bgcolor: 'rgba(255, 255, 255, 0.08)',
-            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)', color: '#fff' },
           }}
         >
           <X size={18} />
@@ -383,21 +409,21 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
       </Box>
 
       {/* Tabs */}
-      <Box sx={{ px: { xs: 2, sm: 3 }, pt: 1.5, bgcolor: '#121214', borderBottom: '0.5px solid rgba(255, 255, 255, 0.08)' }}>
+      <Box sx={{ px: { xs: 2, sm: 3 }, pt: 1.5, bgcolor: '#121216', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
         <Tabs
           value={activeTab}
           onChange={(_, v) => setActiveTab(v)}
           variant={isMobile ? 'scrollable' : 'standard'}
           scrollButtons="auto"
           sx={{
-            minHeight: 44,
+            minHeight: 46,
             '& .MuiTab-root': {
               color: 'rgba(255, 255, 255, 0.6)',
               fontWeight: 600,
-              fontSize: '0.85rem',
+              fontSize: '0.88rem',
               textTransform: 'none',
-              minHeight: 44,
-              px: 2,
+              minHeight: 46,
+              px: 2.2,
               '&.Mui-selected': {
                 color: '#34C759',
                 fontWeight: 700,
@@ -416,24 +442,24 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
         </Tabs>
       </Box>
 
-      <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#000000', overflowY: 'auto' }}>
+      <DialogContent sx={{ p: { xs: 2, sm: 3.5 }, bgcolor: '#0A0A0C', overflowY: 'auto' }}>
         {errorMsg && (
-          <Alert severity="error" sx={{ mb: 2.5, bgcolor: 'rgba(255, 69, 58, 0.15)', color: '#FF453A' }}>
+          <Alert severity="error" sx={{ mb: 2.5, bgcolor: 'rgba(255, 69, 58, 0.15)', color: '#FF453A', borderRadius: '14px' }}>
             {errorMsg}
           </Alert>
         )}
 
         {/* TAB 1: GENERAL E HIDRATACIÓN */}
         {activeTab === 0 && (
-          <Stack spacing={2.5}>
-            <Box sx={{ p: 2.5, borderRadius: '20px', bgcolor: '#1C1C1E', border: '0.5px solid rgba(255, 255, 255, 0.08)' }}>
-              <Typography variant="subtitle2" sx={{ color: '#34C759', fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Stack spacing={3}>
+            <Box sx={{ p: { xs: 2.2, sm: 3 }, borderRadius: '20px', bgcolor: '#16161A', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <Typography variant="subtitle2" sx={{ color: '#34C759', fontWeight: 800, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Flame size={18} /> Pauta Nutricional
               </Typography>
 
-              <Stack spacing={2}>
+              <Stack spacing={2.2}>
                 <Box>
-                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.75, display: 'block', fontWeight: 600 }}>
                     Nombre del Plan *
                   </Typography>
                   <TextField
@@ -441,15 +467,13 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                     placeholder="Ej: Dieta de Definición 2.200 kcal"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    InputProps={{
-                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '15px' },
-                    }}
+                    InputProps={{ sx: inputStyle }}
                   />
                 </Box>
 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.75, display: 'block', fontWeight: 600 }}>
                       Calorías Objetivo Diarias (Kcal)
                     </Typography>
                     <TextField
@@ -458,20 +482,20 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                       value={calories}
                       onChange={(e) => setCalories(Number(e.target.value))}
                       InputProps={{
-                        sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '15px' },
-                        endAdornment: <InputAdornment position="end"><Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>kcal</Typography></InputAdornment>,
+                        sx: inputStyle,
+                        endAdornment: <InputAdornment position="end"><Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontWeight: 600 }}>kcal</Typography></InputAdornment>,
                       }}
                     />
                     {calculatedTotalCalories > 0 && (
-                      <Typography variant="caption" sx={{ color: '#34C759', mt: 0.5, display: 'block', fontWeight: 600 }}>
+                      <Typography variant="caption" sx={{ color: '#34C759', mt: 0.75, display: 'block', fontWeight: 700 }}>
                         ✓ Suma real de las 5 comidas: {calculatedTotalCalories} kcal
                       </Typography>
                     )}
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
-                      Valores rápidos
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.75, display: 'block', fontWeight: 600 }}>
+                      Presets Calóricos
                     </Typography>
                     <Stack direction="row" spacing={0.8} flexWrap="wrap" useFlexGap>
                       {CALORIE_PRESETS.map((cal) => (
@@ -481,11 +505,13 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                           size="small"
                           onClick={() => setCalories(cal)}
                           sx={{
-                            bgcolor: calories === cal ? '#34C759' : '#2C2C2E',
+                            bgcolor: calories === cal ? '#34C759' : 'rgba(255, 255, 255, 0.06)',
                             color: calories === cal ? '#000000' : '#ffffff',
-                            fontWeight: 600,
-                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            fontSize: '0.78rem',
                             cursor: 'pointer',
+                            border: '1px solid',
+                            borderColor: calories === cal ? '#34C759' : 'rgba(255, 255, 255, 0.1)',
                           }}
                         />
                       ))}
@@ -494,7 +520,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                 </Grid>
 
                 <Box>
-                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.75, display: 'block', fontWeight: 600 }}>
                     Descripción o Resumen
                   </Typography>
                   <TextField
@@ -504,9 +530,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                     placeholder="Instrucciones sobre días de entreno, descansos..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    InputProps={{
-                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '14px' },
-                    }}
+                    InputProps={{ sx: inputStyle }}
                   />
                 </Box>
               </Stack>
@@ -515,31 +539,48 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
             {/* Agua Diaria */}
             <Box
               sx={{
-                p: 2.5,
+                p: { xs: 2.2, sm: 3 },
                 borderRadius: '20px',
-                bgcolor: '#1C1C1E',
-                border: '0.5px solid rgba(0, 122, 255, 0.25)',
-                boxShadow: '0 8px 24px rgba(0, 122, 255, 0.08)',
+                bgcolor: '#16161A',
+                border: '1px solid rgba(0, 122, 255, 0.3)',
+                boxShadow: '0 8px 30px rgba(0, 122, 255, 0.08)',
               }}
             >
-              <Typography variant="subtitle2" sx={{ color: '#007AFF', fontWeight: 700, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Droplets size={18} /> Cantidad de Agua Diaria Asignada
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', display: 'block', mb: 2 }}>
-                Esta meta se sincronizará con el perfil y dashboard diario de hidratación del cliente.
-              </Typography>
+              <Stack direction="row" spacing={1.5} alignItems="center" mb={1}>
+                <Box
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: '10px',
+                    bgcolor: 'rgba(0, 122, 255, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#007AFF',
+                  }}
+                >
+                  <Droplets size={18} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ color: '#007AFF', fontWeight: 800 }}>
+                    Cantidad de Agua Diaria Asignada
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                    Esta meta se sincronizará con el dashboard diario de hidratación del cliente.
+                  </Typography>
+                </Box>
+              </Stack>
 
-              <Grid container spacing={2} alignItems="center">
+              <Grid container spacing={2.5} alignItems="center" sx={{ mt: 1 }}>
                 <Grid item xs={12} sm={5}>
                   <TextField
                     fullWidth
                     type="number"
-                    label="Litros / día"
                     value={waterLiters}
                     onChange={(e) => setWaterLiters(Math.max(0.5, Number(e.target.value)))}
                     InputProps={{
-                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px', fontWeight: 700 },
-                      endAdornment: <InputAdornment position="end"><Typography sx={{ color: '#007AFF', fontWeight: 700 }}>Litros</Typography></InputAdornment>,
+                      sx: inputStyle,
+                      endAdornment: <InputAdornment position="end"><Typography sx={{ color: '#007AFF', fontWeight: 700, fontSize: '0.9rem' }}>Litros / día</Typography></InputAdornment>,
                       inputProps: { step: 0.1, min: 0.5, max: 8.0 }
                     }}
                   />
@@ -553,11 +594,13 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                         label={`${val} L`}
                         onClick={() => setWaterLiters(val)}
                         sx={{
-                          bgcolor: waterLiters === val ? '#007AFF' : '#2C2C2E',
+                          bgcolor: waterLiters === val ? '#007AFF' : 'rgba(255, 255, 255, 0.06)',
                           color: '#ffffff',
                           fontWeight: 700,
-                          fontSize: '0.8rem',
+                          fontSize: '0.82rem',
                           cursor: 'pointer',
+                          border: '1px solid',
+                          borderColor: waterLiters === val ? '#007AFF' : 'rgba(255, 255, 255, 0.1)',
                         }}
                       />
                     ))}
@@ -567,8 +610,8 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
             </Box>
 
             {/* Observaciones generales */}
-            <Box sx={{ p: 2.5, borderRadius: '20px', bgcolor: '#1C1C1E', border: '0.5px solid rgba(255, 255, 255, 0.08)' }}>
-              <Typography variant="subtitle2" sx={{ color: '#ffffff', fontWeight: 700, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ p: { xs: 2.2, sm: 3 }, borderRadius: '20px', bgcolor: '#16161A', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <Typography variant="subtitle2" sx={{ color: '#ffffff', fontWeight: 800, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Info size={18} color="#AF52DE" /> Observaciones y Pautas para el Atleta
               </Typography>
               <TextField
@@ -578,9 +621,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                 placeholder="Observaciones de salud, cocinados, especias permitidas o pautas de fin de semana..."
                 value={generalNotes}
                 onChange={(e) => setGeneralNotes(e.target.value)}
-                InputProps={{
-                  sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '14px' },
-                }}
+                InputProps={{ sx: inputStyle }}
               />
             </Box>
           </Stack>
@@ -602,20 +643,20 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                     onClick={() => setActiveMealKey(meal.key)}
                     sx={{
                       flex: '1 0 auto',
-                      minWidth: 120,
-                      p: 1.5,
+                      minWidth: 125,
+                      p: 1.8,
                       borderRadius: '16px',
-                      bgcolor: isSelected ? 'rgba(52, 199, 89, 0.15)' : '#1C1C1E',
-                      border: isSelected ? '1.5px solid #34C759' : '0.5px solid rgba(255, 255, 255, 0.08)',
+                      bgcolor: isSelected ? 'rgba(52, 199, 89, 0.15)' : '#16161A',
+                      border: isSelected ? '1.5px solid #34C759' : '1px solid rgba(255, 255, 255, 0.08)',
                       cursor: 'pointer',
                       textAlign: 'center',
                     }}
                   >
-                    <IconComp size={20} color={isSelected ? '#34C759' : meal.color} style={{ margin: '0 auto 4px' }} />
-                    <Typography variant="body2" fontWeight={isSelected ? 800 : 600} sx={{ color: isSelected ? '#34C759' : '#ffffff', fontSize: '0.82rem' }}>
+                    <IconComp size={22} color={isSelected ? '#34C759' : meal.color} style={{ margin: '0 auto 6px' }} />
+                    <Typography variant="body2" fontWeight={isSelected ? 800 : 600} sx={{ color: isSelected ? '#34C759' : '#ffffff', fontSize: '0.85rem' }}>
                       {meal.label}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', fontSize: '0.7rem' }}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', fontSize: '0.72rem', mt: 0.25 }}>
                       {count} {count === 1 ? 'item' : 'items'} • {mealKcal} kcal
                     </Typography>
                   </Box>
@@ -629,30 +670,30 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
               const totalMealKcal = currentFoods.reduce((sum, f) => sum + (f.calories || 0), 0);
 
               return (
-                <Box sx={{ p: 2.5, borderRadius: '20px', bgcolor: '#1C1C1E', border: '0.5px solid rgba(255, 255, 255, 0.08)' }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                <Box sx={{ p: { xs: 2.2, sm: 3 }, borderRadius: '20px', bgcolor: '#16161A', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2.5}>
                     <Stack direction="row" spacing={1.5} alignItems="center">
-                      <currentMealDef.icon size={22} color={currentMealDef.color} />
+                      <currentMealDef.icon size={24} color={currentMealDef.color} />
                       <Box>
                         <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#ffffff' }}>
                           {currentMealDef.label}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
                           Toma sugerida: {currentMealDef.defaultTime}
                         </Typography>
                       </Box>
                     </Stack>
 
                     <Chip
-                      icon={<Flame size={14} color="#FF9500" />}
+                      icon={<Flame size={15} color="#FF9500" />}
                       label={`${totalMealKcal} kcal`}
-                      sx={{ bgcolor: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 800 }}
+                      sx={{ bgcolor: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 800, fontSize: '0.82rem' }}
                     />
                   </Stack>
 
                   {/* Formulario rápido para añadir alimento */}
-                  <Box sx={{ p: 2, borderRadius: '14px', bgcolor: '#2C2C2E', mb: 2.5 }}>
-                    <Typography variant="caption" fontWeight={700} sx={{ color: '#34C759', mb: 1.5, display: 'block' }}>
+                  <Box sx={{ p: 2.2, borderRadius: '16px', bgcolor: '#1E1E24', border: '1px solid rgba(255, 255, 255, 0.08)', mb: 3 }}>
+                    <Typography variant="caption" fontWeight={700} sx={{ color: '#34C759', mb: 1.5, display: 'block', fontSize: '0.82rem' }}>
                       + Añadir Alimento a {currentMealDef.label}
                     </Typography>
 
@@ -662,16 +703,18 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                           options={availableFoods}
                           getOptionLabel={(option) => `${option.name} (${option.calories} kcal/100g)`}
                           value={selectedFood}
-                          onChange={(_, newVal) => setSelectedFood(newVal)}
+                          onChange={(_, newVal) => {
+                            setSelectedFood(newVal);
+                            if (newVal) setCustomFoodName('');
+                          }}
                           renderInput={(params) => (
                             <TextField
                               {...params}
-                              placeholder="Buscar en el catálogo..."
+                              placeholder="Buscar alimento en catálogo..."
                               size="small"
-                              sx={{
-                                bgcolor: '#1C1C1E',
-                                borderRadius: '10px',
-                                '& .MuiInputBase-root': { color: '#fff', fontSize: '0.85rem' },
+                              InputProps={{
+                                ...params.InputProps,
+                                sx: inputStyle,
                               }}
                             />
                           )}
@@ -683,12 +726,12 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                           fullWidth
                           size="small"
                           type="number"
-                          label="Cantidad"
+                          placeholder="100"
                           value={foodQuantity}
                           onChange={(e) => setFoodQuantity(e.target.value)}
                           InputProps={{
-                            sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                            endAdornment: <InputAdornment position="end"><Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>{foodUnit}</Typography></InputAdornment>,
+                            sx: inputStyle,
+                            endAdornment: <InputAdornment position="end"><Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}>{foodUnit}</Typography></InputAdornment>,
                           }}
                         />
                       </Grid>
@@ -698,19 +741,18 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                           fullWidth
                           size="small"
                           select
-                          label="Unidad"
                           value={foodUnit}
                           onChange={(e) => setFoodUnit(e.target.value)}
                           SelectProps={{ native: true }}
                           InputProps={{
-                            sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
+                            sx: inputStyle,
                           }}
                         >
-                          <option value="g">Gramos (g)</option>
-                          <option value="ml">Mililitros (ml)</option>
-                          <option value="ud">Unidades</option>
-                          <option value="cucharada">Cucharadas</option>
-                          <option value="cazo">Cazo (scoop)</option>
+                          <option value="g" style={{ background: '#1C1C1E', color: '#fff' }}>Gramos (g)</option>
+                          <option value="ml" style={{ background: '#1C1C1E', color: '#fff' }}>Mililitros (ml)</option>
+                          <option value="ud" style={{ background: '#1C1C1E', color: '#fff' }}>Unidades</option>
+                          <option value="cucharada" style={{ background: '#1C1C1E', color: '#fff' }}>Cucharadas</option>
+                          <option value="cazo" style={{ background: '#1C1C1E', color: '#fff' }}>Cazo (scoop)</option>
                         </TextField>
                       </Grid>
 
@@ -724,9 +766,10 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                             bgcolor: '#34C759',
                             color: '#000',
                             fontWeight: 700,
-                            borderRadius: '10px',
-                            height: 40,
+                            borderRadius: '12px',
+                            height: 42,
                             textTransform: 'none',
+                            fontSize: '0.88rem',
                           }}
                         >
                           Añadir
@@ -734,41 +777,45 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                       </Grid>
                     </Grid>
 
-                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
-                      <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', mb: 1, display: 'block' }}>
-                        O escribir alimento manual:
-                      </Typography>
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                        <TextField
-                          fullWidth
-                          size="small"
-                          placeholder="Nombre libre (ej: 4 huevos revueltos con avena)"
-                          value={customFoodName}
-                          onChange={(e) => {
-                            setCustomFoodName(e.target.value);
-                            if (e.target.value) setSelectedFood(null);
-                          }}
-                          InputProps={{
-                            sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                          }}
-                        />
-                        <TextField
-                          size="small"
-                          type="number"
-                          placeholder="Kcal / 100g"
-                          value={customFoodKcal}
-                          onChange={(e) => setCustomFoodKcal(e.target.value)}
-                          InputProps={{
-                            sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem', width: { sm: 140 } },
-                          }}
-                        />
-                      </Stack>
+                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                      <Button
+                        size="small"
+                        onClick={() => setShowManualFood(!showManualFood)}
+                        startIcon={showManualFood ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'none', fontSize: '0.78rem', p: 0 }}
+                      >
+                        {showManualFood ? 'Ocultar alimento manual' : '¿Alimento manual libre?'}
+                      </Button>
+
+                      <Collapse in={showManualFood}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 1.5 }}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Nombre libre (ej: 4 huevos revueltos con avena)"
+                            value={customFoodName}
+                            onChange={(e) => {
+                              setCustomFoodName(e.target.value);
+                              if (e.target.value) setSelectedFood(null);
+                            }}
+                            InputProps={{ sx: inputStyle }}
+                          />
+                          <TextField
+                            size="small"
+                            type="number"
+                            placeholder="Kcal / 100g"
+                            value={customFoodKcal}
+                            onChange={(e) => setCustomFoodKcal(e.target.value)}
+                            InputProps={{ sx: inputStyle }}
+                          />
+                        </Stack>
+                      </Collapse>
                     </Box>
                   </Box>
 
                   {/* Listado */}
                   {currentFoods.length === 0 ? (
-                    <Box sx={{ p: 3, textAlign: 'center', borderRadius: '12px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+                    <Box sx={{ p: 3.5, textAlign: 'center', borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                         No hay alimentos asociados a {currentMealDef.label}. Añade alimentos arriba.
                       </Typography>
@@ -779,9 +826,10 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                         <Box
                           key={item.id || idx}
                           sx={{
-                            p: 1.5,
-                            borderRadius: '12px',
-                            bgcolor: '#2C2C2E',
+                            p: 1.8,
+                            borderRadius: '14px',
+                            bgcolor: '#1E1E24',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
@@ -792,14 +840,14 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                               {item.name}
                             </Typography>
                             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                              {item.quantity} {item.unit || 'g'} • {item.calories} kcal
+                              {item.quantity} {item.unit || 'g'} • <strong style={{ color: '#FF9500' }}>{item.calories} kcal</strong>
                             </Typography>
                           </Box>
 
                           <IconButton
                             size="small"
                             onClick={() => handleRemoveFoodFromMeal(activeMealKey, idx)}
-                            sx={{ color: '#FF453A' }}
+                            sx={{ color: '#FF453A', '&:hover': { bgcolor: 'rgba(255,69,58,0.15)' } }}
                           >
                             <Trash2 size={16} />
                           </IconButton>
@@ -816,17 +864,20 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
         {/* TAB 3: SUPLEMENTACIÓN */}
         {activeTab === 2 && (
           <Stack spacing={2.5}>
-            <Box sx={{ p: 2.5, borderRadius: '20px', bgcolor: '#1C1C1E', border: '0.5px solid rgba(255, 255, 255, 0.08)' }}>
-              <Typography variant="subtitle2" sx={{ color: '#FF9500', fontWeight: 700, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+            <Box sx={{ p: { xs: 2.2, sm: 3 }, borderRadius: '20px', bgcolor: '#16161A', border: '1px solid rgba(255, 149, 0, 0.25)' }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF9500', fontWeight: 800, mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Pill size={18} /> Suplementación y Productos Recomendados
               </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', display: 'block', mb: 2.5 }}>
-                Añade suplementos o productos recomendados con su enlace de compra para que el alumno pueda adquirirlos.
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mb: 2.5 }}>
+                Añade suplementos o productos con su enlace de compra para que el alumno pueda adquirirlos directamente.
               </Typography>
 
-              <Box sx={{ p: 2, borderRadius: '14px', bgcolor: '#2C2C2E', mb: 3 }}>
+              <Box sx={{ p: 2.2, borderRadius: '16px', bgcolor: '#1E1E24', border: '1px solid rgba(255, 255, 255, 0.08)', mb: 3 }}>
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      Seleccionar de mis productos
+                    </Typography>
                     <Autocomplete
                       options={availableProducts}
                       getOptionLabel={(opt) => `${opt.name} ${opt.price ? `(${opt.price}€)` : ''}`}
@@ -842,70 +893,80 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          placeholder="Seleccionar de mis productos..."
+                          placeholder="Buscar producto guardado..."
                           size="small"
-                          sx={{ bgcolor: '#1C1C1E', borderRadius: '10px', '& .MuiInputBase-root': { color: '#fff', fontSize: '0.85rem' } }}
+                          InputProps={{
+                            ...params.InputProps,
+                            sx: inputStyle,
+                          }}
                         />
                       )}
                     />
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      O escribir nombre libre
+                    </Typography>
                     <TextField
                       fullWidth
                       size="small"
-                      placeholder="O escribir nombre (ej: Multivitamínico, Creatina Creapure)"
+                      placeholder="Ej: Multivitamínico, Creatina Creapure"
                       value={suppName}
                       onChange={(e) => setSuppName(e.target.value)}
-                      InputProps={{
-                        sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                      }}
+                      InputProps={{ sx: inputStyle }}
                     />
                   </Grid>
 
                   <Grid item xs={12}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      Enlace de compra del producto (URL)
+                    </Typography>
                     <TextField
                       fullWidth
                       size="small"
-                      placeholder="Enlace del producto (URL ej: https://www.amazon.es/... o HSN, Prozis)"
+                      placeholder="https://www.amazon.es/... o HSN, Prozis, MyProtein"
                       value={suppUrl}
                       onChange={(e) => setSuppUrl(e.target.value)}
                       InputProps={{
                         startAdornment: <InputAdornment position="start"><LinkIcon size={16} color="#007AFF" /></InputAdornment>,
-                        sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
+                        sx: inputStyle,
                       }}
                     />
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      Momento de la toma / Timing
+                    </Typography>
                     <TextField
                       fullWidth
                       size="small"
-                      label="Momento de la toma"
-                      placeholder="ej: En el Desayuno, Pre-entreno, En la Cena"
+                      placeholder="Ej: En el Desayuno, Pre-entreno, En la Cena"
                       value={suppTiming}
                       onChange={(e) => setSuppTiming(e.target.value)}
-                      InputProps={{
-                        sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                      }}
+                      InputProps={{ sx: inputStyle }}
                     />
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      Dosis recomendada
+                    </Typography>
                     <TextField
                       fullWidth
                       size="small"
-                      label="Dosis"
-                      placeholder="ej: 1 cápsula con agua, 5g"
+                      placeholder="Ej: 1 cápsula con agua, 5g diarios"
                       value={suppDosage}
                       onChange={(e) => setSuppDosage(e.target.value)}
-                      InputProps={{
-                        sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                      }}
+                      InputProps={{ sx: inputStyle }}
                     />
                   </Grid>
 
                   <Grid item xs={12}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      Observaciones de este suplemento
+                    </Typography>
                     <TextField
                       fullWidth
                       size="small"
@@ -914,9 +975,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                       placeholder="Observaciones de este suplemento..."
                       value={suppObservations}
                       onChange={(e) => setSuppObservations(e.target.value)}
-                      InputProps={{
-                        sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                      }}
+                      InputProps={{ sx: inputStyle }}
                     />
                   </Grid>
 
@@ -930,9 +989,10 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                         bgcolor: '#FF9500',
                         color: '#000',
                         fontWeight: 700,
-                        borderRadius: '10px',
-                        py: 1,
+                        borderRadius: '12px',
+                        py: 1.2,
                         textTransform: 'none',
+                        fontSize: '0.9rem',
                         '&:hover': { bgcolor: '#e08500' },
                       }}
                     >
@@ -943,8 +1003,12 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
               </Box>
 
               {/* Lista */}
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1.5, display: 'block', fontWeight: 700 }}>
+                Suplementos Prescritos ({supplements.length}):
+              </Typography>
+
               {supplements.length === 0 ? (
-                <Box sx={{ p: 3, textAlign: 'center', borderRadius: '12px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+                <Box sx={{ p: 3.5, textAlign: 'center', borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
                   <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                     No hay suplementos prescritos. Puedes añadir suplementos arriba.
                   </Typography>
@@ -956,9 +1020,9 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                       key={supp.id || index}
                       sx={{
                         p: 2,
-                        borderRadius: '14px',
-                        bgcolor: '#2C2C2E',
-                        border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '16px',
+                        bgcolor: '#1E1E24',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
                       }}
                     >
                       <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
@@ -971,20 +1035,20 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                               <Chip
                                 size="small"
                                 label={supp.timing}
-                                sx={{ bgcolor: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 700, fontSize: '0.72rem' }}
+                                sx={{ bgcolor: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 700, fontSize: '0.74rem' }}
                               />
                             )}
                             {supp.dosage && (
                               <Chip
                                 size="small"
                                 label={supp.dosage}
-                                sx={{ bgcolor: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, fontSize: '0.72rem' }}
+                                sx={{ bgcolor: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, fontSize: '0.74rem' }}
                               />
                             )}
                           </Stack>
 
                           {supp.observations && (
-                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem', mt: 0.5 }}>
+                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.82rem', mt: 0.5 }}>
                               {supp.observations}
                             </Typography>
                           )}
@@ -997,7 +1061,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                                 rel="noopener noreferrer"
                                 style={{
                                   color: '#007AFF',
-                                  fontSize: '0.78rem',
+                                  fontSize: '0.8rem',
                                   textDecoration: 'none',
                                   display: 'inline-flex',
                                   alignItems: 'center',
@@ -1005,7 +1069,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                                   fontWeight: 600,
                                 }}
                               >
-                                <ExternalLink size={13} /> Ver / Comprar producto ({supp.url.length > 40 ? `${supp.url.substring(0, 40)}...` : supp.url})
+                                <ExternalLink size={13} /> Ver enlace de compra
                               </a>
                             </Box>
                           )}
@@ -1014,7 +1078,7 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
                         <IconButton
                           size="small"
                           onClick={() => handleRemoveSupplement(index)}
-                          sx={{ color: '#FF453A' }}
+                          sx={{ color: '#FF453A', '&:hover': { bgcolor: 'rgba(255,69,58,0.15)' } }}
                         >
                           <Trash2 size={16} />
                         </IconButton>
@@ -1030,12 +1094,12 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
 
       <DialogActions
         sx={{
-          px: { xs: 2, sm: 3 },
-          py: 2,
-          borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
-          bgcolor: 'rgba(28, 28, 30, 0.85)',
-          backdropFilter: 'blur(20px)',
-          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 12px)' : 2,
+          px: { xs: 2.5, sm: 3.5 },
+          py: 2.2,
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          bgcolor: 'rgba(22, 22, 26, 0.85)',
+          backdropFilter: 'blur(24px)',
+          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 14px)' : 2.2,
           gap: 1.5,
         }}
       >
@@ -1043,12 +1107,14 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
           onClick={onClose}
           sx={{
             flex: 1,
-            height: 44,
-            borderRadius: '12px',
+            height: 46,
+            borderRadius: '14px',
             color: '#ffffff',
             bgcolor: 'rgba(255, 255, 255, 0.08)',
             fontWeight: 600,
             textTransform: 'none',
+            fontSize: '0.92rem',
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
           }}
         >
           Cancelar
@@ -1059,12 +1125,14 @@ export const ClientDietBuilderModal: React.FC<ClientDietBuilderModalProps> = ({
           variant="contained"
           sx={{
             flex: 2,
-            height: 44,
-            borderRadius: '12px',
+            height: 46,
+            borderRadius: '14px',
             bgcolor: '#34C759',
             color: '#000000',
-            fontWeight: 700,
+            fontWeight: 800,
             textTransform: 'none',
+            fontSize: '0.94rem',
+            boxShadow: '0 4px 16px rgba(52, 199, 89, 0.3)',
             '&:hover': { bgcolor: '#2eb34f' },
           }}
         >

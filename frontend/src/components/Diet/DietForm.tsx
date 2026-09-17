@@ -1,4 +1,4 @@
-// Modal de creación y edición integral de Dietas con hidratación, 5 comidas estructuradas y suplementos recomendados
+// Modal de creación y edición integral de Dietas con diseño Apple Liquid Glass
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   Dialog,
@@ -16,9 +16,7 @@ import {
   Grid,
   Autocomplete,
   InputAdornment,
-  Divider,
-  Alert,
-  Tooltip,
+  Collapse,
   useTheme,
   useMediaQuery,
 } from '@mui/material';
@@ -37,9 +35,11 @@ import {
   Trash2,
   ExternalLink,
   Info,
-  CheckCircle2,
-  Sparkles,
   Link as LinkIcon,
+  Check,
+  Sparkles,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { Diet, MealFoodItem, DietSupplementProduct } from '../../types/Diet';
 import { Food } from '../../types/Food';
@@ -64,6 +64,28 @@ export const MEAL_DEFINITIONS = [
   { key: 'snack', label: 'Merienda', icon: Cookie, color: '#AF52DE', defaultTime: '17:30 - 18:00' },
   { key: 'dinner', label: 'Cena', icon: ChefHat, color: '#FF2D55', defaultTime: '21:00 - 21:30' },
 ];
+
+const inputStyle = {
+  color: '#ffffff',
+  bgcolor: 'rgba(255, 255, 255, 0.05)',
+  borderRadius: '14px',
+  fontSize: '0.92rem',
+  border: '1px solid rgba(255, 255, 255, 0.12)',
+  transition: 'all 0.2s ease',
+  '&:hover': {
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    bgcolor: 'rgba(255, 255, 255, 0.07)',
+  },
+  '&.Mui-focused': {
+    borderColor: '#34C759',
+    bgcolor: 'rgba(255, 255, 255, 0.09)',
+    boxShadow: '0 0 0 3px rgba(52, 199, 89, 0.2)',
+  },
+  '& input::placeholder, & textarea::placeholder': {
+    color: 'rgba(255, 255, 255, 0.4)',
+    opacity: 1,
+  },
+};
 
 export const DietForm: React.FC<DietFormProps> = ({
   open,
@@ -92,28 +114,19 @@ export const DietForm: React.FC<DietFormProps> = ({
     dinner: [],
   });
 
-  // Observaciones por comida
-  const [mealNotes, setMealNotes] = useState<Record<string, string>>({
-    breakfast: '',
-    mid_morning: '',
-    lunch: '',
-    snack: '',
-    dinner: '',
-  });
-
   // Suplementación y productos recomendados
   const [supplements, setSupplements] = useState<DietSupplementProduct[]>([]);
 
   // Alimentos y Productos disponibles
   const [availableFoods, setAvailableFoods] = useState<Food[]>([]);
   const [availableProducts, setAvailableProducts] = useState<Product[]>([]);
-  const [loadingCatalog, setLoadingCatalog] = useState<boolean>(false);
 
   // Estado temporal para añadir alimento a una comida
   const [activeMealKey, setActiveMealKey] = useState<string>('breakfast');
   const [selectedFood, setSelectedFood] = useState<Food | null>(null);
   const [foodQuantity, setFoodQuantity] = useState<string>('100');
   const [foodUnit, setFoodUnit] = useState<string>('g');
+  const [showManualFood, setShowManualFood] = useState<boolean>(false);
   const [customFoodName, setCustomFoodName] = useState<string>('');
   const [customFoodKcal, setCustomFoodKcal] = useState<string>('');
 
@@ -122,7 +135,7 @@ export const DietForm: React.FC<DietFormProps> = ({
   const [suppName, setSuppName] = useState<string>('');
   const [suppUrl, setSuppUrl] = useState<string>('');
   const [suppTiming, setSuppTiming] = useState<string>('En el Desayuno');
-  const [suppDosage, setSuppDosage] = useState<string>('1 cápsula / toma');
+  const [suppDosage, setSuppDosage] = useState<string>('1 cápsula con agua');
   const [suppObservations, setSuppObservations] = useState<string>('');
 
   useEffect(() => {
@@ -168,22 +181,15 @@ export const DietForm: React.FC<DietFormProps> = ({
           snack: [],
           dinner: [],
         });
-        setMealNotes({
-          breakfast: '',
-          mid_morning: '',
-          lunch: '',
-          snack: '',
-          dinner: '',
-        });
         setSupplements([]);
       }
       setActiveTab(0);
       setActiveMealKey('breakfast');
+      setShowManualFood(false);
     }
   }, [open, dietToEdit]);
 
   const loadCatalog = async () => {
-    setLoadingCatalog(true);
     try {
       const [foodsRes, prodsRes] = await Promise.all([
         foodService.getFoods(),
@@ -193,8 +199,6 @@ export const DietForm: React.FC<DietFormProps> = ({
       setAvailableProducts(Array.isArray(prodsRes) ? prodsRes : (prodsRes as any)?.data || []);
     } catch (e) {
       console.error('Error cargando catálogo:', e);
-    } finally {
-      setLoadingCatalog(false);
     }
   };
 
@@ -268,7 +272,7 @@ export const DietForm: React.FC<DietFormProps> = ({
       name: nameToUse,
       url: urlToUse || undefined,
       timing: suppTiming.trim() || 'En el Desayuno',
-      dosage: suppDosage.trim() || '1 toma diaria',
+      dosage: suppDosage.trim() || '1 cápsula con agua',
       observations: suppObservations.trim() || undefined,
     };
 
@@ -277,7 +281,7 @@ export const DietForm: React.FC<DietFormProps> = ({
     setSuppName('');
     setSuppUrl('');
     setSuppTiming('En el Desayuno');
-    setSuppDosage('1 cápsula / toma');
+    setSuppDosage('1 cápsula con agua');
     setSuppObservations('');
   };
 
@@ -311,12 +315,12 @@ export const DietForm: React.FC<DietFormProps> = ({
       fullScreen={isMobile}
       PaperProps={{
         sx: {
-          bgcolor: '#000000',
+          bgcolor: '#0A0A0C',
           backgroundImage: 'none',
           color: '#ffffff',
           borderRadius: { xs: 0, sm: '24px' },
           border: { xs: 'none', sm: '1px solid rgba(255, 255, 255, 0.12)' },
-          boxShadow: '0 24px 60px rgba(0, 0, 0, 0.85)',
+          boxShadow: '0 32px 80px rgba(0, 0, 0, 0.9)',
           maxHeight: { xs: '100%', sm: '90vh' },
           display: 'flex',
           flexDirection: 'column',
@@ -326,39 +330,39 @@ export const DietForm: React.FC<DietFormProps> = ({
       {/* Header Apple Liquid Glass */}
       <Box
         sx={{
-          px: { xs: 2, sm: 3 },
-          py: 2,
+          px: { xs: 2.5, sm: 3.5 },
+          py: 2.2,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderBottom: '0.5px solid rgba(255, 255, 255, 0.1)',
-          background: 'rgba(28, 28, 30, 0.85)',
-          backdropFilter: 'blur(20px)',
-          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 12px)' : 2,
+          borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'rgba(22, 22, 26, 0.85)',
+          backdropFilter: 'blur(24px)',
+          pt: isMobile ? 'calc(env(safe-area-inset-top, 0px) + 14px)' : 2.2,
         }}
       >
         <Stack direction="row" alignItems="center" spacing={1.5}>
           <Box
             sx={{
-              width: 38,
-              height: 38,
+              width: 40,
+              height: 40,
               borderRadius: '12px',
               bgcolor: 'rgba(52, 199, 89, 0.15)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               color: '#34C759',
-              border: '0.5px solid rgba(52, 199, 89, 0.3)',
+              border: '1px solid rgba(52, 199, 89, 0.3)',
             }}
           >
             <UtensilsCrossed size={20} />
           </Box>
           <Box>
             <Typography variant="subtitle1" sx={{ fontWeight: 800, color: '#ffffff', lineHeight: 1.2 }}>
-              {dietToEdit ? 'Editar Plan Nutricional & Dieta' : 'Diseñar Plan Nutricional Completo'}
+              {dietToEdit ? 'Editar Pauta Nutricional' : 'Crear Pauta Nutricional & Dieta'}
             </Typography>
-            <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', fontSize: '0.75rem' }}>
-              Hidratación, 5 comidas pautadas y suplementación con enlaces
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', fontSize: '0.78rem' }}>
+              Hidratación diaria, 5 tomas de comidas y suplementación pautada
             </Typography>
           </Box>
         </Stack>
@@ -367,31 +371,31 @@ export const DietForm: React.FC<DietFormProps> = ({
           size="small"
           onClick={onClose}
           sx={{
-            color: 'rgba(235, 235, 245, 0.8)',
+            color: 'rgba(255, 255, 255, 0.8)',
             bgcolor: 'rgba(255, 255, 255, 0.08)',
-            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)' },
+            '&:hover': { bgcolor: 'rgba(255, 255, 255, 0.15)', color: '#fff' },
           }}
         >
           <X size={18} />
         </IconButton>
       </Box>
 
-      {/* Selector de Pestañas Apple */}
-      <Box sx={{ px: { xs: 2, sm: 3 }, pt: 1.5, bgcolor: '#121214', borderBottom: '0.5px solid rgba(255, 255, 255, 0.08)' }}>
+      {/* Tabs Navigation Apple Inset Style */}
+      <Box sx={{ px: { xs: 2, sm: 3 }, pt: 1.5, bgcolor: '#121216', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
         <Tabs
           value={activeTab}
           onChange={(_, v) => setActiveTab(v)}
           variant={isMobile ? 'scrollable' : 'standard'}
           scrollButtons="auto"
           sx={{
-            minHeight: 44,
+            minHeight: 46,
             '& .MuiTab-root': {
               color: 'rgba(255, 255, 255, 0.6)',
               fontWeight: 600,
-              fontSize: '0.85rem',
+              fontSize: '0.88rem',
               textTransform: 'none',
-              minHeight: 44,
-              px: 2,
+              minHeight: 46,
+              px: 2.2,
               '&.Mui-selected': {
                 color: '#34C759',
                 fontWeight: 700,
@@ -411,42 +415,40 @@ export const DietForm: React.FC<DietFormProps> = ({
       </Box>
 
       {/* Contenido con Scroll */}
-      <DialogContent sx={{ p: { xs: 2, sm: 3 }, bgcolor: '#000000', overflowY: 'auto' }}>
+      <DialogContent sx={{ p: { xs: 2, sm: 3.5 }, bgcolor: '#0A0A0C', overflowY: 'auto' }}>
         {/* TAB 1: DATOS GENERALES E HIDRATACIÓN */}
         {activeTab === 0 && (
-          <Stack spacing={2.5}>
-            {/* Card Nombre y Calorías */}
+          <Stack spacing={3}>
+            {/* Card Información Básica */}
             <Box
               sx={{
-                p: { xs: 2, sm: 2.5 },
+                p: { xs: 2.2, sm: 3 },
                 borderRadius: '20px',
-                bgcolor: '#1C1C1E',
-                border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                bgcolor: '#16161A',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <Typography variant="subtitle2" sx={{ color: '#34C759', fontWeight: 700, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="subtitle2" sx={{ color: '#34C759', fontWeight: 800, mb: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Flame size={18} /> Información General del Plan
               </Typography>
 
-              <Stack spacing={2}>
+              <Stack spacing={2.2}>
                 <Box>
-                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.75, display: 'block', fontWeight: 600 }}>
                     Nombre del Plan / Dieta *
                   </Typography>
                   <TextField
                     fullWidth
-                    placeholder="Ej: Dieta de Definición 2.200 kcal - Jorge"
+                    placeholder="Ej: Dieta de Definición 2.200 kcal"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    InputProps={{
-                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '15px' },
-                    }}
+                    InputProps={{ sx: inputStyle }}
                   />
                 </Box>
 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.75, display: 'block', fontWeight: 600 }}>
                       Calorías Objetivo Diarias (Kcal)
                     </Typography>
                     <TextField
@@ -456,20 +458,20 @@ export const DietForm: React.FC<DietFormProps> = ({
                       value={calories}
                       onChange={(e) => setCalories(Number(e.target.value))}
                       InputProps={{
-                        sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '15px' },
-                        endAdornment: <InputAdornment position="end"><Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem' }}>kcal</Typography></InputAdornment>,
+                        sx: inputStyle,
+                        endAdornment: <InputAdornment position="end"><Typography sx={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontWeight: 600 }}>kcal</Typography></InputAdornment>,
                       }}
                     />
                     {calculatedTotalCalories > 0 && (
-                      <Typography variant="caption" sx={{ color: '#34C759', mt: 0.5, display: 'block', fontWeight: 600 }}>
-                        ✓ Total sumado de las 5 comidas: {calculatedTotalCalories} kcal
+                      <Typography variant="caption" sx={{ color: '#34C759', mt: 0.75, display: 'block', fontWeight: 700 }}>
+                        ✓ Sumatorio real de las 5 comidas: {calculatedTotalCalories} kcal
                       </Typography>
                     )}
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
-                    <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
-                      Ajuste rápido de Kcal
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.75, display: 'block', fontWeight: 600 }}>
+                      Presets Calóricos
                     </Typography>
                     <Stack direction="row" spacing={0.8} flexWrap="wrap" useFlexGap>
                       {CALORIE_PRESETS.map((cal) => (
@@ -479,11 +481,14 @@ export const DietForm: React.FC<DietFormProps> = ({
                           size="small"
                           onClick={() => setCalories(cal)}
                           sx={{
-                            bgcolor: calories === cal ? '#34C759' : '#2C2C2E',
+                            bgcolor: calories === cal ? '#34C759' : 'rgba(255, 255, 255, 0.06)',
                             color: calories === cal ? '#000000' : '#ffffff',
-                            fontWeight: 600,
-                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            fontSize: '0.78rem',
                             cursor: 'pointer',
+                            border: '1px solid',
+                            borderColor: calories === cal ? '#34C759' : 'rgba(255, 255, 255, 0.1)',
+                            transition: 'all 0.15s ease',
                           }}
                         />
                       ))}
@@ -492,7 +497,7 @@ export const DietForm: React.FC<DietFormProps> = ({
                 </Grid>
 
                 <Box>
-                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.5, display: 'block', fontWeight: 500 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.75, display: 'block', fontWeight: 600 }}>
                     Descripción o Resumen del Objetivo
                   </Typography>
                   <TextField
@@ -502,9 +507,7 @@ export const DietForm: React.FC<DietFormProps> = ({
                     placeholder="Enfoque de macronutrientes, días de carga o descanso..."
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    InputProps={{
-                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '14px' },
-                    }}
+                    InputProps={{ sx: inputStyle }}
                   />
                 </Box>
               </Stack>
@@ -513,39 +516,56 @@ export const DietForm: React.FC<DietFormProps> = ({
             {/* Card Hidratación Diaria Requerida */}
             <Box
               sx={{
-                p: { xs: 2, sm: 2.5 },
+                p: { xs: 2.2, sm: 3 },
                 borderRadius: '20px',
-                bgcolor: '#1C1C1E',
-                border: '0.5px solid rgba(0, 122, 255, 0.25)',
-                boxShadow: '0 8px 24px rgba(0, 122, 255, 0.08)',
+                bgcolor: '#16161A',
+                border: '1px solid rgba(0, 122, 255, 0.3)',
+                boxShadow: '0 8px 30px rgba(0, 122, 255, 0.08)',
               }}
             >
-              <Typography variant="subtitle2" sx={{ color: '#007AFF', fontWeight: 700, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Droplets size={18} /> Cantidad de Agua Diaria del Cliente
-              </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', display: 'block', mb: 2 }}>
-                Esta meta de hidratación se asociará directamente al perfil del cliente para que pueda registrar sus tomas diarias.
-              </Typography>
+              <Stack direction="row" spacing={1.5} alignItems="center" mb={1}>
+                <Box
+                  sx={{
+                    width: 34,
+                    height: 34,
+                    borderRadius: '10px',
+                    bgcolor: 'rgba(0, 122, 255, 0.15)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#007AFF',
+                  }}
+                >
+                  <Droplets size={18} />
+                </Box>
+                <Box>
+                  <Typography variant="subtitle2" sx={{ color: '#007AFF', fontWeight: 800 }}>
+                    Meta de Hidratación Diaria del Cliente
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
+                    Cantidad de agua en Litros que se asociará directamente a su perfil de seguimiento
+                  </Typography>
+                </Box>
+              </Stack>
 
-              <Grid container spacing={2} alignItems="center">
+              <Grid container spacing={2.5} alignItems="center" sx={{ mt: 1 }}>
                 <Grid item xs={12} sm={5}>
                   <TextField
                     fullWidth
                     type="number"
-                    label="Litros / día"
                     value={waterLiters}
                     onChange={(e) => setWaterLiters(Math.max(0.5, Number(e.target.value)))}
                     InputProps={{
-                      sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '16px', fontWeight: 700 },
-                      endAdornment: <InputAdornment position="end"><Typography sx={{ color: '#007AFF', fontWeight: 700 }}>Litros</Typography></InputAdornment>,
+                      sx: inputStyle,
+                      endAdornment: <InputAdornment position="end"><Typography sx={{ color: '#007AFF', fontWeight: 700, fontSize: '0.9rem' }}>Litros / día</Typography></InputAdornment>,
                       inputProps: { step: 0.1, min: 0.5, max: 8.0 }
                     }}
                   />
                 </Grid>
 
                 <Grid item xs={12} sm={7}>
-                  <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', mb: 0.8, display: 'block', fontWeight: 500 }}>
-                    Valores recomendados:
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)', mb: 0.75, display: 'block', fontWeight: 600 }}>
+                    Recomendaciones rápidas:
                   </Typography>
                   <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
                     {WATER_PRESETS.map((val) => (
@@ -554,12 +574,14 @@ export const DietForm: React.FC<DietFormProps> = ({
                         label={`${val} L`}
                         onClick={() => setWaterLiters(val)}
                         sx={{
-                          bgcolor: waterLiters === val ? '#007AFF' : '#2C2C2E',
+                          bgcolor: waterLiters === val ? '#007AFF' : 'rgba(255, 255, 255, 0.06)',
                           color: '#ffffff',
                           fontWeight: 700,
-                          fontSize: '0.8rem',
+                          fontSize: '0.82rem',
                           cursor: 'pointer',
-                          border: waterLiters === val ? '1px solid #007AFF' : '0.5px solid rgba(255,255,255,0.1)',
+                          border: '1px solid',
+                          borderColor: waterLiters === val ? '#007AFF' : 'rgba(255, 255, 255, 0.1)',
+                          transition: 'all 0.15s ease',
                         }}
                       />
                     ))}
@@ -571,13 +593,13 @@ export const DietForm: React.FC<DietFormProps> = ({
             {/* Card Pautas y Observaciones Generales */}
             <Box
               sx={{
-                p: { xs: 2, sm: 2.5 },
+                p: { xs: 2.2, sm: 3 },
                 borderRadius: '20px',
-                bgcolor: '#1C1C1E',
-                border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                bgcolor: '#16161A',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
               }}
             >
-              <Typography variant="subtitle2" sx={{ color: '#ffffff', fontWeight: 700, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="subtitle2" sx={{ color: '#ffffff', fontWeight: 800, mb: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Info size={18} color="#AF52DE" /> Pautas y Observaciones Generales
               </Typography>
               <TextField
@@ -587,9 +609,7 @@ export const DietForm: React.FC<DietFormProps> = ({
                 placeholder="Pautas sobre cocinado, sal, descansos o cómo distribuir las comidas a lo largo de su jornada laboral..."
                 value={generalNotes}
                 onChange={(e) => setGeneralNotes(e.target.value)}
-                InputProps={{
-                  sx: { color: '#ffffff', bgcolor: '#2C2C2E', borderRadius: '12px', fontSize: '14px' },
-                }}
+                InputProps={{ sx: inputStyle }}
               />
             </Box>
           </Stack>
@@ -612,21 +632,21 @@ export const DietForm: React.FC<DietFormProps> = ({
                     onClick={() => setActiveMealKey(meal.key)}
                     sx={{
                       flex: '1 0 auto',
-                      minWidth: 120,
-                      p: 1.5,
+                      minWidth: 125,
+                      p: 1.8,
                       borderRadius: '16px',
-                      bgcolor: isSelected ? 'rgba(52, 199, 89, 0.15)' : '#1C1C1E',
-                      border: isSelected ? '1.5px solid #34C759' : '0.5px solid rgba(255, 255, 255, 0.08)',
+                      bgcolor: isSelected ? 'rgba(52, 199, 89, 0.15)' : '#16161A',
+                      border: isSelected ? '1.5px solid #34C759' : '1px solid rgba(255, 255, 255, 0.08)',
                       cursor: 'pointer',
                       transition: 'all 0.2s ease',
                       textAlign: 'center',
                     }}
                   >
-                    <IconComponent size={20} color={isSelected ? '#34C759' : meal.color} style={{ margin: '0 auto 4px' }} />
-                    <Typography variant="body2" fontWeight={isSelected ? 800 : 600} sx={{ color: isSelected ? '#34C759' : '#ffffff', fontSize: '0.82rem' }}>
+                    <IconComponent size={22} color={isSelected ? '#34C759' : meal.color} style={{ margin: '0 auto 6px' }} />
+                    <Typography variant="body2" fontWeight={isSelected ? 800 : 600} sx={{ color: isSelected ? '#34C759' : '#ffffff', fontSize: '0.85rem' }}>
                       {meal.label}
                     </Typography>
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', fontSize: '0.7rem' }}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', fontSize: '0.72rem', mt: 0.25 }}>
                       {count} {count === 1 ? 'alimento' : 'alimentos'} • {mealKcal} kcal
                     </Typography>
                   </Box>
@@ -643,35 +663,35 @@ export const DietForm: React.FC<DietFormProps> = ({
               return (
                 <Box
                   sx={{
-                    p: { xs: 2, sm: 2.5 },
+                    p: { xs: 2.2, sm: 3 },
                     borderRadius: '20px',
-                    bgcolor: '#1C1C1E',
-                    border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                    bgcolor: '#16161A',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
                   }}
                 >
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2.5}>
                     <Stack direction="row" spacing={1.5} alignItems="center">
-                      <currentMealDef.icon size={22} color={currentMealDef.color} />
+                      <currentMealDef.icon size={24} color={currentMealDef.color} />
                       <Box>
                         <Typography variant="subtitle1" fontWeight={800} sx={{ color: '#ffffff' }}>
                           {currentMealDef.label}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)' }}>
+                        <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
                           Horario sugerido: {currentMealDef.defaultTime}
                         </Typography>
                       </Box>
                     </Stack>
 
                     <Chip
-                      icon={<Flame size={14} color="#FF9500" />}
+                      icon={<Flame size={15} color="#FF9500" />}
                       label={`${totalMealKcal} kcal`}
-                      sx={{ bgcolor: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 800 }}
+                      sx={{ bgcolor: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 800, fontSize: '0.82rem' }}
                     />
                   </Stack>
 
                   {/* Formulario para añadir alimento a esta comida */}
-                  <Box sx={{ p: 2, borderRadius: '14px', bgcolor: '#2C2C2E', mb: 2.5 }}>
-                    <Typography variant="caption" fontWeight={700} sx={{ color: '#34C759', mb: 1.5, display: 'block' }}>
+                  <Box sx={{ p: 2.2, borderRadius: '16px', bgcolor: '#1E1E24', border: '1px solid rgba(255, 255, 255, 0.08)', mb: 3 }}>
+                    <Typography variant="caption" fontWeight={700} sx={{ color: '#34C759', mb: 1.5, display: 'block', fontSize: '0.82rem' }}>
                       + Añadir Alimento a {currentMealDef.label}
                     </Typography>
 
@@ -681,16 +701,18 @@ export const DietForm: React.FC<DietFormProps> = ({
                           options={availableFoods}
                           getOptionLabel={(option) => `${option.name} (${option.calories} kcal/100g)`}
                           value={selectedFood}
-                          onChange={(_, newVal) => setSelectedFood(newVal)}
+                          onChange={(_, newVal) => {
+                            setSelectedFood(newVal);
+                            if (newVal) setCustomFoodName('');
+                          }}
                           renderInput={(params) => (
                             <TextField
                               {...params}
-                              placeholder="Buscar en el catálogo..."
+                              placeholder="Buscar en el catálogo de alimentos..."
                               size="small"
-                              sx={{
-                                bgcolor: '#1C1C1E',
-                                borderRadius: '10px',
-                                '& .MuiInputBase-root': { color: '#fff', fontSize: '0.85rem' },
+                              InputProps={{
+                                ...params.InputProps,
+                                sx: inputStyle,
                               }}
                             />
                           )}
@@ -702,12 +724,12 @@ export const DietForm: React.FC<DietFormProps> = ({
                           fullWidth
                           size="small"
                           type="number"
-                          label="Cantidad"
+                          placeholder="100"
                           value={foodQuantity}
                           onChange={(e) => setFoodQuantity(e.target.value)}
                           InputProps={{
-                            sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                            endAdornment: <InputAdornment position="end"><Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.75rem' }}>{foodUnit}</Typography></InputAdornment>,
+                            sx: inputStyle,
+                            endAdornment: <InputAdornment position="end"><Typography sx={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.78rem' }}>{foodUnit}</Typography></InputAdornment>,
                           }}
                         />
                       </Grid>
@@ -717,19 +739,18 @@ export const DietForm: React.FC<DietFormProps> = ({
                           fullWidth
                           size="small"
                           select
-                          label="Unidad"
                           value={foodUnit}
                           onChange={(e) => setFoodUnit(e.target.value)}
                           SelectProps={{ native: true }}
                           InputProps={{
-                            sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
+                            sx: inputStyle,
                           }}
                         >
-                          <option value="g">Gramos (g)</option>
-                          <option value="ml">Mililitros (ml)</option>
-                          <option value="ud">Unidades</option>
-                          <option value="cucharada">Cucharadas</option>
-                          <option value="cazo">Cazo (scoop)</option>
+                          <option value="g" style={{ background: '#1C1C1E', color: '#fff' }}>Gramos (g)</option>
+                          <option value="ml" style={{ background: '#1C1C1E', color: '#fff' }}>Mililitros (ml)</option>
+                          <option value="ud" style={{ background: '#1C1C1E', color: '#fff' }}>Unidades</option>
+                          <option value="cucharada" style={{ background: '#1C1C1E', color: '#fff' }}>Cucharadas</option>
+                          <option value="cazo" style={{ background: '#1C1C1E', color: '#fff' }}>Cazo (scoop)</option>
                         </TextField>
                       </Grid>
 
@@ -743,10 +764,10 @@ export const DietForm: React.FC<DietFormProps> = ({
                             bgcolor: '#34C759',
                             color: '#000',
                             fontWeight: 700,
-                            borderRadius: '10px',
-                            height: 40,
+                            borderRadius: '12px',
+                            height: 42,
                             textTransform: 'none',
-                            fontSize: '0.85rem',
+                            fontSize: '0.88rem',
                             '&:hover': { bgcolor: '#2eb34f' },
                           }}
                         >
@@ -755,46 +776,50 @@ export const DietForm: React.FC<DietFormProps> = ({
                       </Grid>
                     </Grid>
 
-                    {/* Opción rápida para alimento manual si no está en catálogo */}
-                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '0.5px solid rgba(255,255,255,0.08)' }}>
-                      <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', mb: 1, display: 'block' }}>
-                        ¿O escribir alimento libre?:
-                      </Typography>
-                      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
-                        <TextField
-                          fullWidth
-                          size="small"
-                          placeholder="Nombre libre (ej: Tortilla de 3 claras)"
-                          value={customFoodName}
-                          onChange={(e) => {
-                            setCustomFoodName(e.target.value);
-                            if (e.target.value) setSelectedFood(null);
-                          }}
-                          InputProps={{
-                            sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                          }}
-                        />
-                        <TextField
-                          size="small"
-                          type="number"
-                          placeholder="Kcal / 100g"
-                          value={customFoodKcal}
-                          onChange={(e) => setCustomFoodKcal(e.target.value)}
-                          InputProps={{
-                            sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem', width: { sm: 140 } },
-                          }}
-                        />
-                      </Stack>
+                    {/* Toggle para entrada manual de alimento */}
+                    <Box sx={{ mt: 1.5, pt: 1.5, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+                      <Button
+                        size="small"
+                        onClick={() => setShowManualFood(!showManualFood)}
+                        startIcon={showManualFood ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+                        sx={{ color: 'rgba(255,255,255,0.6)', textTransform: 'none', fontSize: '0.78rem', p: 0 }}
+                      >
+                        {showManualFood ? 'Ocultar alimento manual libre' : '¿El alimento no está en el catálogo? Añadir manualmente'}
+                      </Button>
+
+                      <Collapse in={showManualFood}>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mt: 1.5 }}>
+                          <TextField
+                            fullWidth
+                            size="small"
+                            placeholder="Nombre del alimento (ej: Tortilla de 3 claras)"
+                            value={customFoodName}
+                            onChange={(e) => {
+                              setCustomFoodName(e.target.value);
+                              if (e.target.value) setSelectedFood(null);
+                            }}
+                            InputProps={{ sx: inputStyle }}
+                          />
+                          <TextField
+                            size="small"
+                            type="number"
+                            placeholder="Kcal / 100g"
+                            value={customFoodKcal}
+                            onChange={(e) => setCustomFoodKcal(e.target.value)}
+                            InputProps={{ sx: inputStyle }}
+                          />
+                        </Stack>
+                      </Collapse>
                     </Box>
                   </Box>
 
                   {/* Listado de alimentos añadidos en esta comida */}
-                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', mb: 1, display: 'block', fontWeight: 600 }}>
+                  <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1.5, display: 'block', fontWeight: 700 }}>
                     Alimentos en {currentMealDef.label} ({currentFoods.length}):
                   </Typography>
 
                   {currentFoods.length === 0 ? (
-                    <Box sx={{ p: 3, textAlign: 'center', borderRadius: '12px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+                    <Box sx={{ p: 3.5, textAlign: 'center', borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
                       <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
                         No hay alimentos asociados a {currentMealDef.label}. Añade alimentos arriba.
                       </Typography>
@@ -805,9 +830,10 @@ export const DietForm: React.FC<DietFormProps> = ({
                         <Box
                           key={item.id || idx}
                           sx={{
-                            p: 1.5,
-                            borderRadius: '12px',
-                            bgcolor: '#2C2C2E',
+                            p: 1.8,
+                            borderRadius: '14px',
+                            bgcolor: '#1E1E24',
+                            border: '1px solid rgba(255, 255, 255, 0.08)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
@@ -818,14 +844,14 @@ export const DietForm: React.FC<DietFormProps> = ({
                               {item.name}
                             </Typography>
                             <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)' }}>
-                              {item.quantity} {item.unit || 'g'} • {item.calories} kcal
+                              {item.quantity} {item.unit || 'g'} • <strong style={{ color: '#FF9500' }}>{item.calories} kcal</strong>
                             </Typography>
                           </Box>
 
                           <IconButton
                             size="small"
                             onClick={() => handleRemoveFoodFromMeal(activeMealKey, idx)}
-                            sx={{ color: '#FF453A', '&:hover': { bgcolor: 'rgba(255,69,58,0.1)' } }}
+                            sx={{ color: '#FF453A', '&:hover': { bgcolor: 'rgba(255,69,58,0.15)' } }}
                           >
                             <Trash2 size={16} />
                           </IconButton>
@@ -844,27 +870,30 @@ export const DietForm: React.FC<DietFormProps> = ({
           <Stack spacing={2.5}>
             <Box
               sx={{
-                p: { xs: 2, sm: 2.5 },
+                p: { xs: 2.2, sm: 3 },
                 borderRadius: '20px',
-                bgcolor: '#1C1C1E',
-                border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                bgcolor: '#16161A',
+                border: '1px solid rgba(255, 149, 0, 0.25)',
               }}
             >
-              <Typography variant="subtitle2" sx={{ color: '#FF9500', fontWeight: 700, mb: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="subtitle2" sx={{ color: '#FF9500', fontWeight: 800, mb: 0.5, display: 'flex', alignItems: 'center', gap: 1 }}>
                 <Pill size={18} /> Suplementación & Productos Recomendados
               </Typography>
-              <Typography variant="caption" sx={{ color: 'rgba(235, 235, 245, 0.6)', display: 'block', mb: 2.5 }}>
-                Añade suplementos o productos recomendados (vitaminas, creatina, proteína, etc.). El cliente verá el enlace directo para adquirirlos y tus pautas de dosificación.
+              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'block', mb: 2.5 }}>
+                Añade suplementos o productos con su enlace directo de compra (Amazon, HSN, MyProtein, etc.) y pautas de dosificación.
               </Typography>
 
               {/* Formulario para añadir suplemento */}
-              <Box sx={{ p: 2, borderRadius: '14px', bgcolor: '#2C2C2E', mb: 3 }}>
+              <Box sx={{ p: 2.2, borderRadius: '16px', bgcolor: '#1E1E24', border: '1px solid rgba(255, 255, 255, 0.08)', mb: 3 }}>
                 <Typography variant="caption" fontWeight={700} sx={{ color: '#FF9500', mb: 1.5, display: 'block' }}>
                   + Añadir Recomendación de Producto / Suplemento
                 </Typography>
 
                 <Grid container spacing={2}>
                   <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      Seleccionar de mis productos
+                    </Typography>
                     <Autocomplete
                       options={availableProducts}
                       getOptionLabel={(opt) => `${opt.name} ${opt.price ? `(${opt.price}€)` : ''}`}
@@ -880,81 +909,89 @@ export const DietForm: React.FC<DietFormProps> = ({
                       renderInput={(params) => (
                         <TextField
                           {...params}
-                          placeholder="Seleccionar de mis productos..."
+                          placeholder="Buscar producto guardado..."
                           size="small"
-                          sx={{ bgcolor: '#1C1C1E', borderRadius: '10px', '& .MuiInputBase-root': { color: '#fff', fontSize: '0.85rem' } }}
+                          InputProps={{
+                            ...params.InputProps,
+                            sx: inputStyle,
+                          }}
                         />
                       )}
                     />
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      O nombre libre
+                    </Typography>
                     <TextField
                       fullWidth
                       size="small"
-                      placeholder="O escribir nombre (ej: Multivitamínico Solaray, Creatina Creapure)"
+                      placeholder="Ej: Multivitamínico Solaray, Creatina Creapure"
                       value={suppName}
                       onChange={(e) => setSuppName(e.target.value)}
-                      InputProps={{
-                        sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                      }}
+                      InputProps={{ sx: inputStyle }}
                     />
                   </Grid>
 
                   <Grid item xs={12}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      Enlace de compra del producto (URL)
+                    </Typography>
                     <TextField
                       fullWidth
                       size="small"
-                      placeholder="Enlace de compra del producto (URL ej: https://www.amazon.es/... o HSN, Prozis, etc.)"
+                      placeholder="https://www.amazon.es/... o HSN, Prozis, MyProtein"
                       value={suppUrl}
                       onChange={(e) => setSuppUrl(e.target.value)}
                       InputProps={{
                         startAdornment: <InputAdornment position="start"><LinkIcon size={16} color="#007AFF" /></InputAdornment>,
-                        sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
+                        sx: inputStyle,
                       }}
                     />
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      Momento de la toma / Timing
+                    </Typography>
                     <TextField
                       fullWidth
                       size="small"
-                      label="Momento de la toma / Timing"
-                      placeholder="ej: En el Desayuno, Pre-entreno, En la Cena"
+                      placeholder="Ej: En el Desayuno, Pre-entreno, En la Cena"
                       value={suppTiming}
                       onChange={(e) => setSuppTiming(e.target.value)}
-                      InputProps={{
-                        sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                      }}
+                      InputProps={{ sx: inputStyle }}
                     />
                   </Grid>
 
                   <Grid item xs={12} sm={6}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      Dosis recomendada
+                    </Typography>
                     <TextField
                       fullWidth
                       size="small"
-                      label="Dosis recomendada"
-                      placeholder="ej: 1 cápsula con agua, 5g tras el entreno"
+                      placeholder="Ej: 1 cápsula con agua, 5g diarios"
                       value={suppDosage}
                       onChange={(e) => setSuppDosage(e.target.value)}
-                      InputProps={{
-                        sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                      }}
+                      InputProps={{ sx: inputStyle }}
                     />
                   </Grid>
 
                   <Grid item xs={12}>
+                    <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 0.5, display: 'block', fontWeight: 600 }}>
+                      Observaciones o modo de empleo
+                    </Typography>
                     <TextField
                       fullWidth
                       size="small"
                       multiline
                       rows={2}
-                      placeholder="Observaciones de este suplemento (ej: Tomar junto con comida grasa para mejorar absorción, no en ayunas...)"
+                      placeholder="Ej: Tomar siempre con una comida grasa para mejorar absorción..."
                       value={suppObservations}
                       onChange={(e) => setSuppObservations(e.target.value)}
-                      InputProps={{
-                        sx: { bgcolor: '#1C1C1E', color: '#fff', borderRadius: '10px', fontSize: '0.85rem' },
-                      }}
+                      InputProps={{ sx: inputStyle }}
                     />
                   </Grid>
 
@@ -968,9 +1005,10 @@ export const DietForm: React.FC<DietFormProps> = ({
                         bgcolor: '#FF9500',
                         color: '#000',
                         fontWeight: 700,
-                        borderRadius: '10px',
-                        py: 1,
+                        borderRadius: '12px',
+                        py: 1.2,
                         textTransform: 'none',
+                        fontSize: '0.9rem',
                         '&:hover': { bgcolor: '#e08500' },
                       }}
                     >
@@ -981,14 +1019,14 @@ export const DietForm: React.FC<DietFormProps> = ({
               </Box>
 
               {/* Lista de suplementos prescritos */}
-              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)', mb: 1.5, display: 'block', fontWeight: 600 }}>
-                Suplementos Recomendados en esta Dieta ({supplements.length}):
+              <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1.5, display: 'block', fontWeight: 700 }}>
+                Suplementos Prescritos ({supplements.length}):
               </Typography>
 
               {supplements.length === 0 ? (
-                <Box sx={{ p: 3, textAlign: 'center', borderRadius: '12px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
+                <Box sx={{ p: 3.5, textAlign: 'center', borderRadius: '16px', bgcolor: 'rgba(255, 255, 255, 0.02)', border: '1px dashed rgba(255, 255, 255, 0.1)' }}>
                   <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.4)' }}>
-                    No hay suplementos prescritos para este plan. Puedes añadirlos arriba con su enlace de compra.
+                    No hay suplementos prescritos. Añádelos arriba con su enlace de compra.
                   </Typography>
                 </Box>
               ) : (
@@ -998,9 +1036,9 @@ export const DietForm: React.FC<DietFormProps> = ({
                       key={supp.id || index}
                       sx={{
                         p: 2,
-                        borderRadius: '14px',
-                        bgcolor: '#2C2C2E',
-                        border: '0.5px solid rgba(255, 255, 255, 0.08)',
+                        borderRadius: '16px',
+                        bgcolor: '#1E1E24',
+                        border: '1px solid rgba(255, 255, 255, 0.08)',
                       }}
                     >
                       <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
@@ -1013,20 +1051,20 @@ export const DietForm: React.FC<DietFormProps> = ({
                               <Chip
                                 size="small"
                                 label={supp.timing}
-                                sx={{ bgcolor: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 700, fontSize: '0.72rem' }}
+                                sx={{ bgcolor: 'rgba(255, 149, 0, 0.15)', color: '#FF9500', fontWeight: 700, fontSize: '0.74rem' }}
                               />
                             )}
                             {supp.dosage && (
                               <Chip
                                 size="small"
                                 label={supp.dosage}
-                                sx={{ bgcolor: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, fontSize: '0.72rem' }}
+                                sx={{ bgcolor: 'rgba(52, 199, 89, 0.15)', color: '#34C759', fontWeight: 700, fontSize: '0.74rem' }}
                               />
                             )}
                           </Stack>
 
                           {supp.observations && (
-                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.8rem', mt: 0.5 }}>
+                            <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.82rem', mt: 0.5 }}>
                               {supp.observations}
                             </Typography>
                           )}
@@ -1039,7 +1077,7 @@ export const DietForm: React.FC<DietFormProps> = ({
                                 rel="noopener noreferrer"
                                 style={{
                                   color: '#007AFF',
-                                  fontSize: '0.78rem',
+                                  fontSize: '0.8rem',
                                   textDecoration: 'none',
                                   display: 'inline-flex',
                                   alignItems: 'center',
@@ -1047,7 +1085,7 @@ export const DietForm: React.FC<DietFormProps> = ({
                                   fontWeight: 600,
                                 }}
                               >
-                                <ExternalLink size={13} /> Ver / Comprar producto ({supp.url.length > 40 ? `${supp.url.substring(0, 40)}...` : supp.url})
+                                <ExternalLink size={13} /> Ver enlace de compra
                               </a>
                             </Box>
                           )}
@@ -1056,7 +1094,7 @@ export const DietForm: React.FC<DietFormProps> = ({
                         <IconButton
                           size="small"
                           onClick={() => handleRemoveSupplement(index)}
-                          sx={{ color: '#FF453A', '&:hover': { bgcolor: 'rgba(255,69,58,0.1)' } }}
+                          sx={{ color: '#FF453A', '&:hover': { bgcolor: 'rgba(255,69,58,0.15)' } }}
                         >
                           <Trash2 size={16} />
                         </IconButton>
@@ -1073,12 +1111,12 @@ export const DietForm: React.FC<DietFormProps> = ({
       {/* Footer Botones Apple */}
       <DialogActions
         sx={{
-          px: { xs: 2, sm: 3 },
-          py: 2,
-          borderTop: '0.5px solid rgba(255, 255, 255, 0.1)',
-          bgcolor: 'rgba(28, 28, 30, 0.85)',
-          backdropFilter: 'blur(20px)',
-          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 12px)' : 2,
+          px: { xs: 2.5, sm: 3.5 },
+          py: 2.2,
+          borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+          bgcolor: 'rgba(22, 22, 26, 0.85)',
+          backdropFilter: 'blur(24px)',
+          pb: isMobile ? 'calc(env(safe-area-inset-bottom, 0px) + 14px)' : 2.2,
           gap: 1.5,
         }}
       >
@@ -1086,8 +1124,8 @@ export const DietForm: React.FC<DietFormProps> = ({
           onClick={onClose}
           sx={{
             flex: 1,
-            height: 44,
-            borderRadius: '12px',
+            height: 46,
+            borderRadius: '14px',
             color: '#ffffff',
             bgcolor: 'rgba(255, 255, 255, 0.08)',
             fontWeight: 600,
@@ -1104,18 +1142,18 @@ export const DietForm: React.FC<DietFormProps> = ({
           variant="contained"
           sx={{
             flex: 2,
-            height: 44,
-            borderRadius: '12px',
+            height: 46,
+            borderRadius: '14px',
             bgcolor: '#34C759',
             color: '#000000',
-            fontWeight: 700,
+            fontWeight: 800,
             textTransform: 'none',
-            fontSize: '0.92rem',
-            boxShadow: '0 4px 14px rgba(52, 199, 89, 0.3)',
+            fontSize: '0.94rem',
+            boxShadow: '0 4px 16px rgba(52, 199, 89, 0.3)',
             '&:hover': { bgcolor: '#2eb34f' },
           }}
         >
-          {dietToEdit ? 'Guardar Plan' : 'Crear Plan Nutricional'}
+          {dietToEdit ? 'Guardar Pauta' : 'Crear Pauta Nutricional'}
         </Button>
       </DialogActions>
     </Dialog>

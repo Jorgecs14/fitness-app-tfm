@@ -11,7 +11,18 @@ import {
   Menu,
   MenuItem
 } from '@mui/material'
-import { Iconify } from '../../utils/iconify'
+import {
+  ChefHat,
+  UtensilsCrossed,
+  Plus,
+  Search,
+  FileDown,
+  FileText,
+  Layers,
+  Droplets,
+  Pill,
+  Sparkles
+} from 'lucide-react'
 import { DietWithFoods } from '../../types/DietWithFoods'
 import { User } from '../../types/User'
 import * as dietService from '../../services/dietService'
@@ -263,7 +274,7 @@ export const DietManager = () => {
               Gestión de Planes Nutricionales
             </Typography>
             <Typography variant="body2" sx={{ color: 'rgba(235, 235, 245, 0.6)', maxWidth: 620, lineHeight: 1.5 }}>
-              Pauta dietas personalizadas, gestiona macronutrientes, alimentos por comidas y asigna planes a tus alumnos.
+              Pauta dietas personalizadas con hidratación diaria, 5 tomas de comidas y suplementación con enlace de compra.
             </Typography>
 
             {/* Micro-Badges de Métricas */}
@@ -274,13 +285,13 @@ export const DietManager = () => {
                   alignItems: 'center',
                   gap: 1,
                   px: 1.75,
-                  py: 0.5,
+                  py: 0.6,
                   borderRadius: '9999px',
                   bgcolor: 'rgba(255, 255, 255, 0.06)',
-                  border: '0.5px solid rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <Iconify icon="solar:chef-hat-bold-duotone" width={16} sx={{ color: '#007AFF' }} />
+                <ChefHat size={16} color="#007AFF" />
                 <Typography variant="caption" sx={{ fontWeight: 600, color: '#ffffff' }}>
                   {diets.length} Planes Activos
                 </Typography>
@@ -292,15 +303,33 @@ export const DietManager = () => {
                   alignItems: 'center',
                   gap: 1,
                   px: 1.75,
-                  py: 0.5,
+                  py: 0.6,
                   borderRadius: '9999px',
                   bgcolor: 'rgba(255, 255, 255, 0.06)',
-                  border: '0.5px solid rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.1)',
                 }}
               >
-                <Iconify icon="solar:plate-bold" width={16} sx={{ color: '#34C759' }} />
+                <UtensilsCrossed size={16} color="#34C759" />
                 <Typography variant="caption" sx={{ fontWeight: 600, color: '#ffffff' }}>
-                  {totalFoodsCount} Alimentos Asignados
+                  5 Tomas por Plan
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 1,
+                  px: 1.75,
+                  py: 0.6,
+                  borderRadius: '9999px',
+                  bgcolor: 'rgba(0, 122, 255, 0.12)',
+                  border: '1px solid rgba(0, 122, 255, 0.25)',
+                }}
+              >
+                <Droplets size={16} color="#007AFF" />
+                <Typography variant="caption" sx={{ fontWeight: 600, color: '#007AFF' }}>
+                  Control de Hidratación
                 </Typography>
               </Box>
             </Stack>
@@ -309,7 +338,7 @@ export const DietManager = () => {
           <Stack direction="row" spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' } }}>
             <Button
               variant="outlined"
-              startIcon={<Iconify icon="eva:download-fill" />}
+              startIcon={<FileDown size={17} />}
               onClick={(e) => setExportMenuAnchor(e.currentTarget)}
               sx={{
                 flex: { xs: 1, sm: 'initial' },
@@ -331,14 +360,14 @@ export const DietManager = () => {
             </Button>
             <Button
               variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
+              startIcon={<Plus size={18} />}
               onClick={handleAdd}
               sx={{
                 flex: { xs: 2, sm: 'initial' },
                 borderRadius: '12px',
                 px: 2.5,
                 py: 1,
-                fontWeight: 700,
+                fontWeight: 800,
                 bgcolor: '#34C759',
                 color: '#000000',
                 textTransform: 'none',
@@ -365,17 +394,22 @@ export const DietManager = () => {
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <Iconify icon="eva:search-fill" sx={{ color: 'rgba(235, 235, 245, 0.5)' }} />
+                <Search size={18} color="rgba(235, 235, 245, 0.5)" />
               </InputAdornment>
             ),
             sx: {
               color: '#ffffff',
-              bgcolor: '#1C1C1E',
-              borderRadius: '12px',
-              fontSize: '16px', // Previene auto-zoom en Safari iOS
-              '& fieldset': { borderColor: 'rgba(255, 255, 255, 0.1)' },
-              '&:hover fieldset': { borderColor: 'rgba(52, 199, 89, 0.4)' },
-              '&.Mui-focused fieldset': { borderColor: '#34C759' },
+              bgcolor: '#16161A',
+              borderRadius: '14px',
+              fontSize: '15px',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              '&:hover': {
+                borderColor: 'rgba(52, 199, 89, 0.4)',
+              },
+              '&.Mui-focused': {
+                borderColor: '#34C759',
+                boxShadow: '0 0 0 3px rgba(52, 199, 89, 0.2)',
+              },
             },
           }}
         />
@@ -396,7 +430,6 @@ export const DietManager = () => {
       <DietForm
         open={formOpen}
         dietToEdit={editingDiet}
-        users={users}
         onClose={handleFormClose}
         onSubmit={handleSubmit}
       />
@@ -438,20 +471,31 @@ export const DietManager = () => {
         anchorEl={exportMenuAnchor}
         open={Boolean(exportMenuAnchor)}
         onClose={() => setExportMenuAnchor(null)}
+        PaperProps={{
+          sx: {
+            bgcolor: '#1C1C1E',
+            color: '#ffffff',
+            borderRadius: '14px',
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: '0 12px 32px rgba(0, 0, 0, 0.7)',
+          },
+        }}
       >
-        <MenuItem onClick={() => handleExport('pdf')}>
-          <Iconify icon='eva:file-text-fill' sx={{ mr: 2 }} />
+        <MenuItem onClick={() => handleExport('pdf')} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+          <FileText size={16} style={{ marginRight: 12, color: '#007AFF' }} />
           Exportar a PDF
         </MenuItem>
-        <MenuItem onClick={() => handleExport('excel')}>
-          <Iconify icon='eva:file-fill' sx={{ mr: 2 }} />
+        <MenuItem onClick={() => handleExport('excel')} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+          <Layers size={16} style={{ marginRight: 12, color: '#34C759' }} />
           Exportar a Excel
         </MenuItem>
-        <MenuItem onClick={() => handleExport('csv')}>
-          <Iconify icon='eva:file-text-outline' sx={{ mr: 2 }} />
+        <MenuItem onClick={() => handleExport('csv')} sx={{ '&:hover': { bgcolor: 'rgba(255,255,255,0.08)' } }}>
+          <FileDown size={16} style={{ marginRight: 12, color: '#FF9500' }} />
           Exportar a CSV
         </MenuItem>
       </Menu>
     </Box>
   )
 }
+
+export default DietManager;
