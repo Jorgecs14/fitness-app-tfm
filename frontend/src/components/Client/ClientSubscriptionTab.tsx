@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Grid,
   Stack,
   Chip,
   Button,
@@ -30,7 +29,6 @@ import {
   Calendar,
   Clock,
   ShieldCheck,
-  RotateCcw,
   Plus,
   ArrowRight,
   Receipt,
@@ -90,7 +88,7 @@ export const ClientSubscriptionTab: React.FC<ClientSubscriptionTabProps> = ({ cu
     e.preventDefault();
     const cleanNumber = cardForm.cardNumber.replace(/\s+/g, '');
     if (cleanNumber.length < 15) {
-      setError('Por favor, introduce un número de tarjeta válido (16 dígitos).');
+      setError('Por favor, introduce un número de tarjeta válido.');
       return;
     }
 
@@ -119,7 +117,7 @@ export const ClientSubscriptionTab: React.FC<ClientSubscriptionTabProps> = ({ cu
         stripe_payment_token: `tok_sim_${Date.now()}`,
       });
 
-      setSuccessMsg('¡Suscripción y tarjeta procesadas con éxito! Tu cuota mensual está activa.');
+      setSuccessMsg('Suscripción y tarjeta procesadas con éxito. Tu cuota mensual está activa.');
       setCardModalOpen(false);
       setCardForm({ cardNumber: '', cardExp: '', cardCvc: '', cardHolder: '' });
       await loadBillingData();
@@ -180,267 +178,283 @@ export const ClientSubscriptionTab: React.FC<ClientSubscriptionTabProps> = ({ cu
   const isCanceled = sub?.status === 'canceled' || sub?.cancel_at_period_end;
 
   return (
-    <Box>
+    <Stack spacing={3}>
       {error && (
-        <Alert severity="error" sx={{ mb: 3, borderRadius: '12px' }} onClose={() => setError(null)}>
+        <Alert severity="error" sx={{ borderRadius: '14px' }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
 
       {successMsg && (
-        <Alert severity="success" sx={{ mb: 3, borderRadius: '12px' }} onClose={() => setSuccessMsg(null)}>
+        <Alert severity="success" sx={{ borderRadius: '14px' }} onClose={() => setSuccessMsg(null)}>
           {successMsg}
         </Alert>
       )}
 
       {/* Grid Principal de Estado y Tarjeta */}
-      <Grid container spacing={3} mb={4}>
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1.4fr 1fr' },
+          gap: 2.5
+        }}
+      >
         {/* Tarjeta de Suscripción */}
-        <Grid size={{ xs: 12, md: 7 }}>
-          <Box
-            className="apple-card"
-            sx={{
-              p: { xs: 2.5, sm: 3 },
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              background: 'linear-gradient(180deg, #1C1C1E 0%, #161618 100%)',
-              border: isActive
-                ? '1px solid rgba(52, 199, 89, 0.3)'
-                : '1px solid rgba(255, 149, 0, 0.3)',
-            }}
-          >
-            <Box>
-              <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                <Box>
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: 0.5 }}>
-                    Plan Contratado
-                  </Typography>
-                  <Typography variant="h5" fontWeight="800" sx={{ color: '#ffffff', mt: 0.2 }}>
-                    {sub?.plan_name || 'Seguimiento Personalizado'}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 0.4, display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                    <UserCheck size={16} color="#007AFF" />
-                    Preparador: <strong style={{ color: '#ffffff' }}>{trainer?.name || 'Entrenador Asignado'}</strong>
+        <Box
+          sx={{
+            p: { xs: 2.5, sm: 3 },
+            borderRadius: '20px',
+            bgcolor: 'var(--bg-card, #18181b)',
+            border: isActive
+              ? '1px solid rgba(52, 199, 89, 0.3)'
+              : '1px solid rgba(255, 149, 0, 0.3)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between'
+          }}
+        >
+          <Box>
+            <Box display="flex" justifyContent="space-between" alignItems="flex-start" mb={2}>
+              <Box>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+                  Plan Contratado
+                </Typography>
+                <Typography variant="h5" fontWeight="800" sx={{ color: '#ffffff', mt: 0.3 }}>
+                  {sub?.plan_name || 'Seguimiento Personalizado'}
+                </Typography>
+                <Typography variant="body2" sx={{ color: 'rgba(255, 255, 255, 0.7)', mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                  <UserCheck size={16} color="#007AFF" />
+                  Preparador: <strong style={{ color: '#ffffff' }}>{trainer?.name || 'Entrenador Asignado'}</strong>
+                </Typography>
+              </Box>
+
+              <Chip
+                label={
+                  isActive
+                    ? 'Suscripción Activa'
+                    : isCanceled
+                    ? 'Cancelada'
+                    : 'Pendiente de Pago'
+                }
+                size="small"
+                sx={{
+                  fontWeight: 700,
+                  bgcolor: isActive ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 149, 0, 0.15)',
+                  color: isActive ? '#34C759' : '#FF9500',
+                  border: `1px solid ${isActive ? 'rgba(52, 199, 89, 0.3)' : 'rgba(255, 149, 0, 0.3)'}`,
+                  px: 0.5,
+                }}
+              />
+            </Box>
+
+            <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
+
+            {/* Importe y Fechas */}
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                gap: 2,
+                my: 1
+              }}
+            >
+              <Box>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block' }}>
+                  Tu Cuota Mensual
+                </Typography>
+                <Typography variant="h4" fontWeight="900" sx={{ color: '#007AFF', letterSpacing: '-0.02em', mt: 0.3 }}>
+                  {formatEuro(sub?.monthly_amount)}
+                  <span style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)', fontWeight: 500 }}> / mes</span>
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block' }}>
+                  Próxima Renovación
+                </Typography>
+                <Typography variant="subtitle1" fontWeight="700" sx={{ color: '#ffffff', mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                  <Calendar size={16} color="rgba(255, 255, 255, 0.6)" />
+                  {formatDate(sub?.current_period_end)}
+                </Typography>
+              </Box>
+
+              <Box
+                sx={{
+                  gridColumn: { xs: 'span 1', sm: 'span 2' },
+                  p: 1.5,
+                  borderRadius: '12px',
+                  bgcolor: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: 1
+                }}
+              >
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Clock size={15} color="rgba(255, 255, 255, 0.5)" />
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                    Último pago registrado: <strong style={{ color: '#ffffff' }}>{formatDate(sub?.last_payment_date)}</strong>
                   </Typography>
                 </Box>
 
                 <Chip
-                  label={
-                    isActive
-                      ? 'Suscripción Activa'
-                      : isCanceled
-                      ? 'Cancelada'
-                      : 'Pendiente de Pago'
-                  }
+                  label={sub?.payment_type === 'stripe' ? 'Pago Automático Stripe' : 'Gestión Manual'}
                   size="small"
                   sx={{
-                    fontWeight: 700,
-                    bgcolor: isActive ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 149, 0, 0.15)',
-                    color: isActive ? '#34C759' : '#FF9500',
-                    border: `1px solid ${isActive ? 'rgba(52, 199, 89, 0.3)' : 'rgba(255, 149, 0, 0.3)'}`,
-                    px: 0.5,
+                    height: 22,
+                    fontSize: '0.68rem',
+                    bgcolor: 'rgba(0, 122, 255, 0.1)',
+                    color: '#007AFF',
+                    border: '1px solid rgba(0, 122, 255, 0.25)',
                   }}
                 />
               </Box>
-
-              <Divider sx={{ my: 2, borderColor: 'rgba(255, 255, 255, 0.08)' }} />
-
-              {/* Importe y Fechas */}
-              <Grid container spacing={2} my={1}>
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block' }}>
-                    Tu Cuota Mensual
-                  </Typography>
-                  <Typography variant="h4" fontWeight="900" sx={{ color: '#007AFF', letterSpacing: '-0.02em', mt: 0.3 }}>
-                    {formatEuro(sub?.monthly_amount)}
-                    <span style={{ fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.6)', fontWeight: 500 }}> / mes</span>
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 6 }}>
-                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block' }}>
-                    Próxima Renovación
-                  </Typography>
-                  <Typography variant="subtitle1" fontWeight="700" sx={{ color: '#ffffff', mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                    <Calendar size={16} color="rgba(255, 255, 255, 0.6)" />
-                    {formatDate(sub?.current_period_end)}
-                  </Typography>
-                </Grid>
-
-                <Grid size={{ xs: 12 }}>
-                  <Box
-                    p={1.5}
-                    sx={{
-                      borderRadius: '12px',
-                      bgcolor: 'rgba(255, 255, 255, 0.03)',
-                      border: '1px solid rgba(255, 255, 255, 0.06)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: 1
-                    }}
-                  >
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <Clock size={15} color="rgba(255, 255, 255, 0.5)" />
-                      <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                        Último pago registrado: <strong style={{ color: '#ffffff' }}>{formatDate(sub?.last_payment_date)}</strong>
-                      </Typography>
-                    </Box>
-
-                    <Chip
-                      label={sub?.payment_type === 'stripe' ? 'Pago Automático Stripe' : 'Gestión Manual'}
-                      size="small"
-                      sx={{
-                        height: 22,
-                        fontSize: '0.68rem',
-                        bgcolor: 'rgba(0, 122, 255, 0.1)',
-                        color: '#007AFF',
-                        border: '1px solid rgba(0, 122, 255, 0.25)',
-                      }}
-                    />
-                  </Box>
-                </Grid>
-              </Grid>
             </Box>
+          </Box>
 
-            {/* Acciones de Suscripción */}
-            <Box mt={3} pt={2} borderTop="1px solid rgba(255, 255, 255, 0.08)" display="flex" gap={1.5} flexWrap="wrap">
-              {!isActive ? (
+          {/* Acciones de Suscripción */}
+          <Box mt={3} pt={2} borderTop="1px solid rgba(255, 255, 255, 0.08)" display="flex" gap={1.5} flexWrap="wrap" alignItems="center">
+            {!isActive ? (
+              <Button
+                variant="contained"
+                onClick={() => setCardModalOpen(true)}
+                startIcon={<CreditCard size={16} />}
+                sx={{
+                  borderRadius: '12px',
+                  fontWeight: 700,
+                  textTransform: 'none',
+                  bgcolor: '#007AFF',
+                  px: 3,
+                  py: 1,
+                }}
+              >
+                Pagar Cuota con Tarjeta (Stripe)
+              </Button>
+            ) : (
+              <>
                 <Button
-                  variant="contained"
+                  variant="outlined"
                   onClick={() => setCardModalOpen(true)}
                   startIcon={<CreditCard size={16} />}
                   sx={{
                     borderRadius: '12px',
-                    fontWeight: 700,
+                    fontWeight: 600,
                     textTransform: 'none',
-                    bgcolor: '#007AFF',
-                    px: 3,
-                    py: 1,
+                    borderColor: 'rgba(255, 255, 255, 0.2)',
+                    color: '#ffffff',
+                    '&:hover': { borderColor: '#ffffff', bgcolor: 'rgba(255, 255, 255, 0.05)' }
                   }}
                 >
-                  Pagar Cuota con Tarjeta (Stripe)
+                  Actualizar Tarjeta
                 </Button>
-              ) : (
-                <>
-                  <Button
-                    variant="outlined"
-                    onClick={() => setCardModalOpen(true)}
-                    startIcon={<CreditCard size={16} />}
-                    sx={{
-                      borderRadius: '12px',
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      borderColor: 'rgba(255, 255, 255, 0.2)',
-                      color: '#ffffff',
-                      '&:hover': { borderColor: '#ffffff', bgcolor: 'rgba(255, 255, 255, 0.05)' }
-                    }}
-                  >
-                    Actualizar Tarjeta
-                  </Button>
 
-                  <Button
-                    variant="text"
-                    color="error"
-                    onClick={() => setCancelModalOpen(true)}
-                    sx={{
-                      borderRadius: '12px',
-                      fontWeight: 600,
-                      textTransform: 'none',
-                      ml: 'auto'
-                    }}
-                  >
-                    Cancelar Suscripción
-                  </Button>
-                </>
-              )}
-            </Box>
+                <Button
+                  variant="text"
+                  color="error"
+                  onClick={() => setCancelModalOpen(true)}
+                  sx={{
+                    borderRadius: '12px',
+                    fontWeight: 600,
+                    textTransform: 'none',
+                    ml: 'auto'
+                  }}
+                >
+                  Cancelar Suscripción
+                </Button>
+              </>
+            )}
           </Box>
-        </Grid>
+        </Box>
 
         {/* Tarjeta Visual de Pago */}
-        <Grid size={{ xs: 12, md: 5 }}>
-          <Box
-            className="apple-card"
-            sx={{
-              p: 3,
-              height: '100%',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'space-between',
-              background: 'linear-gradient(135deg, rgba(0, 122, 255, 0.2) 0%, rgba(20, 20, 24, 0.95) 100%)',
-              border: '1px solid rgba(0, 122, 255, 0.3)',
-              position: 'relative',
-              overflow: 'hidden',
-            }}
-          >
-            <Box>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#ffffff', letterSpacing: 1 }}>
-                  MÉTODO DE PAGO
+        <Box
+          sx={{
+            p: 3,
+            borderRadius: '20px',
+            bgcolor: 'var(--bg-card, #18181b)',
+            border: '1px solid rgba(0, 122, 255, 0.25)',
+            boxShadow: '0 8px 30px rgba(0,0,0,0.3)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'space-between',
+            position: 'relative',
+            overflow: 'hidden',
+          }}
+        >
+          <Box>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2.5}>
+              <Typography variant="subtitle2" fontWeight="800" sx={{ color: '#ffffff', letterSpacing: 0.8 }}>
+                MÉTODO DE PAGO
+              </Typography>
+              <Lock size={16} color="#007AFF" />
+            </Box>
+
+            {/* Tarjeta Visual Mockup */}
+            <Box
+              sx={{
+                p: 2.5,
+                borderRadius: '16px',
+                background: 'linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%)',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                boxShadow: '0 8px 20px rgba(0, 0, 0, 0.5)',
+                color: '#ffffff',
+              }}
+            >
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <CreditCard size={26} color="#38bdf8" />
+                <Typography variant="caption" fontWeight="800" sx={{ letterSpacing: 1, color: '#38bdf8' }}>
+                  {sub?.card_brand || 'VISA'}
                 </Typography>
-                <Lock size={18} color="#007AFF" />
               </Box>
 
-              {/* Tarjeta Visual Mockup */}
-              <Box
-                sx={{
-                  p: 2.5,
-                  borderRadius: '16px',
-                  background: 'linear-gradient(135deg, #1e3a8a 0%, #0f172a 100%)',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  boxShadow: '0 10px 25px rgba(0, 0, 0, 0.6)',
-                  color: '#ffffff',
-                }}
-              >
-                <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                  <CreditCard size={28} color="#38bdf8" />
-                  <Typography variant="caption" fontWeight="800" sx={{ letterSpacing: 1, color: '#38bdf8' }}>
-                    {sub?.card_brand || 'VISA'}
+              <Typography variant="h6" fontWeight="700" sx={{ letterSpacing: 2, mb: 2, fontSize: '1.05rem' }}>
+                •••• •••• •••• {sub?.card_last4 || '4242'}
+              </Typography>
+
+              <Box display="flex" justifyContent="space-between" alignItems="flex-end">
+                <Box>
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.65rem' }}>
+                    TITULAR
+                  </Typography>
+                  <Typography variant="body2" fontWeight="700" sx={{ color: '#ffffff', textTransform: 'uppercase', fontSize: '0.8rem' }}>
+                    {currentUser?.name} {currentUser?.surname}
                   </Typography>
                 </Box>
-
-                <Typography variant="h6" fontWeight="700" sx={{ letterSpacing: 2, mb: 2, fontSize: '1.1rem' }}>
-                  •••• •••• •••• {sub?.card_last4 || '4242'}
-                </Typography>
-
-                <Box display="flex" justifyContent="space-between" alignItems="flex-end">
-                  <Box>
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.65rem' }}>
-                      TITULAR
-                    </Typography>
-                    <Typography variant="body2" fontWeight="700" sx={{ color: '#ffffff', textTransform: 'uppercase', fontSize: '0.8rem' }}>
-                      {currentUser?.name} {currentUser?.surname}
-                    </Typography>
-                  </Box>
-                  <Box textAlign="right">
-                    <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.65rem' }}>
-                      CADUCA
-                    </Typography>
-                    <Typography variant="body2" fontWeight="700" sx={{ color: '#ffffff', fontSize: '0.8rem' }}>
-                      {sub?.card_exp_month || 12}/{sub?.card_exp_year ? String(sub.card_exp_year).slice(-2) : '28'}
-                    </Typography>
-                  </Box>
+                <Box textAlign="right">
+                  <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '0.65rem' }}>
+                    CADUCA
+                  </Typography>
+                  <Typography variant="body2" fontWeight="700" sx={{ color: '#ffffff', fontSize: '0.8rem' }}>
+                    {sub?.card_exp_month || 12}/{sub?.card_exp_year ? String(sub.card_exp_year).slice(-2) : '28'}
+                  </Typography>
                 </Box>
               </Box>
             </Box>
-
-            <Box mt={2}>
-              <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', lineHeight: 1.4 }}>
-                <ShieldCheck size={14} style={{ verticalAlign: 'middle', marginRight: 4, color: '#34C759' }} />
-                Tus pagos son procesados de forma cifrada y segura con el estándar bancario PCI-DSS de Stripe.
-              </Typography>
-            </Box>
           </Box>
-        </Grid>
-      </Grid>
+
+          <Box mt={2}>
+            <Typography variant="caption" sx={{ color: 'rgba(255, 255, 255, 0.5)', display: 'block', lineHeight: 1.4 }}>
+              <ShieldCheck size={14} style={{ verticalAlign: 'middle', marginRight: 4, color: '#34C759' }} />
+              Tus pagos son procesados de forma cifrada y segura con el estándar bancario PCI-DSS de Stripe.
+            </Typography>
+          </Box>
+        </Box>
+      </Box>
 
       {/* Historial de Recibos y Facturas */}
-      <Box className="apple-card" sx={{ p: { xs: 2.5, sm: 3 }, background: '#18181b', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2.5}>
+      <Box
+        sx={{
+          p: { xs: 2.5, sm: 3 },
+          borderRadius: '20px',
+          bgcolor: 'var(--bg-card, #18181b)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.3)'
+        }}
+      >
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2.5} flexWrap="wrap" gap={1}>
           <Box display="flex" alignItems="center" gap={1.2}>
             <Receipt size={20} color="#007AFF" />
             <Typography variant="h6" fontWeight="800" sx={{ color: '#ffffff', fontSize: '1.05rem' }}>
@@ -459,7 +473,7 @@ export const ClientSubscriptionTab: React.FC<ClientSubscriptionTabProps> = ({ cu
             </Typography>
           </Box>
         ) : (
-          <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none' }}>
+          <TableContainer component={Paper} sx={{ bgcolor: 'transparent', boxShadow: 'none', overflowX: 'auto' }}>
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ '& th': { borderColor: 'rgba(255, 255, 255, 0.08)', color: 'rgba(255, 255, 255, 0.5)', fontWeight: 700 } }}>
@@ -544,7 +558,7 @@ export const ClientSubscriptionTab: React.FC<ClientSubscriptionTabProps> = ({ cu
                 required
                 value={cardForm.cardHolder}
                 onChange={(e) => setCardForm({ ...cardForm, cardHolder: e.target.value })}
-                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
+                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px', color: '#ffffff' } }}
               />
 
               <TextField
@@ -554,34 +568,30 @@ export const ClientSubscriptionTab: React.FC<ClientSubscriptionTabProps> = ({ cu
                 required
                 value={cardForm.cardNumber}
                 onChange={(e) => setCardForm({ ...cardForm, cardNumber: e.target.value })}
-                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
+                InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px', color: '#ffffff' } }}
               />
 
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 6 }}>
-                  <TextField
-                    label="Caducidad (MM/AA)"
-                    placeholder="12/28"
-                    fullWidth
-                    required
-                    value={cardForm.cardExp}
-                    onChange={(e) => setCardForm({ ...cardForm, cardExp: e.target.value })}
-                    InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
-                  />
-                </Grid>
-                <Grid size={{ xs: 6 }}>
-                  <TextField
-                    label="CVC / CVV"
-                    placeholder="123"
-                    type="password"
-                    fullWidth
-                    required
-                    value={cardForm.cardCvc}
-                    onChange={(e) => setCardForm({ ...cardForm, cardCvc: e.target.value })}
-                    InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px' } }}
-                  />
-                </Grid>
-              </Grid>
+              <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                <TextField
+                  label="Caducidad (MM/AA)"
+                  placeholder="12/28"
+                  fullWidth
+                  required
+                  value={cardForm.cardExp}
+                  onChange={(e) => setCardForm({ ...cardForm, cardExp: e.target.value })}
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px', color: '#ffffff' } }}
+                />
+                <TextField
+                  label="CVC / CVV"
+                  placeholder="123"
+                  type="password"
+                  fullWidth
+                  required
+                  value={cardForm.cardCvc}
+                  onChange={(e) => setCardForm({ ...cardForm, cardCvc: e.target.value })}
+                  InputProps={{ sx: { bgcolor: 'rgba(255, 255, 255, 0.04)', borderRadius: '12px', fontSize: '15px', color: '#ffffff' } }}
+                />
+              </Box>
             </Stack>
           </DialogContent>
           <DialogActions sx={{ p: 2.5, pt: 1 }}>
@@ -645,7 +655,7 @@ export const ClientSubscriptionTab: React.FC<ClientSubscriptionTabProps> = ({ cu
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+    </Stack>
   );
 };
 

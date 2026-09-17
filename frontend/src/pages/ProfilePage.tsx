@@ -1,28 +1,21 @@
-// Página de perfil de usuario con edición de datos, cambio de contraseña y estadísticas personales
-import { useState, useEffect } from 'react'
+// Página de perfil de usuario con edición de datos, cambio de contraseña, facturación y diseño premium
+import React, { useState, useEffect } from 'react'
 import {
   Box,
   Card,
   CardContent,
-  CardHeader,
   TextField,
   Button,
   Typography,
   Avatar,
   Stack,
   Divider,
-  IconButton,
   Alert,
   Tab,
   Tabs,
   LinearProgress,
-  Chip,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions
+  Chip
 } from '@mui/material'
-import { Iconify } from '../utils/iconify'
 import { User } from '../types/User'
 import * as userService from '../services/userService'
 import * as dietService from '../services/dietService'
@@ -30,28 +23,19 @@ import * as workoutService from '../services/workoutService'
 import { useToast } from '../utils/notifications'
 import { Chart } from '../utils/chart'
 import { ClientSubscriptionTab } from '../components/Client/ClientSubscriptionTab'
-
-interface TabPanelProps {
-  children?: React.ReactNode
-  index: number
-  value: number
-}
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props
-
-  return (
-    <div
-      role='tabpanel'
-      hidden={value !== index}
-      id={`profile-tabpanel-${index}`}
-      aria-labelledby={`profile-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  )
-}
+import {
+  User as UserIcon,
+  CreditCard,
+  BarChart3,
+  Lock,
+  LogOut,
+  Save,
+  CheckCircle2,
+  Calendar,
+  Mail,
+  ShieldCheck,
+  KeyRound
+} from 'lucide-react'
 
 interface UserStats {
   totalUsers: number
@@ -65,8 +49,8 @@ export const ProfilePage = () => {
   const [activeTab, setActiveTab] = useState(0)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [savingPassword, setSavingPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [changePasswordOpen, setChangePasswordOpen] = useState(false)
   const [stats, setStats] = useState<UserStats>({
     totalUsers: 0,
     totalDiets: 0,
@@ -92,37 +76,42 @@ export const ProfilePage = () => {
 
   useEffect(() => {
     loadUserProfile()
-    loadStats()
   }, [])
+
+  const isTrainerOrAdmin =
+    currentUser?.role === 'trainer' ||
+    currentUser?.role === 'entrenador' ||
+    currentUser?.role === 'admin'
 
   const loadUserProfile = async () => {
     try {
       setLoading(true)
       setError(null)
-
-      // Obtener el usuario actual autenticado
       const user = await userService.getCurrentUser()
-
       setCurrentUser(user)
       setProfileForm({
-        name: user.name,
-        surname: user.surname,
-        email: user.email,
-        birth_date: user.birth_date
+        name: user.name || '',
+        surname: user.surname || '',
+        email: user.email || '',
+        birth_date: user.birth_date ? user.birth_date.split('T')[0] : ''
       })
-    } catch (error: any) {
-      console.error('Error loading profile:', error)
-      const errorMessage = error.message || 'Error al cargar el perfil'
-      setError(errorMessage)
 
-      // Si es un error de autenticación, redirigir al login
+      if (user.role === 'admin' || user.role === 'trainer' || user.role === 'entrenador') {
+        loadStats()
+      }
+    } catch (err: any) {
+      console.error('Error loading profile:', err)
+      const errorMessage = err.message || 'Error al cargar el perfil'
+      setError(errorMessage)
       if (
         errorMessage.includes('autenticado') ||
         errorMessage.includes('inicia sesión')
       ) {
         setTimeout(() => {
+          localStorage.removeItem('auth_token')
+          localStorage.removeItem('user')
           window.location.href = '/sign-in'
-        }, 3000)
+        }, 2000)
       }
     } finally {
       setLoading(false)
@@ -152,37 +141,35 @@ export const ProfilePage = () => {
         totalWorkouts: workouts.length,
         usersByRole
       })
-    } catch (error) {
-      console.error('Error loading stats:', error)
+    } catch (err) {
+      console.error('Error loading stats:', err)
     }
   }
 
-  const handleTabChange = (_: React.SyntheticEvent, newValue: number) => {
-    setActiveTab(newValue)
-  }
-
-  const handleProfileSubmit = async () => {
+  const handleProfileSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     if (!currentUser) return
 
     try {
       setSaving(true)
       await userService.updateUser(currentUser.id, {
         ...profileForm,
-        password: currentUser.password, // Mantener password actual
+        password: currentUser.password,
         role: currentUser.role
       })
 
       showToast('Perfil actualizado correctamente', 'success')
       loadUserProfile()
-    } catch (error) {
-      console.error('Error updating profile:', error)
+    } catch (err) {
+      console.error('Error updating profile:', err)
       showToast('Error al actualizar el perfil', 'error')
     } finally {
       setSaving(false)
     }
   }
 
-  const handlePasswordSubmit = async () => {
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     if (!currentUser) return
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
@@ -196,7 +183,7 @@ export const ProfilePage = () => {
     }
 
     try {
-      setSaving(true)
+      setSavingPassword(true)
       await userService.updateUser(currentUser.id, {
         ...profileForm,
         password: passwordForm.newPassword,
@@ -208,37 +195,41 @@ export const ProfilePage = () => {
         newPassword: '',
         confirmPassword: ''
       })
-      setChangePasswordOpen(false)
       showToast('Contraseña actualizada correctamente', 'success')
-    } catch (error) {
-      console.error('Error updating password:', error)
+    } catch (err) {
+      console.error('Error updating password:', err)
       showToast('Error al actualizar la contraseña', 'error')
     } finally {
-      setSaving(false)
+      setSavingPassword(false)
     }
   }
 
-  const getInitials = (name: string, surname: string) => {
-    return `${name.charAt(0)}${surname.charAt(0)}`.toUpperCase()
+  const handleLogout = () => {
+    localStorage.removeItem('auth_token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('isAuthenticated')
+    window.location.href = '/sign-in'
   }
 
-  const calculateAge = (birthDate: string) => {
+  const getInitials = (name?: string, surname?: string) => {
+    const n = (name || '').charAt(0)
+    const s = (surname || '').charAt(0)
+    return `${n}${s}`.toUpperCase() || 'U'
+  }
+
+  const calculateAge = (birthDate?: string) => {
+    if (!birthDate) return null
     const today = new Date()
     const birth = new Date(birthDate)
     let age = today.getFullYear() - birth.getFullYear()
     const monthDiff = today.getMonth() - birth.getMonth()
-
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < birth.getDate())
-    ) {
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
       age--
     }
-
-    return age
+    return age > 0 ? age : null
   }
 
-  // Datos para gráficos basados en datos reales
+  // Datos para gráficos de admin/entrenador
   const chartData = {
     categories: ['Usuarios', 'Dietas', 'Entrenamientos'],
     series: [
@@ -256,438 +247,577 @@ export const ProfilePage = () => {
 
   if (loading) {
     return (
-      <Box sx={{ p: 3 }}>
-        <LinearProgress />
-        <Typography sx={{ mt: 2 }}>Cargando perfil...</Typography>
+      <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <LinearProgress sx={{ width: '100%', maxWidth: 300, borderRadius: 2 }} />
+        <Typography sx={{ mt: 2, color: 'text.secondary', fontSize: '0.9rem' }}>
+          Cargando tu perfil...
+        </Typography>
       </Box>
     )
   }
 
-  if (error) {
+  if (error || !currentUser) {
     return (
       <Box sx={{ p: 3 }}>
-        <Alert severity='error'>{error}</Alert>
-      </Box>
-    )
-  }
-
-  if (!currentUser) {
-    return (
-      <Box sx={{ p: 3 }}>
-        <Alert severity='warning'>
-          No se pudo cargar la información del usuario
+        <Alert severity='error' sx={{ borderRadius: '12px' }}>
+          {error || 'No se pudo cargar la información del usuario'}
         </Alert>
       </Box>
     )
   }
 
+  const age = calculateAge(currentUser.birth_date)
+
   return (
-    <Box sx={{ p: { xs: 2, sm: 3 } }}>
+    <Box sx={{ p: { xs: 2, sm: 3 }, maxWidth: 1200, mx: 'auto' }}>
       <ToastContainer />
 
-      {/* Header del perfil */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
+      {/* Header Banner del Perfil */}
+      <Card
+        sx={{
+          mb: 3,
+          borderRadius: '20px',
+          bgcolor: 'var(--bg-card, #18181b)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.3)',
+          overflow: 'hidden',
+          position: 'relative'
+        }}
+      >
+        <Box
+          sx={{
+            height: { xs: 80, sm: 100 },
+            background: 'linear-gradient(135deg, rgba(0, 122, 255, 0.35) 0%, rgba(88, 86, 214, 0.2) 100%)',
+            borderBottom: '1px solid rgba(255, 255, 255, 0.06)'
+          }}
+        />
+
+        <CardContent sx={{ p: { xs: 2.5, sm: 3 }, pt: 0, position: 'relative' }}>
           <Stack
             direction={{ xs: 'column', sm: 'row' }}
-            spacing={3}
-            alignItems={{ xs: 'center', sm: 'flex-start' }}
-            textAlign={{ xs: 'center', sm: 'left' }}
+            spacing={{ xs: 2, sm: 3 }}
+            alignItems={{ xs: 'center', sm: 'flex-end' }}
+            sx={{ mt: { xs: -5, sm: -6 }, mb: 2 }}
           >
             <Avatar
               sx={{
-                width: { xs: 100, sm: 80 },
-                height: { xs: 100, sm: 80 },
-                bgcolor: 'primary.main',
-                fontSize: '2rem',
-                fontWeight: 'bold'
+                width: { xs: 88, sm: 100 },
+                height: { xs: 88, sm: 100 },
+                bgcolor: '#007AFF',
+                color: '#ffffff',
+                fontSize: { xs: '1.75rem', sm: '2.1rem' },
+                fontWeight: 800,
+                border: '4px solid #18181b',
+                boxShadow: '0 6px 20px rgba(0,0,0,0.5)'
               }}
             >
               {getInitials(currentUser.name, currentUser.surname)}
             </Avatar>
 
-            <Box sx={{ flex: 1 }}>
+            <Box sx={{ flex: 1, textAlign: { xs: 'center', sm: 'left' } }}>
               <Typography
-                variant='h4'
-                gutterBottom
-                sx={{ fontSize: { xs: '1.75rem', sm: '2.125rem' } }}
+                variant='h5'
+                fontWeight='800'
+                sx={{ color: '#ffffff', letterSpacing: '-0.02em', mb: 0.3 }}
               >
                 {currentUser.name} {currentUser.surname}
               </Typography>
-              <Typography variant='body1' color='text.secondary' gutterBottom>
+              <Typography
+                variant='body2'
+                sx={{ color: 'rgba(255, 255, 255, 0.6)', display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', sm: 'flex-start' }, gap: 0.8, mb: 1.2 }}
+              >
+                <Mail size={14} />
                 {currentUser.email}
               </Typography>
+
               <Stack
-                direction={{ xs: 'column', sm: 'row' }}
+                direction='row'
                 spacing={1}
-                alignItems={{ xs: 'center', sm: 'flex-start' }}
+                alignItems='center'
+                justifyContent={{ xs: 'center', sm: 'flex-start' }}
+                flexWrap='wrap'
+                gap={0.5}
               >
                 <Chip
                   label={
-                    currentUser.role === 'admin' ? 'Administrador' : 'Usuario'
+                    currentUser.role === 'admin'
+                      ? 'Administrador'
+                      : isTrainerOrAdmin
+                      ? 'Entrenador'
+                      : 'Cliente Activo'
                   }
-                  color={currentUser.role === 'admin' ? 'primary' : 'default'}
                   size='small'
+                  sx={{
+                    fontWeight: 700,
+                    bgcolor: isTrainerOrAdmin ? 'rgba(0, 122, 255, 0.15)' : 'rgba(52, 199, 89, 0.15)',
+                    color: isTrainerOrAdmin ? '#007AFF' : '#34C759',
+                    border: `1px solid ${isTrainerOrAdmin ? 'rgba(0, 122, 255, 0.3)' : 'rgba(52, 199, 89, 0.3)'}`
+                  }}
                 />
-                <Chip
-                  label={`${calculateAge(currentUser.birth_date)} años`}
-                  variant='outlined'
-                  size='small'
-                />
+
+                {age && (
+                  <Chip
+                    icon={<Calendar size={13} style={{ marginLeft: 4 }} />}
+                    label={`${age} años`}
+                    size='small'
+                    sx={{
+                      bgcolor: 'rgba(255, 255, 255, 0.05)',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                      border: '1px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                  />
+                )}
               </Stack>
+            </Box>
+
+            <Box sx={{ mt: { xs: 2, sm: 0 } }}>
+              <Button
+                variant='outlined'
+                color='error'
+                size='small'
+                startIcon={<LogOut size={16} />}
+                onClick={handleLogout}
+                sx={{
+                  borderRadius: '12px',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  borderColor: 'rgba(239, 68, 68, 0.3)',
+                  color: '#ef4444',
+                  '&:hover': {
+                    bgcolor: 'rgba(239, 68, 68, 0.1)',
+                    borderColor: '#ef4444'
+                  }
+                }}
+              >
+                Cerrar Sesión
+              </Button>
             </Box>
           </Stack>
         </CardContent>
       </Card>
 
-      {/* Tabs */}
-      <Card>
-        <CardHeader
-          title='Mi Perfil'
+      {/* Tabs Navigation */}
+      <Box
+        sx={{
+          mb: 3,
+          borderRadius: '16px',
+          bgcolor: 'var(--bg-card, #18181b)',
+          p: 0.8,
+          border: '1px solid rgba(255, 255, 255, 0.08)'
+        }}
+      >
+        <Tabs
+          value={activeTab}
+          onChange={(_, val) => setActiveTab(val)}
+          variant='scrollable'
+          scrollButtons='auto'
           sx={{
-            '& .MuiCardHeader-action': {
-              alignSelf: 'stretch',
-              display: 'flex',
-              alignItems: 'center',
-              width: { xs: '100%', sm: 'auto' },
-              mt: { xs: 2, sm: 0 }
+            minHeight: 44,
+            '& .MuiTabs-indicator': {
+              display: 'none'
+            },
+            '& .MuiTab-root': {
+              minHeight: 40,
+              borderRadius: '12px',
+              textTransform: 'none',
+              fontWeight: 600,
+              fontSize: '0.875rem',
+              color: 'rgba(255, 255, 255, 0.6)',
+              px: 2.5,
+              transition: 'all 0.2s ease',
+              '&.Mui-selected': {
+                color: '#ffffff',
+                bgcolor: '#007AFF',
+                boxShadow: '0 4px 12px rgba(0, 122, 255, 0.3)'
+              }
             }
           }}
-          action={
-            <Tabs
-              value={activeTab}
-              onChange={handleTabChange}
-              variant='scrollable'
-              scrollButtons='auto'
-              sx={{
-                minHeight: 48,
-                '& .MuiTab-root': {
-                  minHeight: 48,
-                  fontSize: { xs: '0.75rem', sm: '0.875rem' },
-                  padding: { xs: '8px 12px', sm: '12px 16px' }
-                }
-              }}
-            >
-              <Tab
-                label='Personal'
-                icon={<Iconify icon='solar:user-bold-duotone' width={20} />}
-                iconPosition='start'
-                sx={{ display: { xs: 'flex', sm: 'flex' } }}
-              />
-              <Tab
-                label='Estadísticas'
-                icon={<Iconify icon='solar:chart-bold-duotone' width={20} />}
-                iconPosition='start'
-                sx={{ display: { xs: 'flex', sm: 'flex' } }}
-              />
-              <Tab
-                label='Suscripción y Pagos'
-                icon={<Iconify icon='solar:card-bold-duotone' width={20} />}
-                iconPosition='start'
-                sx={{ display: { xs: 'flex', sm: 'flex' } }}
-              />
-            </Tabs>
-          }
-        />
+        >
+          <Tab
+            label='Datos Personales'
+            icon={<UserIcon size={17} />}
+            iconPosition='start'
+          />
+          {!isTrainerOrAdmin ? (
+            <Tab
+              label='Suscripción y Pagos'
+              icon={<CreditCard size={17} />}
+              iconPosition='start'
+            />
+          ) : (
+            <Tab
+              label='Estadísticas'
+              icon={<BarChart3 size={17} />}
+              iconPosition='start'
+            />
+          )}
+          <Tab
+            label='Seguridad'
+            icon={<Lock size={17} />}
+            iconPosition='start'
+          />
+        </Tabs>
+      </Box>
 
-        <Divider />
+      {/* Tab 0: Datos Personales */}
+      {activeTab === 0 && (
+        <Card
+          sx={{
+            borderRadius: '20px',
+            bgcolor: 'var(--bg-card, #18181b)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            p: { xs: 2.5, sm: 3.5 }
+          }}
+        >
+          <Box display='flex' alignItems='center' gap={1.2} mb={3}>
+            <UserIcon size={22} color='#007AFF' />
+            <Typography variant='h6' fontWeight='800' sx={{ color: '#ffffff' }}>
+              Información de la Cuenta
+            </Typography>
+          </Box>
 
-        {/* Panel de Información Personal */}
-        <TabPanel value={activeTab} index={0}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', lg: 'row' },
-              gap: 3
-            }}
-          >
-            <Box sx={{ flex: 1 }}>
-              <Card variant='outlined'>
-                <CardHeader title='Datos Personales' />
-                <CardContent>
-                  <Stack spacing={3}>
-                    <TextField
-                      fullWidth
-                      label='Nombre'
-                      value={profileForm.name}
-                      onChange={(e) =>
-                        setProfileForm((prev) => ({
-                          ...prev,
-                          name: e.target.value
-                        }))
-                      }
-                    />
-                    <TextField
-                      fullWidth
-                      label='Apellido'
-                      value={profileForm.surname}
-                      onChange={(e) =>
-                        setProfileForm((prev) => ({
-                          ...prev,
-                          surname: e.target.value
-                        }))
-                      }
-                    />
-                    <TextField
-                      fullWidth
-                      label='Email'
-                      type='email'
-                      value={profileForm.email}
-                      onChange={(e) =>
-                        setProfileForm((prev) => ({
-                          ...prev,
-                          email: e.target.value
-                        }))
-                      }
-                    />
-                    <TextField
-                      fullWidth
-                      label='Fecha de Nacimiento'
-                      type='date'
-                      value={profileForm.birth_date}
-                      onChange={(e) =>
-                        setProfileForm((prev) => ({
-                          ...prev,
-                          birth_date: e.target.value
-                        }))
-                      }
-                      InputLabelProps={{ shrink: true }}
-                    />
-
-                    <Button
-                      variant='contained'
-                      onClick={handleProfileSubmit}
-                      disabled={saving}
-                      startIcon={
-                        saving ? (
-                          <Iconify icon='solar:refresh-bold-duotone' />
-                        ) : (
-                          <Iconify icon='solar:diskette-bold-duotone' />
-                        )
-                      }
-                      fullWidth={true}
-                      sx={{ mt: 2 }}
-                    >
-                      {saving ? 'Guardando...' : 'Guardar Cambios'}
-                    </Button>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Box>
-
-            <Box sx={{ flex: 1 }}>
-              <Card variant='outlined'>
-                <CardHeader
-                  title='Gestión de Contraseña'
-                  action={
-                    <IconButton
-                      size='small'
-                      onClick={() => setChangePasswordOpen(true)}
-                    >
-                      <Iconify
-                        icon='solar:lock-keyhole-bold-duotone'
-                        width={20}
-                      />
-                    </IconButton>
+          <form onSubmit={handleProfileSubmit}>
+            <Stack spacing={3}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                  gap: 2.5
+                }}
+              >
+                <TextField
+                  fullWidth
+                  label='Nombre'
+                  required
+                  value={profileForm.name}
+                  onChange={(e) =>
+                    setProfileForm((prev) => ({ ...prev, name: e.target.value }))
                   }
+                  InputProps={{
+                    sx: {
+                      bgcolor: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '12px',
+                      color: '#ffffff'
+                    }
+                  }}
                 />
-                <CardContent>
-                  <Stack spacing={2}>
-                    <Button
-                      variant='outlined'
-                      startIcon={
-                        <Iconify icon='solar:lock-keyhole-bold-duotone' />
-                      }
-                      onClick={() => setChangePasswordOpen(true)}
-                    >
-                      Cambiar Contraseña
-                    </Button>
 
-                    <Button
-                      variant='outlined'
-                      color='error'
-                      startIcon={<Iconify icon='solar:logout-3-bold-duotone' />}
-                      onClick={() => {
-                        localStorage.removeItem('isAuthenticated')
-                        window.location.href = '/sign-in'
-                      }}
-                    >
-                      Cerrar Sesión
-                    </Button>
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Box>
-          </Box>
-        </TabPanel>
+                <TextField
+                  fullWidth
+                  label='Apellido'
+                  required
+                  value={profileForm.surname}
+                  onChange={(e) =>
+                    setProfileForm((prev) => ({ ...prev, surname: e.target.value }))
+                  }
+                  InputProps={{
+                    sx: {
+                      bgcolor: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '12px',
+                      color: '#ffffff'
+                    }
+                  }}
+                />
 
-        {/* Panel de Estadísticas */}
-        <TabPanel value={activeTab} index={1}>
-          <Box
-            sx={{
-              display: 'flex',
-              flexDirection: { xs: 'column', md: 'row' },
-              gap: 3
-            }}
-          >
-            <Box sx={{ flex: 1 }}>
-              <Card variant='outlined'>
-                <CardHeader title='Estadísticas Generales del Sistema' />
-                <CardContent>
-                  <Chart
-                    type='bar'
-                    series={chartData.series}
-                    options={{
-                      chart: { height: 300 },
-                      xaxis: { categories: chartData.categories },
-                      colors: ['#1976d2'],
-                      plotOptions: {
-                        bar: {
-                          horizontal: false,
-                          columnWidth: '55%'
-                        }
-                      }
-                    }}
-                    height={300}
-                  />
-                </CardContent>
-              </Card>
-            </Box>
+                <TextField
+                  fullWidth
+                  label='Email'
+                  type='email'
+                  required
+                  value={profileForm.email}
+                  onChange={(e) =>
+                    setProfileForm((prev) => ({ ...prev, email: e.target.value }))
+                  }
+                  InputProps={{
+                    sx: {
+                      bgcolor: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '12px',
+                      color: '#ffffff'
+                    }
+                  }}
+                />
 
-            <Box sx={{ flex: 1 }}>
-              <Card variant='outlined'>
-                <CardHeader title='Distribución de Usuarios por Rol' />
-                <CardContent>
-                  <Chart
-                    type='donut'
-                    series={roleChartData.series}
-                    options={{
-                      labels: roleChartData.labels,
-                      colors: ['#1976d2', '#2e7d32'],
-                      legend: { position: 'bottom' }
-                    }}
-                    height={300}
-                  />
-                </CardContent>
-              </Card>
-            </Box>
-          </Box>
+                <TextField
+                  fullWidth
+                  label='Fecha de Nacimiento'
+                  type='date'
+                  value={profileForm.birth_date}
+                  onChange={(e) =>
+                    setProfileForm((prev) => ({ ...prev, birth_date: e.target.value }))
+                  }
+                  InputLabelProps={{ shrink: true }}
+                  InputProps={{
+                    sx: {
+                      bgcolor: 'rgba(255, 255, 255, 0.03)',
+                      borderRadius: '12px',
+                      color: '#ffffff'
+                    }
+                  }}
+                />
+              </Box>
 
-          {/* Resumen de datos */}
-          <Box sx={{ mt: 3 }}>
-            <Card variant='outlined'>
-              <CardHeader title='Resumen del Sistema' />
-              <CardContent>
-                <Box
+              <Divider sx={{ borderColor: 'rgba(255, 255, 255, 0.08)', my: 1 }} />
+
+              <Box display='flex' justifyContent='flex-end'>
+                <Button
+                  type='submit'
+                  variant='contained'
+                  disabled={saving}
+                  startIcon={saving ? null : <Save size={18} />}
                   sx={{
-                    display: 'flex',
-                    flexDirection: { xs: 'column', md: 'row' },
-                    gap: 3
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    bgcolor: '#007AFF',
+                    px: 3.5,
+                    py: 1.2
                   }}
                 >
-                  <Box sx={{ flex: 1, textAlign: 'center' }}>
-                    <Typography variant='h3' color='primary'>
-                      {stats.totalUsers}
-                    </Typography>
-                    <Typography variant='body2' color='text.secondary'>
-                      Total de Usuarios
-                    </Typography>
-                  </Box>
-                  <Box sx={{ flex: 1, textAlign: 'center' }}>
-                    <Typography variant='h3' color='success.main'>
-                      {stats.totalDiets}
-                    </Typography>
-                    <Typography variant='body2' color='text.secondary'>
-                      Total de Dietas
-                    </Typography>
-                  </Box>
-                  <Box sx={{ flex: 1, textAlign: 'center' }}>
-                    <Typography variant='h3' color='warning.main'>
-                      {stats.totalWorkouts}
-                    </Typography>
-                    <Typography variant='body2' color='text.secondary'>
-                      Total de Entrenamientos
-                    </Typography>
-                  </Box>
-                </Box>
-              </CardContent>
+                  {saving ? 'Guardando cambios...' : 'Guardar Cambios'}
+                </Button>
+              </Box>
+            </Stack>
+          </form>
+        </Card>
+      )}
+
+      {/* Tab 1: Suscripción y Pagos (Para Clientes) O Estadísticas (Para Entrenadores/Admins) */}
+      {activeTab === 1 && !isTrainerOrAdmin && (
+        <ClientSubscriptionTab currentUser={currentUser} />
+      )}
+
+      {activeTab === 1 && isTrainerOrAdmin && (
+        <Stack spacing={3}>
+          {/* Métricas KPI */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' },
+              gap: 2.5
+            }}
+          >
+            <Card
+              sx={{
+                p: 3,
+                borderRadius: '18px',
+                bgcolor: 'var(--bg-card, #18181b)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                textAlign: 'center'
+              }}
+            >
+              <Typography variant='h3' fontWeight='900' sx={{ color: '#007AFF' }}>
+                {stats.totalUsers}
+              </Typography>
+              <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5 }}>
+                Total de Usuarios
+              </Typography>
+            </Card>
+
+            <Card
+              sx={{
+                p: 3,
+                borderRadius: '18px',
+                bgcolor: 'var(--bg-card, #18181b)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                textAlign: 'center'
+              }}
+            >
+              <Typography variant='h3' fontWeight='900' sx={{ color: '#34C759' }}>
+                {stats.totalDiets}
+              </Typography>
+              <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5 }}>
+                Planes Nutricionales
+              </Typography>
+            </Card>
+
+            <Card
+              sx={{
+                p: 3,
+                borderRadius: '18px',
+                bgcolor: 'var(--bg-card, #18181b)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                textAlign: 'center'
+              }}
+            >
+              <Typography variant='h3' fontWeight='900' sx={{ color: '#FF9500' }}>
+                {stats.totalWorkouts}
+              </Typography>
+              <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mt: 0.5 }}>
+                Rutinas de Entrenamiento
+              </Typography>
             </Card>
           </Box>
-        </TabPanel>
 
-        {/* Panel de Suscripción y Pagos */}
-        <TabPanel value={activeTab} index={2}>
-          <ClientSubscriptionTab currentUser={currentUser} />
-        </TabPanel>
-      </Card>
-
-      {/* Dialog para cambiar contraseña */}
-      <Dialog
-        open={changePasswordOpen}
-        onClose={() => setChangePasswordOpen(false)}
-        maxWidth='sm'
-        fullWidth
-      >
-        <DialogTitle>
-          <Stack direction='row' alignItems='center' spacing={1}>
-            <Iconify icon='solar:lock-keyhole-bold-duotone' width={24} />
-            <Typography variant='h6'>Cambiar Contraseña</Typography>
-          </Stack>
-        </DialogTitle>
-
-        <DialogContent>
-          <Stack spacing={3} sx={{ mt: 1 }}>
-            <TextField
-              fullWidth
-              type='password'
-              label='Contraseña Actual'
-              value={passwordForm.currentPassword}
-              onChange={(e) =>
-                setPasswordForm((prev) => ({
-                  ...prev,
-                  currentPassword: e.target.value
-                }))
-              }
-            />
-            <TextField
-              fullWidth
-              type='password'
-              label='Nueva Contraseña'
-              value={passwordForm.newPassword}
-              onChange={(e) =>
-                setPasswordForm((prev) => ({
-                  ...prev,
-                  newPassword: e.target.value
-                }))
-              }
-              helperText='Mínimo 6 caracteres'
-            />
-            <TextField
-              fullWidth
-              type='password'
-              label='Confirmar Nueva Contraseña'
-              value={passwordForm.confirmPassword}
-              onChange={(e) =>
-                setPasswordForm((prev) => ({
-                  ...prev,
-                  confirmPassword: e.target.value
-                }))
-              }
-            />
-          </Stack>
-        </DialogContent>
-
-        <DialogActions>
-          <Button onClick={() => setChangePasswordOpen(false)}>Cancelar</Button>
-          <Button
-            variant='contained'
-            onClick={handlePasswordSubmit}
-            disabled={saving}
+          {/* Gráficos */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: '1fr', lg: '1fr 1fr' },
+              gap: 2.5
+            }}
           >
-            {saving ? 'Guardando...' : 'Cambiar Contraseña'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+            <Card
+              sx={{
+                p: 3,
+                borderRadius: '18px',
+                bgcolor: 'var(--bg-card, #18181b)',
+                border: '1px solid rgba(255, 255, 255, 0.08)'
+              }}
+            >
+              <Typography variant='subtitle1' fontWeight='800' sx={{ color: '#ffffff', mb: 2 }}>
+                Distribución Global del Sistema
+              </Typography>
+              <Chart
+                type='bar'
+                series={chartData.series}
+                options={{
+                  chart: { height: 260, toolbar: { show: false } },
+                  xaxis: { categories: chartData.categories },
+                  colors: ['#007AFF'],
+                  theme: { mode: 'dark' },
+                  plotOptions: { bar: { horizontal: false, columnWidth: '45%', borderRadius: 6 } }
+                }}
+                height={260}
+              />
+            </Card>
+
+            <Card
+              sx={{
+                p: 3,
+                borderRadius: '18px',
+                bgcolor: 'var(--bg-card, #18181b)',
+                border: '1px solid rgba(255, 255, 255, 0.08)'
+              }}
+            >
+              <Typography variant='subtitle1' fontWeight='800' sx={{ color: '#ffffff', mb: 2 }}>
+                Usuarios por Rol
+              </Typography>
+              <Chart
+                type='donut'
+                series={roleChartData.series}
+                options={{
+                  labels: roleChartData.labels,
+                  colors: ['#007AFF', '#34C759'],
+                  theme: { mode: 'dark' },
+                  legend: { position: 'bottom' }
+                }}
+                height={260}
+              />
+            </Card>
+          </Box>
+        </Stack>
+      )}
+
+      {/* Tab 2: Seguridad y Contraseña */}
+      {activeTab === 2 && (
+        <Card
+          sx={{
+            borderRadius: '20px',
+            bgcolor: 'var(--bg-card, #18181b)',
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            p: { xs: 2.5, sm: 3.5 }
+          }}
+        >
+          <Box display='flex' alignItems='center' gap={1.2} mb={2}>
+            <KeyRound size={22} color='#007AFF' />
+            <Typography variant='h6' fontWeight='800' sx={{ color: '#ffffff' }}>
+              Actualizar Contraseña
+            </Typography>
+          </Box>
+          <Typography variant='body2' sx={{ color: 'rgba(255, 255, 255, 0.6)', mb: 3 }}>
+            Elige una contraseña robusta de al menos 6 caracteres para proteger tu cuenta.
+          </Typography>
+
+          <form onSubmit={handlePasswordSubmit}>
+            <Stack spacing={2.5} sx={{ maxWidth: 500 }}>
+              <TextField
+                fullWidth
+                type='password'
+                label='Contraseña Actual'
+                required
+                value={passwordForm.currentPassword}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    currentPassword: e.target.value
+                  }))
+                }
+                InputProps={{
+                  sx: {
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '12px',
+                    color: '#ffffff'
+                  }
+                }}
+              />
+
+              <TextField
+                fullWidth
+                type='password'
+                label='Nueva Contraseña'
+                required
+                value={passwordForm.newPassword}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    newPassword: e.target.value
+                  }))
+                }
+                helperText='Mínimo 6 caracteres'
+                InputProps={{
+                  sx: {
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '12px',
+                    color: '#ffffff'
+                  }
+                }}
+              />
+
+              <TextField
+                fullWidth
+                type='password'
+                label='Confirmar Nueva Contraseña'
+                required
+                value={passwordForm.confirmPassword}
+                onChange={(e) =>
+                  setPasswordForm((prev) => ({
+                    ...prev,
+                    confirmPassword: e.target.value
+                  }))
+                }
+                InputProps={{
+                  sx: {
+                    bgcolor: 'rgba(255, 255, 255, 0.03)',
+                    borderRadius: '12px',
+                    color: '#ffffff'
+                  }
+                }}
+              />
+
+              <Box pt={1}>
+                <Button
+                  type='submit'
+                  variant='contained'
+                  disabled={savingPassword}
+                  startIcon={savingPassword ? null : <ShieldCheck size={18} />}
+                  sx={{
+                    borderRadius: '12px',
+                    fontWeight: 700,
+                    textTransform: 'none',
+                    bgcolor: '#007AFF',
+                    px: 3.5,
+                    py: 1.2
+                  }}
+                >
+                  {savingPassword ? 'Actualizando...' : 'Actualizar Contraseña'}
+                </Button>
+              </Box>
+            </Stack>
+          </form>
+        </Card>
+      )}
     </Box>
   )
 }
+
+export default ProfilePage
