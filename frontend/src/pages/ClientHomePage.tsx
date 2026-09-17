@@ -30,7 +30,8 @@ import {
   Sun,
   RotateCcw,
   Sparkles,
-  Award
+  Award,
+  Activity
 } from 'lucide-react';
 import { getCurrentUser } from '../services/userService';
 import { getWorkoutsWithExercises, getWorkoutDetails } from '../services/workoutService';
