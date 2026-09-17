@@ -1,5 +1,6 @@
 // Componente principal de gestión de dietas con funcionalidades CRUD, gestión de alimentos y filtros
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Typography,
@@ -26,6 +27,8 @@ import { DietUsersDialog } from './DietUsersDialog'
 import { calculateDietCalories, formatCalories } from '../../utils/dietUtils'
 
 export const DietManager = () => {
+  const navigate = useNavigate()
+  const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [diets, setDiets] = useState<DietWithFoods[]>([])
   const [filteredDiets, setFilteredDiets] = useState<DietWithFoods[]>([])
   const [users, setUsers] = useState<User[]>([])
@@ -49,13 +52,26 @@ export const DietManager = () => {
   const { exportToCSV, exportToPDF, exportToExcel } = useExport()
 
   useEffect(() => {
-    loadDiets()
-    loadUsers()
+    init()
   }, [])
 
-  useEffect(() => {
-    filterDiets()
-  }, [diets, searchQuery])
+  const init = async () => {
+    try {
+      const activeUser = await userService.getCurrentUser()
+      setCurrentUser(activeUser)
+
+      if (activeUser && (activeUser.role === 'client' || activeUser.role === 'cliente')) {
+        navigate('/dashboard/client-diet', { replace: true })
+        return
+      }
+
+      loadDiets()
+      loadUsers(activeUser)
+    } catch (e) {
+      loadDiets()
+      loadUsers(null)
+    }
+  }
 
   const loadDiets = async () => {
     try {
@@ -69,10 +85,15 @@ export const DietManager = () => {
     }
   }
 
-  const loadUsers = async () => {
+  const loadUsers = async (activeUser?: User | null) => {
     try {
-      const data = await userService.getUsers()
-      setUsers(data)
+      if (activeUser && (activeUser.role === 'trainer' || activeUser.role === 'entrenador')) {
+        const data = await userService.getTrainerClients(activeUser.id)
+        setUsers(data)
+      } else {
+        const data = await userService.getUsers()
+        setUsers(data)
+      }
     } catch (error) {
       showToast('Error al cargar usuarios', 'error')
     }

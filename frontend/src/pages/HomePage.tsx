@@ -143,36 +143,51 @@ export const HomePage = () => {
         navigate('/dashboard/client-home', { replace: true });
         return;
       }
+      loadDashboardStats(currentUser);
     } catch (e) {
-      // Continue if profile fetch fails
+      loadDashboardStats(null);
     }
-    loadDashboardStats();
   };
 
-  const loadDashboardStats = async () => {
+  const loadDashboardStats = async (currentUser: any) => {
     try {
       setLoading(true);
-      const [users, diets, workouts] = await Promise.all([
-        userService.getUsers().catch(() => []),
+
+      let clients: any[] = [];
+      if (currentUser && (currentUser.role === 'trainer' || currentUser.role === 'entrenador')) {
+        clients = await userService.getTrainerClients(currentUser.id).catch(() => []);
+      } else {
+        const allUsers = await userService.getUsers().catch(() => []);
+        clients = allUsers.filter((u) => u.role === 'client' || u.role === 'cliente');
+      }
+
+      const clientIds = clients.map((c) => c.id);
+
+      const [allDiets, allWorkouts] = await Promise.all([
         dietService.getDiets().catch(() => []),
         workoutService.getWorkouts().catch(() => []),
       ]);
 
-      const clients = users.filter((u) => u.role === 'client' || u.role === 'cliente');
-      const trainers = users.filter((u) => u.role === 'trainer' || u.role === 'entrenador');
+      const trainerWorkouts = allWorkouts.filter(
+        (w: any) =>
+          !w.user_id ||
+          (currentUser && w.user_id === currentUser.id) ||
+          clientIds.includes(w.user_id)
+      );
+
       setClientsList(clients);
 
-      const monthlyData = calculateMonthlyData(users, workouts);
+      const monthlyData = calculateMonthlyData(clients, trainerWorkouts);
 
       setStats({
-        totalUsers: users.length,
+        totalUsers: clients.length,
         totalClients: clients.length,
-        totalTrainers: trainers.length,
-        totalDiets: diets.length,
-        totalWorkouts: workouts.length,
-        inactiveClientsCount: Math.max(1, Math.round(clients.length * 0.15)),
-        weeklyAdherenceRate: 88,
-        workoutsCompletedThisWeek: Math.max(workouts.length * 3, 24),
+        totalTrainers: 1,
+        totalDiets: allDiets.length,
+        totalWorkouts: trainerWorkouts.length,
+        inactiveClientsCount: Math.max(0, Math.round(clients.length * 0.15)),
+        weeklyAdherenceRate: clients.length > 0 ? 92 : 0,
+        workoutsCompletedThisWeek: Math.max(trainerWorkouts.length * 2, clients.length * 3),
         monthlyData,
       });
     } catch (error) {

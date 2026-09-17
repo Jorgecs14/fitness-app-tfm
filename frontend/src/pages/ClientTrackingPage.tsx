@@ -33,12 +33,18 @@ const ClientTrackingPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      const allUsers = await userService.getUsers();
-      // Filtrar solo los usuarios con rol 'client'
-      const clientUsers = allUsers.filter(user => user.role === 'client' || user.role === 'cliente');
+
+      const currentUser = await userService.getCurrentUser();
+      let clientUsers: User[] = [];
+
+      if (currentUser && (currentUser.role === 'trainer' || currentUser.role === 'entrenador')) {
+        clientUsers = await userService.getTrainerClients(currentUser.id);
+      } else {
+        const allUsers = await userService.getUsers();
+        clientUsers = allUsers.filter(user => user.role === 'client' || user.role === 'cliente');
+      }
+
       setClients(clientUsers);
-      
     } catch (error: any) {
       console.error('Error al cargar clientes:', error);
       setError('Error al cargar la lista de clientes');

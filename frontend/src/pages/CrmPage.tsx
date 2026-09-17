@@ -24,7 +24,7 @@ import {
   ChevronRight,
   ShieldAlert,
 } from 'lucide-react';
-import { getUsers } from '../services/userService';
+import { getUsers, getCurrentUser, getTrainerClients } from '../services/userService';
 import { User } from '../types/User';
 
 export const CrmPage = () => {
@@ -41,9 +41,20 @@ export const CrmPage = () => {
   const loadUsers = async () => {
     try {
       setLoading(true);
-      const userData = await getUsers();
-      // Filtrar solo clientes
-      const clients = userData.filter(user => user.role === 'client' || user.role === 'cliente');
+      const currentUser = await getCurrentUser();
+      if (currentUser && (currentUser.role === 'client' || currentUser.role === 'cliente')) {
+        navigate('/dashboard/client-home', { replace: true });
+        return;
+      }
+
+      let clients: User[] = [];
+      if (currentUser && (currentUser.role === 'trainer' || currentUser.role === 'entrenador')) {
+        clients = await getTrainerClients(currentUser.id);
+      } else {
+        const userData = await getUsers();
+        clients = userData.filter((u) => u.role === 'client' || u.role === 'cliente');
+      }
+
       setUsers(clients);
     } catch (err) {
       setError('Error al cargar los clientes');

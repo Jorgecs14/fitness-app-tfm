@@ -19,8 +19,7 @@ import {
   CircularProgress
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Iconify } from '../utils/iconify';
-import { getUsers } from '../services/userService';
+import { getUsers, getCurrentUser, getTrainerClients } from '../services/userService';
 import { weeklyTrackingService } from '../services/weeklyTrackingService';
 import { User } from '../types/User';
 import ConsistencyHeatmap from '../components/Progress/ConsistencyHeatmap';
@@ -51,10 +50,15 @@ export const ProgressPage: React.FC = () => {
   const loadUsersProgress = async () => {
     try {
       setLoading(true);
-      const users = await getUsers();
-      
-      // Filtrar solo clientes
-      const clients = users.filter(user => user.role === 'client' || user.role === 'cliente');
+      const currentUser = await getCurrentUser();
+      let clients: User[] = [];
+
+      if (currentUser && (currentUser.role === 'trainer' || currentUser.role === 'entrenador')) {
+        clients = await getTrainerClients(currentUser.id);
+      } else {
+        const users = await getUsers();
+        clients = users.filter(user => user.role === 'client' || user.role === 'cliente');
+      }
       
       // Obtener la fecha del último progreso para cada cliente
       const progressPromises = clients.map(async (user) => {
